@@ -12,12 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Generates some swift wrapper from some ops description protobuf."""
+"""Generates some swift wrappers from some ops description protobuf."""
 
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 from builtins import bytes
+from functools import reduce
 
 import json
 import os
@@ -64,18 +65,6 @@ _HEADER = """// Copyright 2019 The TensorFlow Authors. All Rights Reserved.
 // limitations under the License.
 
 """
-
-_DISPATCHER_TEMPLATE = '''@available(
-  *, deprecated, renamed: "_Raw",
-  message:
-    """
-  'Raw' has been renamed to '_Raw' to indicate that it is not a guaranteed/stable API.
-  """
-)
-public typealias Raw = _Raw
-
-{raw_dispatching_enum}
-'''
 
 _OUTPUT_FILE = 'RawOpsGenerated.swift'
 _RENAMED_KEYWORDS = {
@@ -154,46 +143,39 @@ _SWIFTIFIED_ATTR_TYPES = {
 _OMITTED_PARAMETER_NAMES = {
   'x', 'y', 'a', 'b', 'input', 'tensor', 'values'}
 
-_START_COMMENT = '///'
+_START_COMMENT = '  ///'
 
 X10_OPS = {
-  "CanonicalDims", "CheckSameDevice", "CheckSameDevice", "CheckSameDevice",
-  "CheckSameDevice", "CheckSamePrecision", "CheckSamePrecision",
-  "CheckSamePrecision", "CheckSamePrecision",
   "Abs", "Acos", "Acosh", "AddV2", "All", "Any", "ApproximateEqual", "ArgMax",
-  "ArgMax", "ArgMin", "Asin", "Asinh", "Atan", "Atanh", "ConvertPadding",
-  "ConvertPadding2", "ConvertDataFormat", "ConvertDataFormat1",
-  "ConvertDataFormat4", "ConvertMirrorPadMode", "ReversedPaddings",
-  "AvgPool", "AvgPool3D", "AvgPool3DGrad", "AvgPoolGrad", "BatchMatMulV2",
-  "BroadcastGradientArgs", "BroadcastTo", "BroadcastTo", "Cast", "Ceil",
-  "ClipByValue", "ConcatV2", "Conv2D", "Conv2DBackpropFilter",
-  "Conv2DBackpropFilter", "Conv2DBackpropInput", "Conv2DBackpropInput",
-  "Conv3D", "Conv3DBackpropFilterV2", "Conv3DBackpropInputV2", "Cos", "Cosh",
-  "Cumprod", "Cumsum", "DepthwiseConv2dNative",
-  "DepthwiseConv2dNativeBackpropFilter", "DepthwiseConv2dNativeBackpropInput",
-  "DiagPart", "Div", "Elu", "EluGrad", "Equal", "Exp", "ExpandDims", "Expm1",
-  "Fill", "Fill", "Floor", "Gather", "GatherV2", "Greater", "GreaterEqual",
-  "InvertPermutation", "IsFinite", "IsInf", "IsNan", "LeakyRelu",
-  "LeakyReluGrad", "Less", "LessEqual", "LinSpace", "LinSpace", "Log", "Log1p",
-   "LogSoftmax", "LogicalAnd", "LogicalNot", "LogicalOr",
-  "MatMul", "Max", "MaxPool3D", "MaxPool3DGrad", "MaxPoolGradV2",
-  "MaxPoolGradV2", "MaxPoolV2", "MaxPoolV2", "Maximum", "Mean", "Mean", "Min",
-  "Minimum", "MirrorPad", "MirrorPadGrad", "Mod", "Mul", "Neg", "NotEqual",
-  "OneHot", "OneHot", "OnesLike", "Pack", "Pad", "PadV2", "PhysicalCast", "Pow",
-  "Prod", "Qr", "Range", "Rank", "Relu", "Relu6", "Relu6Grad", "ReluGrad",
-  "Reshape", "Reshape", "ReverseV2", "Round", "Rsqrt", "RsqrtGrad", "Select",
-  "Selu", "SeluGrad", "Shape", "Sigmoid", "SigmoidGrad", "Sign", "Sin", "Sinh",
-  "Size", "Slice", "Softmax", "SoftmaxCrossEntropyWithLogits", "Softplus",
-  "SoftplusGrad", "Softsign", "SoftsignGrad",
-  "SparseSoftmaxCrossEntropyWithLogits", "Split", "SplitV", "Sqrt", "Square",
-  "SquaredDifference", "Squeeze", "StatelessMultinomial",
-  "StatelessRandomNormal", "StatelessRandomNormal", "StatelessRandomUniform",
-  "StatelessRandomUniform", "StatelessRandomUniformInt",
-  "StatelessRandomUniformInt", "StatelessTruncatedNormal",
-  "StatelessTruncatedNormal", "StridedSlice", "StridedSliceGrad", "Sub", "Sum",
-  "Sum", "Svd", "Tan", "Tanh", "TensorStridedSliceUpdate", "Tile", "ToDevice",
-  "Transpose", "Unpack", "UnsortedSegmentSum", "Xdivy", "ZerosLike",
-  "Rand",
+  "ArgMin", "Asin", "Asinh", "Atan", "Atanh", "AvgPool", "AvgPool3D",
+  "AvgPool3DGrad", "AvgPoolGrad", "BatchMatMulV2", "BroadcastGradientArgs",
+  "BroadcastTo", "CanonicalDims", "Cast", "Ceil", "CheckSameDevice",
+  "CheckSamePrecision", "ClipByValue", "ConcatV2", "Conv2D",
+  "Conv2DBackpropFilter", "Conv2DBackpropInput", "Conv3D",
+  "Conv3DBackpropFilterV2", "Conv3DBackpropInputV2", "ConvertDataFormat",
+  "ConvertDataFormat1", "ConvertDataFormat4", "ConvertMirrorPadMode",
+  "ConvertPadding", "ConvertPadding2", "Cos", "Cosh", "Cumprod", "Cumsum",
+  "DepthwiseConv2dNative", "DepthwiseConv2dNativeBackpropFilter",
+  "DepthwiseConv2dNativeBackpropInput", "DiagPart", "Div", "Elu", "EluGrad",
+  "Equal", "Exp", "ExpandDims", "Expm1", "Fill", "Floor", "Gather", "GatherV2",
+  "Greater", "GreaterEqual", "InvertPermutation", "IsFinite", "IsInf", "IsNan",
+  "LeakyRelu", "LeakyReluGrad", "Less", "LessEqual", "LinSpace", "Log",
+  "Log1p", "LogSoftmax", "LogicalAnd", "LogicalNot", "LogicalOr", "MatMul",
+  "Max", "MaxPool3D", "MaxPool3DGrad", "MaxPoolGradV2", "MaxPoolV2", "Maximum",
+  "Mean", "Min", "Minimum", "MirrorPad", "MirrorPadGrad", "Mod", "Mul", "Neg",
+  "NotEqual", "OneHot", "OnesLike", "Pack", "Pad", "PadV2", "PhysicalCast",
+  "Pow", "Prod", "Qr", "Rand", "Range", "Rank", "Relu", "Relu6", "Relu6Grad",
+  "ReluGrad", "Reshape", "ReverseV2", "ReversedPaddings", "Round", "Rsqrt",
+  "RsqrtGrad", "Select", "Selu", "SeluGrad", "Shape", "Sigmoid", "SigmoidGrad",
+  "Sign", "Sin", "Sinh", "Size", "Slice", "Softmax",
+  "SoftmaxCrossEntropyWithLogits", "Softplus", "SoftplusGrad", "Softsign",
+  "SoftsignGrad", "SparseSoftmaxCrossEntropyWithLogits", "Split", "SplitV",
+  "Sqrt", "Square", "SquaredDifference", "Squeeze", "StatelessMultinomial",
+  "StatelessRandomNormal", "StatelessRandomUniform",
+  "StatelessRandomUniformInt", "StatelessTruncatedNormal", "StridedSlice",
+  "StridedSliceGrad", "Sub", "Sum", "Svd", "Tan", "Tanh",
+  "TensorStridedSliceUpdate", "Tile", "ToDevice", "Transpose", "Unpack",
+  "UnsortedSegmentSum", "Xdivy", "ZerosLike"
 }
 
 class UnableToGenerateCodeError(Exception):
@@ -231,11 +213,11 @@ class Op(object):
 
   def swift_function(self):
     return '''
-{documentation}@inlinable @inline(__always)
-public static func {name}{generics}({input_args}
-){return_type} {{
-  {body}
-}}'''.format(
+{documentation}  @inlinable @inline(__always)
+  public static func {name}{generics}({input_args}
+  ){return_type} {{
+    {body}
+  }}'''.format(
       documentation=self._swift_documentation(),
       name=self._swift_name(),
       generics=self._swift_generics(),
@@ -245,11 +227,11 @@ public static func {name}{generics}({input_args}
 
   def swift_dispatch_function(self, x10_supported=False):
     return '''
-{documentation}@inlinable @inline(__always)
-public static func {name}{generics}({input_args}
-){return_type} {{
-  {body}
-}}'''.format(
+{documentation}  @inlinable @inline(__always)
+  public static func {name}{generics}({input_args}
+  ){return_type} {{
+    {body}
+  }}'''.format(
       documentation=self._swift_documentation(),
       name=self._swift_name(),
       generics=self._swift_generics(),
@@ -312,7 +294,7 @@ public static func {name}{generics}({input_args}
     if len(constraints) == 1:
       return '<' + ', '.join(constraints) + '>'
     if len(constraints) > 1:
-      return '<\n    ' + ',\n    '.join(constraints) + '\n>'
+      return '<\n    ' + ',\n    '.join(constraints) + '\n  >'
     return ''
 
   def _swift_input_args(self):
@@ -397,7 +379,7 @@ public static func {name}{generics}({input_args}
       return {convert_type}(copying: _RawTFEager.{dispatch}, to: output_device)
     case .TF_EAGER:
       return _RawTFEager.{dispatch}
-  }}
+    }}
 """.format(dispatch=dispatch,
            convert_type=str(self.output_args[0].swift_type(self.string_valued)),
            convert_device=str(device_source.swift_name),
@@ -408,7 +390,7 @@ public static func {name}{generics}({input_args}
       return _RawXLA.{dispatch}
     case .TF_EAGER:
       return _RawTFEager.{dispatch}
-  }}
+    }}
 """.format(dispatch=dispatch,
            backends=reduce(get_common_backend, backends))
 
@@ -622,7 +604,7 @@ class Attribute(object):
       elif default_value.HasField('f'):
         default_value = swift_float(default_value.f)
       elif default_value.HasField('s') and default_value.s:
-        s = str(default_value.s)
+        s = default_value.s.decode("utf8")
         default_value = '.' + swift_compatible_identifier(s.lower()) \
             if self._use_enum else json.dumps(s) # '"' + s + '"'
       elif default_value.HasField('list'):
@@ -740,7 +722,7 @@ class EnumStore(object):
     codes = []
     entries = list(six.iteritems(self._entries))
     for allowed_values, type_name in sorted(entries, key=lambda x: x[1]):
-      allowed_values = [str(a) for a in allowed_values]
+      allowed_values = [a.decode("utf8") for a in allowed_values]
       codes.append(
           # FIXME: Re-add `@_frozen` after SR-9739 is resolved.
           # https://bugs.swift.org/browse/SR-9739
@@ -869,13 +851,12 @@ def main(argv):
   swift_code = (
       _WARNING +
       _HEADER +
-      _DISPATCHER_TEMPLATE.format(raw_dispatching_enum=
       'public enum _Raw {\n\n' +
       '\n'.join(version_codes) +
       '\n\n' +
       '\n\n'.join(enum_store.enum_codes_forwarding()) +
       '\n\n' +
-      '\n'.join(op_codes_forwarding) + '\n\n}'))
+      '\n'.join(op_codes_forwarding) + '\n\n}')
   if FLAGS.dispatching_output_path:
     with tf.gfile.Open(FLAGS.dispatching_output_path, 'w') as f:
       f.write(swift_code)

@@ -180,7 +180,7 @@ public enum _RawXLA {
   ///     Describes which dimension of the input Tensor to reduce across. For vectors,
   ///     use dimension = 0.
   public static func argMax<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     OutputType: TensorFlowIndex
   >(
     _ input: Tensor<T>,
@@ -189,7 +189,7 @@ public enum _RawXLA {
     return cast(argMax(input, dim: dimension, keepdim: false))
   }
   public static func argMax<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     Tidx: TensorFlowIndex,
     OutputType: TensorFlowIndex
   >(
@@ -217,7 +217,7 @@ public enum _RawXLA {
   ///     Describes which dimension of the input Tensor to reduce across. For vectors,
   ///     use dimension = 0.
   public static func argMin<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     Tidx: TensorFlowIndex,
     OutputType: TensorFlowIndex
   >(
@@ -1051,13 +1051,14 @@ public enum _RawXLA {
     _ input: Tensor<T>,
     filter: Tensor<T>,
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
     return tf_Conv(
-      input, filter, true, strides.map { Int64($0) }, convertPadding(padding),
-      [], convertDataFormat(dataFormat),
+      input, filter, true, strides.map { Int64($0) }, convertPadding1(padding),
+      explicitPaddings.map { Int64($0) }, convertDataFormat(dataFormat),
       dilations.map { Int64($0) })
   }
 
@@ -1098,14 +1099,15 @@ public enum _RawXLA {
     filterSizes: Tensor<Int32>,
     outBackprop: Tensor<T>,
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
     return tf_ConvBackpropFilter(
       input, filterSizes.scalars.map { Int64($0) },
       outBackprop, true, strides.map { Int64($0) },
-      convertPadding(padding), [],
+      convertPadding1(padding), explicitPaddings.map { Int64($0) },
       convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
 
@@ -1146,14 +1148,15 @@ public enum _RawXLA {
     filter: Tensor<T>,
     outBackprop: Tensor<T>,
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
     return tf_ConvBackpropInput(
       inputSizes.scalars.map { Int64($0) }, filter,
       outBackprop, true, strides.map { Int64($0) },
-      convertPadding(padding), [],
+      convertPadding1(padding), explicitPaddings.map { Int64($0) },
       convertDataFormat(dataFormat), dilations.map { Int64($0) })
   }
 

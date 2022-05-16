@@ -80,7 +80,8 @@ extension Dataset {
     self.init(
       _handle: _Raw.tensorSliceDataset(
         components: [elements],
-        outputShapes: Element._unknownShapeList))
+        outputShapes: Element._unknownShapeList,
+        metadata: ""))
   }
 }
 
@@ -115,7 +116,8 @@ extension Dataset {
         outputTypes: ResultElement._typeList,
         outputShapes: ResultElement._unknownShapeList,
         useInterOpParallelism: true,
-        preserveCardinality: false))
+        preserveCardinality: false,
+        metadata: ""))
   }
 
   @inlinable
@@ -133,7 +135,8 @@ extension Dataset {
         outputShapes: ResultElement._unknownShapeList,
         useInterOpParallelism: true,
         sloppy: false,
-        preserveCardinality: false))
+        preserveCardinality: false,
+        metadata: ""))
   }
 
   @inlinable
@@ -144,7 +147,8 @@ extension Dataset {
         otherArguments: Tensor<Int32>(0, on: .defaultTFEager),
         predicate: isIncluded,
         outputTypes: Element._typeList,
-        outputShapes: Element._unknownShapeList))
+        outputShapes: Element._unknownShapeList,
+        metadata: ""))
   }
 }
 
@@ -157,7 +161,8 @@ extension Dataset {
         inputDataset: _handle,
         bufferSize: Tensor(Int64(count), on: .defaultTFEager),
         outputTypes: Element._typeList,
-        outputShapes: Element._unknownShapeList))
+        outputShapes: Element._unknownShapeList,
+        metadata: ""))
   }
 
   @inlinable
@@ -175,7 +180,8 @@ extension Dataset {
         seed2: seed2,
         reshuffleEachIteration: reshuffleForEachIterator,
         outputTypes: Element._typeList,
-        outputShapes: Element._unknownShapeList))
+        outputShapes: Element._unknownShapeList,
+        metadata: ""))
   }
 
   @inlinable
@@ -185,7 +191,8 @@ extension Dataset {
         inputDataset: _handle,
         batchSize: Tensor(Int64(batchSize), on: .defaultTFEager),
         outputTypes: Element._typeList,
-        outputShapes: Element._unknownShapeList))
+        outputShapes: Element._unknownShapeList,
+        metadata: ""))
   }
 
   @inlinable
@@ -195,7 +202,8 @@ extension Dataset {
         inputDataset: _handle,
         count: Tensor(Int64(count ?? -1), on: .defaultTFEager),
         outputTypes: Element._typeList,
-        outputShapes: Element._unknownShapeList))
+        outputShapes: Element._unknownShapeList,
+        metadata: ""))
   }
 }
 
@@ -279,6 +287,7 @@ public func zip<T: TensorGroup, U: TensorGroup>(
   let handle = _Raw.zipDataset(
     inputDatasets: [dataset1._handle, dataset2._handle],
     outputTypes: Zip2TensorGroup<T, U>._typeList,
-    outputShapes: Zip2TensorGroup<T, U>._unknownShapeList)
+    outputShapes: Zip2TensorGroup<T, U>._unknownShapeList,
+    metadata: "")
   return Dataset(_handle: handle)
 }

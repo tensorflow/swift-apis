@@ -11,11 +11,12 @@ in the main TensorFlow repo.
 
 ## How to regenerate the bindings
 
-To regenerate the swift ops bindings, run the following command. Note
-that this will use the TensorFlow (1.9 or above) python package.
+To regenerate the Swift ops bindings, run the following command. Note
+that this will use the TensorFlow Python package. Ensure the Python TensorFlow 
+is the same version as the CTensorFlow you're compiling X10 with.
 
 ``` shell
-python generate_wrappers.py --output_path=RawOpsGenerated.swift
+python3 generate_wrappers.py --output_path=RawOpsGenerated.swift
 ```
 
 Documentation gets automatically generated when adding a path to the
@@ -23,5 +24,8 @@ Documentation gets automatically generated when adding a path to the
 `api_def` protos with names like `api_def_OpName.pbtxt`.
 
 ```shell
-python generate_wrappers.py --output_path=RawOpsGenerated.swift --api_def_path=/path/to/tensorflow/core/api_def/base_api
+python3 generate_wrappers.py --output_path=RawOpsGenerated.swift --api_def_path=/path/to/tensorflow/core/api_def/base_api
 ```
+
+Finally, run [swift-format](https://github.com/apple/swift-format) on the
+generated files using the `.swift-format` file for this repository.

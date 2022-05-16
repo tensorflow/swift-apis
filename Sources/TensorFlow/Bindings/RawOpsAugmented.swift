@@ -20,7 +20,7 @@
 // passed as Tensors.
 extension _RawTFEager {
   public static func argMax<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     OutputType: TensorFlowIndex
   >(
     _ input: Tensor<T>,
@@ -237,7 +237,7 @@ extension _Raw {
   }
 
   public static func argMax<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     OutputType: TensorFlowIndex
   >(
     _ input: Tensor<T>,

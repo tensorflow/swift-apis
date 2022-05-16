@@ -141,7 +141,8 @@ final class LazyTensorHandleTests: XCTestCase {
     let outputShapes: [TensorShape?] = [nil, nil]
     let dataset: VariantHandle = _Raw.tensorSliceDataset(
       components: [elements1, elements2],
-      outputShapes: outputShapes
+      outputShapes: outputShapes,
+      metadata: ""
     )
     let iterator: ResourceHandle = _Raw.iteratorV2(
       sharedName: "blah",

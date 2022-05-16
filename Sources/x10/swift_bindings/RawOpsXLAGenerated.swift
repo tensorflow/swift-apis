@@ -68,7 +68,7 @@ extension _RawXLA {
   }
 
   public static func argMax<
-    T: TensorFlowNumeric
+    T: TensorFlowScalar
   >(
     _ input: Tensor<T>,
     dim: Int64,
@@ -79,7 +79,7 @@ extension _RawXLA {
   }
 
   public static func argMin<
-    T: TensorFlowNumeric
+    T: TensorFlowScalar
   >(
     _ input: Tensor<T>,
     dim: Int64,

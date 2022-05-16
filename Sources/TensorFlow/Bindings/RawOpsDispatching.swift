@@ -14,21 +14,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-@available(
-  *, deprecated, renamed: "_Raw",
-  message:
-    """
-  'Raw' has been renamed to '_Raw' to indicate that it is not a guaranteed/stable API.
-  """
-)
-public typealias Raw = _Raw
-
 public enum _Raw {
 
-  static let generatedTensorFlowVersion = "2.1.0"
-  static let generatedTensorFlowGitVersion = "v2.1.0-rc2-17-ge5bf8de"
+  static let generatedTensorFlowVersion = "2.9.0-rc2"
+  static let generatedTensorFlowGitVersion = "v2.9.0-rc1-32-gda871155c2d"
 
   public typealias A = _RawTFEager.A
+
+  public typealias Align = _RawTFEager.Align
 
   public typealias DataFormat = _RawTFEager.DataFormat
 
@@ -36,9 +29,13 @@ public enum _Raw {
 
   public typealias DataFormat2 = _RawTFEager.DataFormat2
 
+  public typealias DataFormat3 = _RawTFEager.DataFormat3
+
   public typealias DensityUnit = _RawTFEager.DensityUnit
 
   public typealias Direction = _RawTFEager.Direction
+
+  public typealias Direction1 = _RawTFEager.Direction1
 
   public typealias Errors = _RawTFEager.Errors
 
@@ -62,13 +59,27 @@ public enum _Raw {
 
   public typealias Mode1 = _RawTFEager.Mode1
 
+  public typealias Mode2 = _RawTFEager.Mode2
+
+  public typealias OpType = _RawTFEager.OpType
+
+  public typealias OpType1 = _RawTFEager.OpType1
+
+  public typealias OpType2 = _RawTFEager.OpType2
+
   public typealias OutputEncoding = _RawTFEager.OutputEncoding
 
   public typealias Padding = _RawTFEager.Padding
 
   public typealias Padding1 = _RawTFEager.Padding1
 
+  public typealias PoolingType = _RawTFEager.PoolingType
+
   public typealias PrecisionMode = _RawTFEager.PrecisionMode
+
+  public typealias ReduceOp = _RawTFEager.ReduceOp
+
+  public typealias ReduceOp1 = _RawTFEager.ReduceOp1
 
   public typealias Reduction = _RawTFEager.Reduction
 
@@ -148,6 +159,12 @@ public enum _Raw {
   }
 
   /// Computes acos of x element-wise.
+  ///
+  ///
+  ///   Provided an input tensor, the `tf.math.acos` operation returns the inverse cosine of each element of the tensor. If `y = tf.math.cos(x)` then, `x = tf.math.acos(y)`.
+  ///
+  ///   Input range is `[-1, 1]` and the output has a range of `[0, pi]`.
+  ///
   @inlinable @inline(__always)
   public static func acos<T: TensorFlowNumeric>(
     _ x: Tensor<T>
@@ -187,6 +204,11 @@ public enum _Raw {
   ///
   /// *NOTE*: `Add` supports broadcasting. `AddN` does not. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+  ///
+  /// Given two input tensors, the `tf.add` operation computes the sum for every element in the tensor.
+  ///
+  /// Both input and output have a range `(-inf, inf)`.
+  ///
   @inlinable @inline(__always)
   public static func add<T: TensorFlowNumeric>(
     _ x: Tensor<T>,
@@ -208,6 +230,11 @@ public enum _Raw {
   ///
   /// *NOTE*: `Add` supports broadcasting. `AddN` does not. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
+  ///
+  /// Given two input tensors, the `tf.add` operation computes the sum for every element in the tensor.
+  ///
+  /// Both input and output have a range `(-inf, inf)`.
+  ///
   @inlinable @inline(__always)
   public static func add(
     _ x: StringTensor,
@@ -444,7 +471,7 @@ public enum _Raw {
   /// Adjust the hue of one or more images.
   ///
   /// `images` is a tensor of at least 3 dimensions.  The last dimension is
-  /// interpretted as channels, and must be three.
+  /// interpreted as channels, and must be three.
   ///
   /// The input image is considered in the RGB colorspace. Conceptually, the RGB
   /// colors are first mapped into HSV. A delta is then applied all the hue values,
@@ -476,7 +503,7 @@ public enum _Raw {
   /// Adjust the saturation of one or more images.
   ///
   /// `images` is a tensor of at least 3 dimensions.  The last dimension is
-  /// interpretted as channels, and must be three.
+  /// interpreted as channels, and must be three.
   ///
   /// The input image is considered in the RGB colorspace. Conceptually, the RGB
   /// colors are first mapped into HSV. A scale is then applied all the saturation
@@ -683,6 +710,30 @@ public enum _Raw {
 
   }
 
+  /// Creates a uninitialized anonymous hash table.
+  ///
+  /// This op creates a new anonymous hash table (as a resource) everytime
+  /// it is executed, with the specified dtype of its keys and values,
+  /// returning the resource handle.  Before using the table you will have
+  /// to initialize it.  After initialization the table will be
+  /// immutable. The table is anonymous in the sense that it can only be
+  /// accessed by the returned resource handle (e.g. it cannot be looked up
+  /// by a name in a resource manager). The table will be automatically
+  /// deleted when all resource handles pointing to it are gone.
+  ///
+  /// - Attrs:
+  ///     - key_dtype: Type of the table keys.
+  ///     - value_dtype: Type of the table values.
+  ///
+  /// - Output table_handle: The resource handle to the newly created hash-table resource.
+  @inlinable @inline(__always)
+  public static func anonymousHashTable(
+    keyDtype: TensorDataType,
+    valueDtype: TensorDataType
+  ) -> ResourceHandle {
+    _RawTFEager.anonymousHashTable(keyDtype: keyDtype, valueDtype: valueDtype)
+  }
+
   /// A container for an iterator resource.
   ///
   /// - Output handle: A handle to the iterator that can be passed to a "MakeIterator" or
@@ -713,6 +764,20 @@ public enum _Raw {
     _RawTFEager.anonymousIteratorV2(outputTypes: outputTypes, outputShapes: outputShapes)
   }
 
+  /// A container for an iterator resource.
+  ///
+  /// - Output handle: A handle to the iterator that can be passed to a "MakeIterator" or
+  ///     "IteratorGetNext" op. In contrast to Iterator, AnonymousIterator prevents
+  ///     resource sharing by name, and does not keep a reference to the resource
+  ///     container.
+  @inlinable @inline(__always)
+  public static func anonymousIteratorV3(
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> ResourceHandle {
+    _RawTFEager.anonymousIteratorV3(outputTypes: outputTypes, outputShapes: outputShapes)
+  }
+
   @inlinable @inline(__always)
   public static func anonymousMemoryCache() -> (handle: ResourceHandle, deleter: VariantHandle) {
     _RawTFEager.anonymousMemoryCache()
@@ -736,12 +801,132 @@ public enum _Raw {
       devices: devices, outputTypes: outputTypes, outputShapes: outputShapes)
   }
 
+  /// A container for a multi device iterator resource.
+  ///
+  /// - Output handle: A handle to a multi device iterator that can be passed to a
+  ///     "MultiDeviceIteratorGetNextFromShard" op. In contrast to MultiDeviceIterator,
+  ///     AnonymousIterator prevents resource sharing by name, and does not keep a
+  ///     reference to the resource container.
+  @inlinable @inline(__always)
+  public static func anonymousMultiDeviceIteratorV3(
+    devices: [String],
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> ResourceHandle {
+    _RawTFEager.anonymousMultiDeviceIteratorV3(
+      devices: devices, outputTypes: outputTypes, outputShapes: outputShapes)
+  }
+
+  /// Creates an empty anonymous mutable hash table that uses tensors as the backing store.
+  ///
+  /// This op creates a new anonymous mutable hash table (as a resource) everytime
+  /// it is executed, with the specified dtype of its keys and values,
+  /// returning the resource handle. Each value must be a scalar.
+  /// Data can be inserted into the table using
+  /// the insert operations. It does not support the initialization operation.
+  ///
+  /// It uses "open addressing" with quadratic reprobing to resolve
+  /// collisions.
+  ///
+  /// The table is anonymous in the sense that it can only be
+  /// accessed by the returned resource handle (e.g. it cannot be looked up
+  /// by a name in a resource manager). The table will be automatically
+  /// deleted when all resource handles pointing to it are gone.
+  ///
+  /// - Parameter empty_key: The key used to represent empty key buckets internally. Must not
+  ///     be used in insert or lookup operations.
+  ///
+  /// - Attrs:
+  ///     - key_dtype: Type of the table keys.
+  ///     - value_dtype: Type of the table values.
+  ///     - value_shape: The shape of each value.
+  ///     - initial_num_buckets: The initial number of hash table buckets. Must be a power
+  ///         to 2.
+  ///     - max_load_factor: The maximum ratio between number of entries and number of
+  ///         buckets before growing the table. Must be between 0 and 1.
+  ///
+  /// - Output table_handle: The resource handle to the newly created hash-table resource.
+  @inlinable @inline(__always)
+  public static func anonymousMutableDenseHashTable<KeyDtype: TensorFlowScalar>(
+    emptyKey: Tensor<KeyDtype>,
+    deletedKey: Tensor<KeyDtype>,
+    valueDtype: TensorDataType,
+    valueShape: TensorShape?,
+    initialNumBuckets: Int64 = 131072,
+    maxLoadFactor: Double = 0.8
+  ) -> ResourceHandle {
+    _RawTFEager.anonymousMutableDenseHashTable(
+      emptyKey: emptyKey, deletedKey: deletedKey, valueDtype: valueDtype, valueShape: valueShape,
+      initialNumBuckets: initialNumBuckets, maxLoadFactor: maxLoadFactor)
+  }
+
+  /// Creates an empty anonymous mutable hash table.
+  ///
+  /// This op creates a new anonymous mutable hash table (as a resource) everytime
+  /// it is executed, with the specified dtype of its keys and values,
+  /// returning the resource handle. Each value must be a scalar.
+  /// Data can be inserted into the table using
+  /// the insert operations. It does not support the initialization operation.
+  /// The table is anonymous in the sense that it can only be
+  /// accessed by the returned resource handle (e.g. it cannot be looked up
+  /// by a name in a resource manager). The table will be automatically
+  /// deleted when all resource handles pointing to it are gone.
+  ///
+  /// - Attrs:
+  ///     - key_dtype: Type of the table keys.
+  ///     - value_dtype: Type of the table values.
+  ///
+  /// - Output table_handle: The resource handle to the newly created hash-table resource.
+  @inlinable @inline(__always)
+  public static func anonymousMutableHashTable(
+    keyDtype: TensorDataType,
+    valueDtype: TensorDataType
+  ) -> ResourceHandle {
+    _RawTFEager.anonymousMutableHashTable(keyDtype: keyDtype, valueDtype: valueDtype)
+  }
+
+  /// Creates an empty anonymous mutable hash table of vector values.
+  ///
+  /// This op creates a new anonymous mutable hash table (as a resource) everytime
+  /// it is executed, with the specified dtype of its keys and values,
+  /// returning the resource handle. Each value must be a vector.
+  /// Data can be inserted into the table using
+  /// the insert operations. It does not support the initialization operation.
+  /// The table is anonymous in the sense that it can only be
+  /// accessed by the returned resource handle (e.g. it cannot be looked up
+  /// by a name in a resource manager). The table will be automatically
+  /// deleted when all resource handles pointing to it are gone.
+  ///
+  /// - Attrs:
+  ///     - key_dtype: Type of the table keys.
+  ///     - value_dtype: Type of the table values.
+  ///
+  /// - Output table_handle: The resource handle to the newly created hash-table resource.
+  @inlinable @inline(__always)
+  public static func anonymousMutableHashTableOfTensors(
+    keyDtype: TensorDataType,
+    valueDtype: TensorDataType,
+    valueShape: TensorShape?
+  ) -> ResourceHandle {
+    _RawTFEager.anonymousMutableHashTableOfTensors(
+      keyDtype: keyDtype, valueDtype: valueDtype, valueShape: valueShape)
+  }
+
   @inlinable @inline(__always)
   public static func anonymousRandomSeedGenerator(
     seed: Tensor<Int64>,
     seed2: Tensor<Int64>
   ) -> (handle: ResourceHandle, deleter: VariantHandle) {
     _RawTFEager.anonymousRandomSeedGenerator(seed: seed, seed2: seed2)
+  }
+
+  @inlinable @inline(__always)
+  public static func anonymousSeedGenerator(
+    seed: Tensor<Int64>,
+    seed2: Tensor<Int64>,
+    reshuffle: Tensor<Bool>
+  ) -> (handle: ResourceHandle, deleter: VariantHandle) {
+    _RawTFEager.anonymousSeedGenerator(seed: seed, seed2: seed2, reshuffle: reshuffle)
   }
 
   /// Computes the "logical or" of elements across dimensions of a tensor.
@@ -804,12 +989,12 @@ public enum _Raw {
   ///   # here a[4] = 166.32 which is the largest element of a across axis 0
   ///   ```
   ///
-  /// - Parameter dimension: int32 or int64, must be in the range `[-rank(input), rank(input))`.
+  /// - Parameter dimension: int16, int32 or int64, must be in the range `[-rank(input), rank(input))`.
   ///     Describes which dimension of the input Tensor to reduce across. For vectors,
   ///     use dimension = 0.
   @inlinable @inline(__always)
   public static func argMax<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     Tidx: TensorFlowIndex,
     OutputType: TensorFlowIndex
   >(
@@ -844,7 +1029,7 @@ public enum _Raw {
   ///     use dimension = 0.
   @inlinable @inline(__always)
   public static func argMin<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     Tidx: TensorFlowIndex,
     OutputType: TensorFlowIndex
   >(
@@ -973,6 +1158,18 @@ public enum _Raw {
     _RawTFEager.assert(condition: condition, data: data, summarize: summarize)
   }
 
+  @inlinable @inline(__always)
+  public static func assertCardinalityDataset(
+    inputDataset: VariantHandle,
+    cardinality: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.assertCardinalityDataset(
+      inputDataset: inputDataset, cardinality: cardinality, outputTypes: outputTypes,
+      outputShapes: outputShapes)
+  }
+
   /// A transformation that asserts which transformations happen next.
   ///
   /// This transformation checks whether the camel-case names (i.e. "FlatMap", not
@@ -997,6 +1194,34 @@ public enum _Raw {
     outputShapes: [TensorShape?]
   ) -> VariantHandle {
     _RawTFEager.assertNextDataset(
+      inputDataset: inputDataset, transformations: transformations, outputTypes: outputTypes,
+      outputShapes: outputShapes)
+  }
+
+  /// A transformation that asserts which transformations happened previously.
+  ///
+  /// This transformation checks the names and, optionally, the attribute name-value
+  /// pairs in the `transformations` argument against those of the transformations
+  /// that preceded this transformation.  If there is a mismatch, the transformation
+  /// raises an exception.
+  ///
+  /// The check occurs when iterating over the contents of the dataset, which
+  /// means that the check happens *after* any static optimizations are applied
+  /// to the dataset graph.
+  ///
+  /// - Parameters:
+  ///     - input_dataset: A variant tensor representing the input dataset.
+  ///         `AssertPrevDataset` passes through the outputs of its input dataset.
+  ///     - transformations: A `tf.string` vector `tf.Tensor` identifying the transformations, with optional
+  ///         attribute name-value pairs, that are expected to have happened previously.
+  @inlinable @inline(__always)
+  public static func assertPrevDataset(
+    inputDataset: VariantHandle,
+    transformations: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.assertPrevDataset(
       inputDataset: inputDataset, transformations: transformations, outputTypes: outputTypes,
       outputShapes: outputShapes)
   }
@@ -1050,9 +1275,73 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func assignVariableOp<Dtype: TensorFlowScalar>(
     resource: ResourceHandle,
-    value: Tensor<Dtype>
+    value: Tensor<Dtype>,
+    validateShape: Bool = false
   ) {
-    _RawTFEager.assignVariableOp(resource: resource, value: value)
+    _RawTFEager.assignVariableOp(resource: resource, value: value, validateShape: validateShape)
+  }
+
+  /// Concats input tensor across all dimensions.
+  ///
+  /// An op which merges slices the input tensor based on the given num_splits
+  /// attribute, strips paddings optionally, and writes the merged tensor without
+  /// paddings to the resource variable.
+  ///
+  /// This op may be generated via the TPU bridge.
+  ///
+  /// For example, with `input` tensor:
+  /// ```
+  /// [[0, 1],
+  ///  [4, 5]]
+  /// [[2, 3],
+  ///  [6, 7]]
+  /// [[8, 9],
+  ///  [12, 13]]
+  /// [[10, 11],
+  ///  [14, 15]]
+  /// ```
+  /// `num_splits`:
+  /// ```
+  /// [2, 2]
+  /// ```
+  /// and `paddings`:
+  /// ```
+  /// [1, 1]
+  /// ```
+  /// the expected `outputs` is:
+  /// ```
+  /// [[0, 1, 2],
+  ///  [4, 5, 6],
+  ///  [8, 9, 10]]
+  /// ```
+  ///
+  /// - Parameter resource: Resource variable for concatenated input tensors across all dimensions.
+  ///       }
+  ///       in_arg {
+  ///         name: "inputs"
+  ///         description: <<END
+  ///     Input tensor slices in row-major order to merge across all dimensions. All
+  ///     inputs must have the same shape.
+  ///       }
+  ///       out_arg {
+  ///         name: "output"
+  ///         description: <<END
+  ///     Output tensor formed from merging input slices based on num_concats defined.
+  ///
+  /// - Attrs:
+  ///     - num_concats: Number of ways to merge per dimension.
+  ///     - paddings: Optional list of right paddings per dimension to strip from the final merged
+  ///         tensor. These paddings must not exceed the dimension size of the merged result
+  ///         prior to stripping paddings.
+  @inlinable @inline(__always)
+  public static func assignVariableXlaConcatND<T: TensorFlowScalar>(
+    resource: ResourceHandle,
+    inputs: [Tensor<T>],
+    numConcats: [Int32],
+    paddings: [Int32]
+  ) {
+    _RawTFEager.assignVariableXlaConcatND(
+      resource: resource, inputs: inputs, numConcats: numConcats, paddings: paddings)
   }
 
   /// Computes the trignometric inverse tangent of x element-wise.
@@ -1088,11 +1377,20 @@ public enum _Raw {
 
   /// Computes arctangent of `y/x` element-wise, respecting signs of the arguments.
   ///
-  /// This is the angle \( \theta \in [-\pi, \pi] \) such that
-  /// \[ x = r \cos(\theta) \]
+  /// This is the angle \\( \theta \in [-\pi, \pi] \\) such that
+  /// \\[ x = r \cos(\theta) \\]
   /// and
-  /// \[ y = r \sin(\theta) \]
-  /// where \(r = \sqrt(x^2 + y^2) \).
+  /// \\[ y = r \sin(\theta) \\]
+  /// where \\(r = \sqrt{x^2 + y^2} \\).
+  ///
+  /// For example:
+  ///
+  /// >>> x = [1., 1.]
+  /// >>> y = [1., -1.]
+  /// >>> print((tf.math.atan2(y,x) * (180 / np.pi)).numpy())
+  /// [ 45. -45.]
+  ///
+  ///
   @inlinable @inline(__always)
   public static func atan2<T: FloatingPoint & TensorFlowScalar>(
     _ y: Tensor<T>,
@@ -1496,11 +1794,13 @@ public enum _Raw {
     index: Tensor<Int64>,
     autoShardPolicy: Int64 = 0,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    numReplicas: Int64 = 0
   ) -> VariantHandle {
     _RawTFEager.autoShardDataset(
       inputDataset: inputDataset, numWorkers: numWorkers, index: index,
-      autoShardPolicy: autoShardPolicy, outputTypes: outputTypes, outputShapes: outputShapes)
+      autoShardPolicy: autoShardPolicy, outputTypes: outputTypes, outputShapes: outputShapes,
+      numReplicas: numReplicas)
   }
 
   /// Performs average pooling on the input.
@@ -1541,6 +1841,9 @@ public enum _Raw {
   }
 
   /// Performs 3D average pooling on the input.
+  ///
+  /// Each entry in `output` is the mean of the corresponding size `ksize` window in
+  /// `value`.
   ///
   /// - Parameter input: Shape `[batch, depth, rows, cols, channels]` tensor to pool over.
   ///
@@ -1662,6 +1965,29 @@ public enum _Raw {
     _RawTFEager.b()
   }
 
+  @inlinable @inline(__always)
+  public static func bandedTriangularSolve<T: FloatingPoint & TensorFlowScalar>(
+    matrix: Tensor<T>,
+    rhs: Tensor<T>,
+    lower: Bool = true,
+    adjoint: Bool = false
+  ) -> Tensor<T> {
+    switch commonBackend(matrix.handle.backend, rhs.handle.backend) {
+    case .XLA:
+      let output_device = rhs.device
+      let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
+      let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.bandedTriangularSolve(
+          matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.bandedTriangularSolve(
+        matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint)
+    }
+
+  }
+
   /// Batches all input tensors nondeterministically.
   ///
   /// When many instances of this Op are being run concurrently with the same
@@ -1762,11 +2088,12 @@ public enum _Raw {
     inputDataset: VariantHandle,
     batchSize: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.batchDataset(
       inputDataset: inputDataset, batchSize: batchSize, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Creates a dataset that batches `batch_size` elements from `input_dataset`.
@@ -1782,11 +2109,13 @@ public enum _Raw {
     dropRemainder: Tensor<Bool>,
     parallelCopy: Bool = false,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.batchDatasetV2(
       inputDataset: inputDataset, batchSize: batchSize, dropRemainder: dropRemainder,
-      parallelCopy: parallelCopy, outputTypes: outputTypes, outputShapes: outputShapes)
+      parallelCopy: parallelCopy, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Batches all the inputs tensors to the computation done by the function.
@@ -1812,6 +2141,7 @@ public enum _Raw {
   ///           batch_timeout_micros=100000,  # 100ms
   ///           allowed_batch_sizes=[3, 10],
   ///           batching_queue="")
+  ///   ```
   ///
   /// If more than one session.run call is simultaneously trying to compute `b`
   /// the values of `a` will be gathered, non-deterministically concatenated
@@ -1842,8 +2172,9 @@ public enum _Raw {
   ///     - max_enqueued_batches: Maximum number of batches enqueued. Default: 10.
   ///     - allowed_batch_sizes: Optional list of allowed batch sizes. If left empty, does
   ///         nothing. Otherwise, supplies a list of batch sizes, causing the op to pad
-  ///         batches up to one of those sizes. The entries must increase monotonically, and
-  ///         the final entry must equal max_batch_size.
+  ///         batches up to one of those sizes. The entries must increase monotonically.
+  ///         If enable_large_batch_splitting is false (i.e., large-input-split is not
+  ///         enabled) the final entry must equal max_batch_size.
   ///     - container: Controls the scope of sharing of this batch.
   ///     - shared_name: Concurrently running instances of batch in the same device with the
   ///         same container and shared_name will batch their elements together. If left
@@ -1851,6 +2182,8 @@ public enum _Raw {
   ///     - Tin: the types of tensors to be batched.
   ///     - Tcaptured: the types of the captured tensors.
   ///     - Tout: the types of the output tensors.
+  ///     - enable_large_batch_splitting: input with a large size (i.e., larger than the largest value of
+  ///         `allowed_batch_sizes`) will be splitted into multiple batches with batch size.
   ///
   /// - Output out_tensors: The output tensors.
   @inlinable @inline(__always)
@@ -1871,14 +2204,15 @@ public enum _Raw {
     allowedBatchSizes: [Int32],
     container: String,
     sharedName: String,
-    batchingQueue: String
+    batchingQueue: String,
+    enableLargeBatchSplitting: Bool = false
   ) -> Tout {
     _RawTFEager.batchFunction(
       inTensors: inTensors, capturedTensors: capturedTensors, f: f,
       numBatchThreads: numBatchThreads, maxBatchSize: maxBatchSize,
       batchTimeoutMicros: batchTimeoutMicros, maxEnqueuedBatches: maxEnqueuedBatches,
       allowedBatchSizes: allowedBatchSizes, container: container, sharedName: sharedName,
-      batchingQueue: batchingQueue)
+      batchingQueue: batchingQueue, enableLargeBatchSplitting: enableLargeBatchSplitting)
   }
 
   /// Multiplies slices of two tensors in batches.
@@ -1978,6 +2312,66 @@ public enum _Raw {
       return _RawXLA.batchMatMulV2(x, y, adjX: adjX, adjY: adjY)
     case .TF_EAGER:
       return _RawTFEager.batchMatMulV2(x, y, adjX: adjX, adjY: adjY)
+    }
+
+  }
+
+  /// Multiplies slices of two tensors in batches.
+  ///
+  /// Multiplies all slices of `Tensor` `x` and `y` (each slice can be
+  /// viewed as an element of a batch), and arranges the individual results
+  /// in a single output tensor of the same batch size. Each of the
+  /// individual slices can optionally be adjointed (to adjoint a matrix
+  /// means to transpose and conjugate it) before multiplication by setting
+  /// the `adj_x` or `adj_y` flag to `True`, which are by default `False`.
+  ///
+  /// The input tensors `x` and `y` are 2-D or higher with shape `[..., r_x, c_x]`
+  /// and `[..., r_y, c_y]`.
+  ///
+  /// The output tensor is 2-D or higher with shape `[..., r_o, c_o]`, where:
+  ///
+  ///     r_o = c_x if adj_x else r_x
+  ///     c_o = r_y if adj_y else c_y
+  ///
+  /// It is computed as:
+  ///
+  ///     output[..., :, :] = matrix(x[..., :, :]) * matrix(y[..., :, :])
+  ///
+  /// *NOTE*: `BatchMatMulV3` supports broadcasting in the batch dimensions. More
+  /// about broadcasting
+  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html).
+  ///
+  ///
+  /// - Parameters:
+  ///     - x: 2-D or higher with shape `[..., r_x, c_x]`.
+  ///     - y: 2-D or higher with shape `[..., r_y, c_y]`.
+  ///
+  /// - Attrs:
+  ///     - Tout: If not spcified, Tout is the same type to input type.
+  ///     - adj_x: If `True`, adjoint the slices of `x`. Defaults to `False`.
+  ///     - adj_y: If `True`, adjoint the slices of `y`. Defaults to `False`.
+  ///
+  /// - Output output: 3-D or higher with shape `[..., r_o, c_o]`
+  @inlinable @inline(__always)
+  public static func batchMatMulV3<
+    Ta: TensorFlowNumeric,
+    Tb: TensorFlowNumeric,
+    Tout: TensorFlowNumeric
+  >(
+    _ x: Tensor<Ta>,
+    _ y: Tensor<Tb>,
+    adjX: Bool = false,
+    adjY: Bool = false
+  ) -> Tensor<Tout> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<Ta>(copying: x, to: .defaultTFEager)
+      let y = Tensor<Tb>(copying: y, to: .defaultTFEager)
+      return Tensor<Tout>(
+        copying: _RawTFEager.batchMatMulV3(x, y, adjX: adjX, adjY: adjY), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.batchMatMulV3(x, y, adjX: adjX, adjY: adjY)
     }
 
   }
@@ -2544,12 +2938,21 @@ public enum _Raw {
 
   }
 
-  /// Computes the Bessel i0e function of `x` element-wise.
-  ///
-  /// Exponentially scaled modified Bessel function of order 0 defined as
-  /// `bessel_i0e(x) = exp(-abs(x)) bessel_i0(x)`.
-  ///
-  /// This function is faster and numerically stabler than `bessel_i0(x)`.
+  @inlinable @inline(__always)
+  public static func besselI0<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselI0(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselI0(x)
+    }
+
+  }
+
   @inlinable @inline(__always)
   public static func besselI0e<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -2565,12 +2968,21 @@ public enum _Raw {
 
   }
 
-  /// Computes the Bessel i1e function of `x` element-wise.
-  ///
-  /// Exponentially scaled modified Bessel function of order 0 defined as
-  /// `bessel_i1e(x) = exp(-abs(x)) bessel_i1(x)`.
-  ///
-  /// This function is faster and numerically stabler than `bessel_i1(x)`.
+  @inlinable @inline(__always)
+  public static func besselI1<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselI1(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselI1(x)
+    }
+
+  }
+
   @inlinable @inline(__always)
   public static func besselI1e<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -2582,6 +2994,126 @@ public enum _Raw {
       return Tensor<T>(copying: _RawTFEager.besselI1e(x), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.besselI1e(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselJ0<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselJ0(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselJ0(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselJ1<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselJ1(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselJ1(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselK0<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselK0(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselK0(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselK0e<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselK0e(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselK0e(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselK1<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselK1(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselK1(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselK1e<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselK1e(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselK1e(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselY0<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselY0(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselY0(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func besselY1<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.besselY1(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.besselY1(x)
     }
 
   }
@@ -3363,6 +3895,63 @@ public enum _Raw {
       logitsDimension: logitsDimension, splitType: splitType)
   }
 
+  /// Calculates gains for each feature and returns the best possible split information for each node. However, if no split is found, then no split information is returned for that node.
+  ///
+  /// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
+  ///
+  /// It is possible that not all nodes can be split on each feature. Hence, the list of possible nodes can differ between the features. Therefore, we return `node_ids_list` for each feature, containing the list of nodes that this feature can be used to split.
+  ///
+  /// In this manner, the output is the best split per features and per node, so that it needs to be combined later to produce the best split for each node (among all possible features).
+  ///
+  /// The output shapes are compatible in a way that the first dimension of all tensors are the same and equal to the number of possible split nodes for each feature.
+  ///
+  /// - Parameters:
+  ///     - node_id_range: A Rank 1 tensor (shape=[2]) to specify the range [first, last) of node ids to process within `stats_summary_list`. The nodes are iterated between the two nodes specified by the tensor, as like `for node_id in range(node_id_range[0], node_id_range[1])` (Note that the last index node_id_range[1] is exclusive).
+  ///     - stats_summaries_list: A list of Rank 4 tensor (#shape=[max_splits, feature_dims, bucket, stats_dims]) for accumulated stats summary (gradient/hessian) per node, per dimension, per buckets for each feature.
+  ///         The first dimension of the tensor is the maximum number of splits, and thus not all elements of it will be used, but only the indexes specified by node_ids will be used.
+  ///     - split_types: A Rank 1 tensor indicating if this Op should perform inequality split or equality split per feature.
+  ///     - candidate_feature_ids: Rank 1 tensor with ids for each feature. This is the real id of the feature.
+  ///     - l1: l1 regularization factor on leaf weights, per instance based.
+  ///     - l2: l2 regularization factor on leaf weights, per instance based.
+  ///     - tree_complexity: adjustment to the gain, per leaf based.
+  ///     - min_node_weight: minimum avg of hessians in a node before required for the node to be considered for splitting.
+  ///
+  /// - Attrs:
+  ///     - num_features: inferred from the size of `stats_summary_list`; the number of total features.
+  ///     - logits_dimension: The dimension of logit, i.e., number of classes.
+  ///
+  /// - Outputs:
+  ///     - node_ids: A Rank 1 tensors indicating possible split node ids for each feature. The length of the list is num_features, but each tensor has different size as each feature provides different possible nodes. See above for details like shapes and sizes.
+  ///     - gains: A Rank 1 tensor indicating the best gains for each feature to split for certain nodes. See above for details like shapes and sizes.
+  ///     - feature_ids: A Rank 1 tensors indicating the best feature id for each node. See above for details like shapes and sizes.
+  ///     - feature_dimensions: A Rank 1 tensors indicating the best feature dimension for each feature to split for certain nodes if the feature is multi-dimension. See above for details like shapes and sizes.
+  ///     - thresholds: A Rank 1 tensors indicating the bucket id to compare with (as a threshold) for split in each node. See above for details like shapes and sizes.
+  ///     - left_node_contribs: A Rank 2 tensors indicating the contribution of the left nodes when branching from parent nodes (given by the tensor element in the output node_ids_list) to the left direction by the given threshold for each feature. This value will be used to make the left node value by adding to the parent node value. Second dimension size is 1 for 1-dimensional logits, but would be larger for multi-class problems. See above for details like shapes and sizes.
+  ///     - right_node_contribs: A Rank 2 tensors, with the same shape/conditions as left_node_contribs_list, but just that the value is for the right node.
+  ///     - split_with_default_directions: A Rank 1 tensors indicating the which direction to go if data is missing. See above for details like shapes and sizes.
+  ///         Inequality with default left returns 0, inequality with default right returns 1, equality with default right returns 2.
+  @inlinable @inline(__always)
+  public static func boostedTreesCalculateBestFeatureSplitV2(
+    nodeIdRange: Tensor<Int32>,
+    statsSummariesList: [Tensor<Float>],
+    splitTypes: StringTensor,
+    candidateFeatureIds: Tensor<Int32>,
+    l1: Tensor<Float>,
+    l2: Tensor<Float>,
+    treeComplexity: Tensor<Float>,
+    minNodeWeight: Tensor<Float>,
+    logitsDimension: Int64
+  ) -> (
+    nodeIds: Tensor<Int32>, gains: Tensor<Float>, featureIds: Tensor<Int32>,
+    featureDimensions: Tensor<Int32>, thresholds: Tensor<Int32>, leftNodeContribs: Tensor<Float>,
+    rightNodeContribs: Tensor<Float>, splitWithDefaultDirections: StringTensor
+  ) {
+    _RawTFEager.boostedTreesCalculateBestFeatureSplitV2(
+      nodeIdRange: nodeIdRange, statsSummariesList: statsSummariesList, splitTypes: splitTypes,
+      candidateFeatureIds: candidateFeatureIds, l1: l1, l2: l2, treeComplexity: treeComplexity,
+      minNodeWeight: minNodeWeight, logitsDimension: logitsDimension)
+  }
+
   /// Calculates gains for each feature and returns the best possible split information for the feature.
   ///
   /// The split information is the best threshold (bucket id), gains and left/right node contributions per node for each feature.
@@ -3997,6 +4586,9 @@ public enum _Raw {
       pruningMode: pruningMode)
   }
 
+  /// Updates the tree ensemble by adding a layer to the last tree being grown
+  ///
+  /// or by starting a new tree.
   ///
   /// - Parameters:
   ///     - tree_ensemble_handle: Handle to the ensemble variable.
@@ -4023,10 +4615,13 @@ public enum _Raw {
   /// - Attrs:
   ///     - num_features: Number of features that have best splits returned. INFERRED.
   ///     - logits_dimension: scalar, dimension of the logits
+  ///     - num_groups: Number of groups of split information to process, where a group contains feature
+  ///         ids that are processed together in BoostedTreesCalculateBestFeatureSplitOpV2.
+  ///         INFERRED.
   @inlinable @inline(__always)
   public static func boostedTreesUpdateEnsembleV2(
     treeEnsembleHandle: ResourceHandle,
-    featureIds: Tensor<Int32>,
+    featureIds: [Tensor<Int32>],
     dimensionIds: [Tensor<Int32>],
     nodeIds: [Tensor<Int32>],
     gains: [Tensor<Float>],
@@ -4104,6 +4699,15 @@ public enum _Raw {
   ///
   /// In the above example, the input Tensor with the shape of `[1, 3]`
   /// is broadcasted to output Tensor with shape of `[3, 3]`.
+  ///
+  /// When doing broadcasted operations such as multiplying a tensor
+  /// by a scalar, broadcasting (usually) confers some time or space
+  /// benefit, as the broadcasted tensor is never materialized.
+  ///
+  /// However, `broadcast_to` does not carry with it any such benefits.
+  /// The newly-created tensor takes the full memory of the broadcasted
+  /// shape. (In a graph context, `broadcast_to` might be fused to
+  /// subsequent operation and then be optimized away, however.)
   ///
   /// - Parameters:
   ///     - input: A Tensor to broadcast.
@@ -4245,6 +4849,27 @@ public enum _Raw {
       selectCols: selectCols, recordDefaults: recordDefaults, outputShapes: outputShapes)
   }
 
+  @inlinable @inline(__always)
+  public static func cSVDatasetV2<OutputTypes: TensorArrayProtocol>(
+    filenames: StringTensor,
+    compressionType: StringTensor,
+    bufferSize: Tensor<Int64>,
+    header: Tensor<Bool>,
+    fieldDelim: StringTensor,
+    useQuoteDelim: Tensor<Bool>,
+    naValue: StringTensor,
+    selectCols: Tensor<Int64>,
+    recordDefaults: OutputTypes,
+    excludeCols: Tensor<Int64>,
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.cSVDatasetV2(
+      filenames: filenames, compressionType: compressionType, bufferSize: bufferSize,
+      header: header, fieldDelim: fieldDelim, useQuoteDelim: useQuoteDelim, naValue: naValue,
+      selectCols: selectCols, recordDefaults: recordDefaults, excludeCols: excludeCols,
+      outputShapes: outputShapes)
+  }
+
   /// Performs beam search decoding on the logits given in input.
   ///
   /// A note about the attribute merge_repeated: For the beam search decoder,
@@ -4282,8 +4907,8 @@ public enum _Raw {
     topPaths: Int64,
     mergeRepeated: Bool = true
   ) -> (
-    decodedIndices: [Tensor<Int64>], decodedValues: [Tensor<Int64>],
-    decodedShape: [Tensor<Int64>], logProbability: Tensor<T>
+    decodedIndices: [Tensor<Int64>], decodedValues: [Tensor<Int64>], decodedShape: [Tensor<Int64>],
+    logProbability: Tensor<T>
   ) {
     _RawTFEager.cTCBeamSearchDecoder(
       inputs: inputs, sequenceLength: sequenceLength, beamWidth: beamWidth, topPaths: topPaths,
@@ -4321,13 +4946,15 @@ public enum _Raw {
   public static func cTCGreedyDecoder<T: FloatingPoint & TensorFlowScalar>(
     inputs: Tensor<T>,
     sequenceLength: Tensor<Int32>,
-    mergeRepeated: Bool = false
+    mergeRepeated: Bool = false,
+    blankIndex: Int64 = -1
   ) -> (
     decodedIndices: Tensor<Int64>, decodedValues: Tensor<Int64>, decodedShape: Tensor<Int64>,
     logProbability: Tensor<T>
   ) {
     _RawTFEager.cTCGreedyDecoder(
-      inputs: inputs, sequenceLength: sequenceLength, mergeRepeated: mergeRepeated)
+      inputs: inputs, sequenceLength: sequenceLength, mergeRepeated: mergeRepeated,
+      blankIndex: blankIndex)
   }
 
   /// Calculates the CTC Loss (log probability) for each batch entry.  Also calculates
@@ -4374,6 +5001,51 @@ public enum _Raw {
       ignoreLongerOutputsThanInputs: ignoreLongerOutputsThanInputs)
   }
 
+  /// Calculates the CTC Loss (log probability) for each batch entry.  Also calculates
+  ///
+  /// the gradient.  This class performs the softmax operation for you, so inputs
+  /// should be e.g. linear projections of outputs by an LSTM.
+  ///
+  /// - Parameters:
+  ///     - inputs: 3-D, shape: `(max_time x batch_size x num_classes)`, the logits. Default blank
+  ///         label is 0 rather num_classes - 1.
+  ///     - labels_indices: The indices of a `SparseTensor<int32, 2>`.
+  ///         `labels_indices(i, :) == [b, t]` means `labels_values(i)` stores the id for
+  ///         `(batch b, time t)`.
+  ///     - labels_values: The values (labels) associated with the given batch and time.
+  ///     - sequence_length: A vector containing sequence lengths (batch).
+  ///
+  /// - Attrs:
+  ///     - preprocess_collapse_repeated: Scalar, if true then repeated labels are
+  ///         collapsed prior to the CTC calculation.
+  ///     - ctc_merge_repeated: Scalar.  If set to false, *during* CTC calculation
+  ///         repeated non-blank labels will not be merged and are interpreted as
+  ///         individual labels.  This is a simplified version of CTC.
+  ///     - ignore_longer_outputs_than_inputs: Scalar. If set to true, during CTC
+  ///         calculation, items that have longer output sequences than input sequences
+  ///         are skipped: they don't contribute to the loss term and have zero-gradient.
+  ///
+  /// - Outputs:
+  ///     - loss: A vector (batch) containing log-probabilities.
+  ///     - gradient: The gradient of `loss`.  3-D, shape:
+  ///         `(max_time x batch_size x num_classes)`.
+  @inlinable @inline(__always)
+  public static func cTCLossV2(
+    inputs: Tensor<Float>,
+    labelsIndices: Tensor<Int64>,
+    labelsValues: Tensor<Int32>,
+    sequenceLength: Tensor<Int32>,
+    preprocessCollapseRepeated: Bool = false,
+    ctcMergeRepeated: Bool = true,
+    ignoreLongerOutputsThanInputs: Bool = false
+  ) -> (loss: Tensor<Float>, gradient: Tensor<Float>) {
+    _RawTFEager.cTCLossV2(
+      inputs: inputs, labelsIndices: labelsIndices, labelsValues: labelsValues,
+      sequenceLength: sequenceLength, preprocessCollapseRepeated: preprocessCollapseRepeated,
+      ctcMergeRepeated: ctcMergeRepeated,
+      ignoreLongerOutputsThanInputs: ignoreLongerOutputsThanInputs)
+  }
+
   /// Creates a dataset that caches elements from `input_dataset`.
   ///
   /// A CacheDataset will iterate over the input_dataset, and store tensors. If the
@@ -4388,11 +5060,12 @@ public enum _Raw {
     inputDataset: VariantHandle,
     filename: StringTensor,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.cacheDataset(
       inputDataset: inputDataset, filename: filename, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   @inlinable @inline(__always)
@@ -4401,11 +5074,12 @@ public enum _Raw {
     filename: StringTensor,
     cache: ResourceHandle,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.cacheDatasetV2(
       inputDataset: inputDataset, filename: filename, cache: cache, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Cast x of type SrcT to y of DstT.
@@ -4443,7 +5117,28 @@ public enum _Raw {
   /// Checks a tensor for NaN and Inf values.
   ///
   /// When run, reports an `InvalidArgument` error if `tensor` has any values
-  /// that are not a number (NaN) or infinity (Inf). Otherwise, passes `tensor` as-is.
+  /// that are not a number (NaN) or infinity (Inf). Otherwise, returns the input
+  /// tensor.
+  ///
+  /// Example usage:
+  ///
+  /// ``` python
+  /// a = tf.Variable(1.0)
+  /// tf.debugging.check_numerics(a, message='')
+  ///
+  /// b = tf.Variable(np.nan)
+  /// try:
+  ///   tf.debugging.check_numerics(b, message='Checking b')
+  /// except Exception as e:
+  ///   assert "Checking b : Tensor had NaN values" in e.message
+  ///
+  /// c = tf.Variable(np.inf)
+  /// try:
+  ///   tf.debugging.check_numerics(c, message='Checking c')
+  /// except Exception as e:
+  ///   assert "Checking c : Tensor had Inf values" in e.message
+  /// ```
+  ///
   ///
   /// - Attr message: Prefix of the error message.
   @inlinable @inline(__always)
@@ -4459,6 +5154,31 @@ public enum _Raw {
         copying: _RawTFEager.checkNumerics(tensor, message: message), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.checkNumerics(tensor, message: message)
+    }
+
+  }
+
+  /// Checks a tensor for NaN, -Inf and +Inf values.
+  ///
+  /// When run, reports an `InvalidArgument` error if `tensor` has any values
+  /// that are not a number (NaN) or infinity (Inf). Otherwise, returns the input
+  /// tensor. Unlike CheckNumerics (V1), CheckNumericsV2 distinguishes -Inf and +Inf
+  /// in the errors it throws.
+  ///
+  /// - Attr message: Prefix of the error message.
+  @inlinable @inline(__always)
+  public static func checkNumericsV2<T: FloatingPoint & TensorFlowScalar>(
+    _ tensor: Tensor<T>,
+    message: String
+  ) -> Tensor<T> {
+    switch tensor.handle.backend {
+    case .XLA:
+      let output_device = tensor.device
+      let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.checkNumericsV2(tensor, message: message), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.checkNumericsV2(tensor, message: message)
     }
 
   }
@@ -4579,29 +5299,103 @@ public enum _Raw {
     _RawTFEager.closeSummaryWriter(writer: writer)
   }
 
+  /// Mutually exchanges multiple tensors of identical type and shape.
+  @inlinable @inline(__always)
+  public static func collectiveAllToAllV3<T: TensorFlowNumeric>(
+    _ input: Tensor<T>,
+    communicator: ResourceHandle,
+    groupAssignment: Tensor<Int32>,
+    timeoutSeconds: Double = 0
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, groupAssignment.handle.backend) {
+    case .XLA:
+      let output_device = groupAssignment.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.collectiveAllToAllV3(
+          input, communicator: communicator, groupAssignment: groupAssignment,
+          timeoutSeconds: timeoutSeconds), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.collectiveAllToAllV3(
+        input, communicator: communicator, groupAssignment: groupAssignment,
+        timeoutSeconds: timeoutSeconds)
+    }
+
+  }
+
+  /// Assign group keys based on group assignment.
+  @inlinable @inline(__always)
+  public static func collectiveAssignGroupV2(
+    groupAssignment: Tensor<Int32>,
+    deviceIndex: Tensor<Int32>,
+    baseKey: Tensor<Int32>
+  ) -> (groupSize: Tensor<Int32>, groupKey: Tensor<Int32>) {
+    _RawTFEager.collectiveAssignGroupV2(
+      groupAssignment: groupAssignment, deviceIndex: deviceIndex, baseKey: baseKey)
+  }
+
   /// Receives a tensor value broadcast from another device.
   @inlinable @inline(__always)
-  public static func collectiveBcastRecv<T: TensorFlowNumeric>(
+  public static func collectiveBcastRecv<T: TensorFlowScalar>(
     groupSize: Int64,
     groupKey: Int64,
     instanceKey: Int64,
     shape: TensorShape?,
-    communicationHint: String = "auto"
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
   ) -> Tensor<T> {
     _RawTFEager.collectiveBcastRecv(
       groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
-      communicationHint: communicationHint)
+      communicationHint: communicationHint, timeoutSeconds: timeoutSeconds)
+  }
+
+  /// Receives a tensor value broadcast from another device.
+  @inlinable @inline(__always)
+  public static func collectiveBcastRecvV2<
+    T: TensorFlowScalar,
+    Tshape: TensorFlowIndex
+  >(
+    groupSize: Tensor<Int32>,
+    groupKey: Tensor<Int32>,
+    instanceKey: Tensor<Int32>,
+    shape: Tensor<Tshape>,
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(groupSize.handle.backend, groupKey.handle.backend), instanceKey.handle.backend
+      ), shape.handle.backend)
+    {
+    case .XLA:
+      let output_device = shape.device
+      let groupSize = Tensor<Int32>(copying: groupSize, to: .defaultTFEager)
+      let groupKey = Tensor<Int32>(copying: groupKey, to: .defaultTFEager)
+      let instanceKey = Tensor<Int32>(copying: instanceKey, to: .defaultTFEager)
+      let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.collectiveBcastRecvV2(
+          groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
+          communicationHint: communicationHint, timeoutSeconds: timeoutSeconds), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.collectiveBcastRecvV2(
+        groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
+        communicationHint: communicationHint, timeoutSeconds: timeoutSeconds)
+    }
+
   }
 
   /// Broadcasts a tensor value to one or more other devices.
   @inlinable @inline(__always)
-  public static func collectiveBcastSend<T: TensorFlowNumeric>(
+  public static func collectiveBcastSend<T: TensorFlowScalar>(
     _ input: Tensor<T>,
     groupSize: Int64,
     groupKey: Int64,
     instanceKey: Int64,
     shape: TensorShape?,
-    communicationHint: String = "auto"
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
   ) -> Tensor<T> {
     switch input.handle.backend {
     case .XLA:
@@ -4610,11 +5404,44 @@ public enum _Raw {
       return Tensor<T>(
         copying: _RawTFEager.collectiveBcastSend(
           input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
-          communicationHint: communicationHint), to: output_device)
+          communicationHint: communicationHint, timeoutSeconds: timeoutSeconds), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.collectiveBcastSend(
         input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
-        communicationHint: communicationHint)
+        communicationHint: communicationHint, timeoutSeconds: timeoutSeconds)
+    }
+
+  }
+
+  /// Broadcasts a tensor value to one or more other devices.
+  @inlinable @inline(__always)
+  public static func collectiveBcastSendV2<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    groupSize: Tensor<Int32>,
+    groupKey: Tensor<Int32>,
+    instanceKey: Tensor<Int32>,
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(input.handle.backend, groupSize.handle.backend), groupKey.handle.backend),
+      instanceKey.handle.backend)
+    {
+    case .XLA:
+      let output_device = instanceKey.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupSize = Tensor<Int32>(copying: groupSize, to: .defaultTFEager)
+      let groupKey = Tensor<Int32>(copying: groupKey, to: .defaultTFEager)
+      let instanceKey = Tensor<Int32>(copying: instanceKey, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.collectiveBcastSendV2(
+          input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
+          communicationHint: communicationHint, timeoutSeconds: timeoutSeconds), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.collectiveBcastSendV2(
+        input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
+        communicationHint: communicationHint, timeoutSeconds: timeoutSeconds)
     }
 
   }
@@ -4627,7 +5454,8 @@ public enum _Raw {
     groupKey: Int64,
     instanceKey: Int64,
     shape: TensorShape?,
-    communicationHint: String = "auto"
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
   ) -> Tensor<T> {
     switch input.handle.backend {
     case .XLA:
@@ -4636,13 +5464,63 @@ public enum _Raw {
       return Tensor<T>(
         copying: _RawTFEager.collectiveGather(
           input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
-          communicationHint: communicationHint), to: output_device)
+          communicationHint: communicationHint, timeoutSeconds: timeoutSeconds), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.collectiveGather(
         input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, shape: shape,
-        communicationHint: communicationHint)
+        communicationHint: communicationHint, timeoutSeconds: timeoutSeconds)
     }
 
+  }
+
+  /// Mutually accumulates multiple tensors of identical type and shape.
+  @inlinable @inline(__always)
+  public static func collectiveGatherV2<T: TensorFlowNumeric>(
+    _ input: Tensor<T>,
+    groupSize: Tensor<Int32>,
+    groupKey: Tensor<Int32>,
+    instanceKey: Tensor<Int32>,
+    orderingToken: [ResourceHandle],
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(input.handle.backend, groupSize.handle.backend), groupKey.handle.backend),
+      instanceKey.handle.backend)
+    {
+    case .XLA:
+      let output_device = instanceKey.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupSize = Tensor<Int32>(copying: groupSize, to: .defaultTFEager)
+      let groupKey = Tensor<Int32>(copying: groupKey, to: .defaultTFEager)
+      let instanceKey = Tensor<Int32>(copying: instanceKey, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.collectiveGatherV2(
+          input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
+          orderingToken: orderingToken, communicationHint: communicationHint,
+          timeoutSeconds: timeoutSeconds), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.collectiveGatherV2(
+        input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
+        orderingToken: orderingToken, communicationHint: communicationHint,
+        timeoutSeconds: timeoutSeconds)
+    }
+
+  }
+
+  /// Initializes a group for collective operations.
+  @inlinable @inline(__always)
+  public static func collectiveInitializeCommunicator(
+    groupKey: Tensor<Int32>,
+    rank: Tensor<Int32>,
+    groupSize: Tensor<Int32>,
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
+  ) -> ResourceHandle {
+    _RawTFEager.collectiveInitializeCommunicator(
+      groupKey: groupKey, rank: rank, groupSize: groupSize, communicationHint: communicationHint,
+      timeoutSeconds: timeoutSeconds)
   }
 
   /// An Op to permute tensors across replicated TPU instances.
@@ -4691,7 +5569,8 @@ public enum _Raw {
     finalOp: FinalOp,
     subdivOffsets: [Int32],
     waitFor: [Int32],
-    communicationHint: String = "auto"
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0
   ) -> Tensor<T> {
     switch input.handle.backend {
     case .XLA:
@@ -4701,12 +5580,79 @@ public enum _Raw {
         copying: _RawTFEager.collectiveReduce(
           input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
           mergeOp: mergeOp, finalOp: finalOp, subdivOffsets: subdivOffsets, waitFor: waitFor,
-          communicationHint: communicationHint), to: output_device)
+          communicationHint: communicationHint, timeoutSeconds: timeoutSeconds), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.collectiveReduce(
+        input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey, mergeOp: mergeOp,
+        finalOp: finalOp, subdivOffsets: subdivOffsets, waitFor: waitFor,
+        communicationHint: communicationHint, timeoutSeconds: timeoutSeconds)
+    }
+
+  }
+
+  /// Mutually reduces multiple tensors of identical type and shape.
+  @inlinable @inline(__always)
+  public static func collectiveReduceV2<T: TensorFlowNumeric>(
+    _ input: Tensor<T>,
+    groupSize: Tensor<Int32>,
+    groupKey: Tensor<Int32>,
+    instanceKey: Tensor<Int32>,
+    orderingToken: [ResourceHandle],
+    mergeOp: MergeOp,
+    finalOp: FinalOp,
+    communicationHint: String = "auto",
+    timeoutSeconds: Double = 0,
+    maxSubdivsPerDevice: Int64 = -1
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(input.handle.backend, groupSize.handle.backend), groupKey.handle.backend),
+      instanceKey.handle.backend)
+    {
+    case .XLA:
+      let output_device = instanceKey.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupSize = Tensor<Int32>(copying: groupSize, to: .defaultTFEager)
+      let groupKey = Tensor<Int32>(copying: groupKey, to: .defaultTFEager)
+      let instanceKey = Tensor<Int32>(copying: instanceKey, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.collectiveReduceV2(
+          input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
+          orderingToken: orderingToken, mergeOp: mergeOp, finalOp: finalOp,
+          communicationHint: communicationHint, timeoutSeconds: timeoutSeconds,
+          maxSubdivsPerDevice: maxSubdivsPerDevice), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.collectiveReduceV2(
         input, groupSize: groupSize, groupKey: groupKey, instanceKey: instanceKey,
-        mergeOp: mergeOp, finalOp: finalOp, subdivOffsets: subdivOffsets, waitFor: waitFor,
-        communicationHint: communicationHint)
+        orderingToken: orderingToken, mergeOp: mergeOp, finalOp: finalOp,
+        communicationHint: communicationHint, timeoutSeconds: timeoutSeconds,
+        maxSubdivsPerDevice: maxSubdivsPerDevice)
+    }
+
+  }
+
+  /// Mutually reduces multiple tensors of identical type and shape.
+  @inlinable @inline(__always)
+  public static func collectiveReduceV3<T: TensorFlowNumeric>(
+    _ input: Tensor<T>,
+    communicator: ResourceHandle,
+    groupAssignment: Tensor<Int32>,
+    reduction: MergeOp,
+    timeoutSeconds: Double = 0
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, groupAssignment.handle.backend) {
+    case .XLA:
+      let output_device = groupAssignment.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.collectiveReduceV3(
+          input, communicator: communicator, groupAssignment: groupAssignment, reduction: reduction,
+          timeoutSeconds: timeoutSeconds), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.collectiveReduceV3(
+        input, communicator: communicator, groupAssignment: groupAssignment, reduction: reduction,
+        timeoutSeconds: timeoutSeconds)
     }
 
   }
@@ -4735,7 +5681,9 @@ public enum _Raw {
   ///         representing a single score corresponding to each box (each row of boxes).
   ///     - max_output_size_per_class: A scalar integer tensor representing the maximum number of
   ///         boxes to be selected by non max suppression per class
-  ///     - max_total_size: A scalar representing maximum number of boxes retained over all classes.
+  ///     - max_total_size: An int32 scalar representing the maximum number of boxes retained over all
+  ///         classes. Note that setting this value to a large number may result in OOM error
+  ///         depending on the system workload.
   ///     - iou_threshold: A 0-D float tensor representing the threshold for deciding whether
   ///         boxes overlap too much with respect to IOU.
   ///     - score_threshold: A 0-D float tensor representing the threshold for deciding when to remove
@@ -4782,57 +5730,6 @@ public enum _Raw {
       padPerClass: padPerClass, clipBoxes: clipBoxes)
   }
 
-  /// Compare values of `input` to `threshold` and pack resulting bits into a `uint8`.
-  ///
-  /// Each comparison returns a boolean `true` (if `input_value > threshold`)
-  /// or and `false` otherwise.
-  ///
-  /// This operation is useful for Locality-Sensitive-Hashing (LSH) and other
-  /// algorithms that use hashing approximations of cosine and `L2` distances;
-  /// codes can be generated from an input via:
-  ///
-  /// ```python
-  /// codebook_size = 50
-  /// codebook_bits = codebook_size * 32
-  /// codebook = tf.get_variable('codebook', [x.shape[-1].value, codebook_bits],
-  ///                            dtype=x.dtype,
-  ///                            initializer=tf.orthogonal_initializer())
-  /// codes = compare_and_threshold(tf.matmul(x, codebook), threshold=0.)
-  /// codes = tf.bitcast(codes, tf.int32)  # go from uint8 to int32
-  /// # now codes has shape x.shape[:-1] + [codebook_size]
-  /// ```
-  ///
-  /// **NOTE**: Currently, the innermost dimension of the tensor must be divisible
-  /// by 8.
-  ///
-  /// Given an `input` shaped `[s0, s1, ..., s_n]`, the output is
-  /// a `uint8` tensor shaped `[s0, s1, ..., s_n / 8]`.
-  ///
-  /// - Parameters:
-  ///     - input: Values to compare against `threshold` and bitpack.
-  ///     - threshold: Threshold to compare against.
-  ///
-  /// - Attr T: The type of the input and threshold.
-  ///
-  /// - Output output: The bitpacked comparisons.
-  @inlinable @inline(__always)
-  public static func compareAndBitpack<T: TensorFlowScalar>(
-    _ input: Tensor<T>,
-    threshold: Tensor<T>
-  ) -> Tensor<UInt8> {
-    switch commonBackend(input.handle.backend, threshold.handle.backend) {
-    case .XLA:
-      let output_device = threshold.device
-      let input = Tensor<T>(copying: input, to: .defaultTFEager)
-      let threshold = Tensor<T>(copying: threshold, to: .defaultTFEager)
-      return Tensor<UInt8>(
-        copying: _RawTFEager.compareAndBitpack(input, threshold: threshold), to: output_device)
-    case .TF_EAGER:
-      return _RawTFEager.compareAndBitpack(input, threshold: threshold)
-    }
-
-  }
-
   /// Converts two real numbers to a complex number.
   ///
   /// Given a tensor `real` representing the real part of a complex number, and a
@@ -4875,6 +5772,13 @@ public enum _Raw {
   /// `float` or `double` that is the absolute value of each element in `x`. All
   /// elements in `x` must be complex numbers of the form \\(a + bj\\). The absolute
   /// value is computed as \\( \sqrt{a^2 + b^2}\\).
+  ///
+  /// For example:
+  ///
+  /// >>> x = tf.complex(3.0, 4.0)
+  /// >>> print((tf.raw_ops.ComplexAbs(x=x, Tout=tf.dtypes.float32, name=None)).numpy())
+  /// 5.0
+  ///
   @inlinable @inline(__always)
   public static func complexAbs<
     T: TensorFlowScalar,
@@ -4899,6 +5803,57 @@ public enum _Raw {
     nB: Int64
   ) -> (a: [Tensor<Int32>], b: [Tensor<Int64>], c: TC) {
     _RawTFEager.complexStruct(nA: nA, nB: nB)
+  }
+
+  /// Encodes an `ExtensionType` value into a `variant` scalar Tensor.
+  ///
+  /// Returns a scalar variant tensor containing a single `CompositeTensorVariant`
+  /// with the specified Tensor components and TypeSpec.
+  ///
+  /// - Parameter components: The component tensors for the extension type value.
+  ///
+  /// - Attr metadata: String serialization for the TypeSpec.  (Note: the encoding for the TypeSpec
+  ///     may change in future versions of TensorFlow.)
+  ///
+  /// - Output encoded: A `variant` Tensor that containing the encoded value.
+  @inlinable @inline(__always)
+  public static func compositeTensorVariantFromComponents<Tcomponents: TensorArrayProtocol>(
+    components: Tcomponents,
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.compositeTensorVariantFromComponents(components: components, metadata: metadata)
+  }
+
+  /// Decodes a `variant` scalar Tensor into an `ExtensionType` value.
+  ///
+  /// Returns the Tensor components encoded in a `CompositeTensorVariant`.
+  ///
+  /// Raises an error if `type_spec_proto` doesn't match the TypeSpec
+  /// in `encoded`.
+  ///
+  /// - Parameter encoded: A scalar `variant` Tensor containing an encoded ExtensionType value.
+  ///
+  /// - Attrs:
+  ///     - metadata: String serialization for the TypeSpec.  Must be compatible with the
+  ///         `TypeSpec` contained in `encoded`.  (Note: the encoding for the TypeSpec
+  ///         may change in future versions of TensorFlow.)
+  ///     - Tcomponents: Expected dtypes for components.
+  ///
+  /// - Output components: The component tensors for the ExtensionType value in `encoded`.
+  @inlinable @inline(__always)
+  public static func compositeTensorVariantToComponents<Tcomponents: TensorGroup>(
+    encoded: VariantHandle,
+    metadata: String
+  ) -> Tcomponents {
+    _RawTFEager.compositeTensorVariantToComponents(encoded: encoded, metadata: metadata)
+  }
+
+  /// Compresses a dataset element.
+  @inlinable @inline(__always)
+  public static func compressElement<InputTypes: TensorArrayProtocol>(
+    components: InputTypes
+  ) -> VariantHandle {
+    _RawTFEager.compressElement(components: components)
   }
 
   /// Computes the ids of the positions in sampled_candidates that match true_labels.
@@ -4934,8 +5889,16 @@ public enum _Raw {
     seed2: Int64 = 0
   ) -> (indices: Tensor<Int32>, ids: Tensor<Int64>, weights: Tensor<Float>) {
     _RawTFEager.computeAccidentalHits(
-      trueClasses: trueClasses, sampledCandidates: sampledCandidates, numTrue: numTrue,
-      seed: seed, seed2: seed2)
+      trueClasses: trueClasses, sampledCandidates: sampledCandidates, numTrue: numTrue, seed: seed,
+      seed2: seed2)
+  }
+
+  /// Computes the static batch size of a dataset sans partial batches.
+  @inlinable @inline(__always)
+  public static func computeBatchSize(
+    inputDataset: VariantHandle
+  ) -> Tensor<Int64> {
+    _RawTFEager.computeBatchSize(inputDataset: inputDataset)
   }
 
   /// Concatenates tensors along one dimension.
@@ -4959,8 +5922,7 @@ public enum _Raw {
       let output_device = concatDim.device
       let concatDim = Tensor<Int32>(copying: concatDim, to: .defaultTFEager)
       let values = [Tensor<T>](copying: values, to: .defaultTFEager)
-      return Tensor<T>(
-        copying: _RawTFEager.concat(concatDim: concatDim, values), to: output_device)
+      return Tensor<T>(copying: _RawTFEager.concat(concatDim: concatDim, values), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.concat(concatDim: concatDim, values)
     }
@@ -5038,11 +6000,22 @@ public enum _Raw {
     inputDataset: VariantHandle,
     anotherDataset: VariantHandle,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.concatenateDataset(
       inputDataset: inputDataset, anotherDataset: anotherDataset, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
+  }
+
+  /// An op that sets up the centralized structures for a distributed TPU
+  ///
+  /// system.
+  ///
+  /// - Output output: A vector containing the global TPU id of each TPU on the host.
+  @inlinable @inline(__always)
+  public static func configureAndInitializeGlobalTPU() -> Tensor<Int32> {
+    _RawTFEager.configureAndInitializeGlobalTPU()
   }
 
   /// Sets up the centralized structures for a distributed TPU system.
@@ -5061,12 +6034,14 @@ public enum _Raw {
     tpuEmbeddingConfig: String,
     isGlobalInit: Bool = false,
     enableWholeMeshCompilations: Bool = false,
-    compilationFailureClosesChips: Bool = true
+    compilationFailureClosesChips: Bool = true,
+    tpuCancellationClosesChips: Int64 = 0
   ) -> StringTensor {
     _RawTFEager.configureDistributedTPU(
       embeddingConfig: embeddingConfig, tpuEmbeddingConfig: tpuEmbeddingConfig,
       isGlobalInit: isGlobalInit, enableWholeMeshCompilations: enableWholeMeshCompilations,
-      compilationFailureClosesChips: compilationFailureClosesChips)
+      compilationFailureClosesChips: compilationFailureClosesChips,
+      tpuCancellationClosesChips: tpuCancellationClosesChips)
   }
 
   /// Sets up TPUEmbedding in a distributed TPU system.
@@ -5692,6 +6667,25 @@ public enum _Raw {
 
   }
 
+  @inlinable @inline(__always)
+  public static func copyToMesh<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    layout: String,
+    sourceLayout: String
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.copyToMesh(input, layout: layout, sourceLayout: sourceLayout),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.copyToMesh(input, layout: layout, sourceLayout: sourceLayout)
+    }
+
+  }
+
   /// Computes cos of x element-wise.
   ///
   ///   Given an input tensor, this function computes cosine of every
@@ -6049,7 +7043,7 @@ public enum _Raw {
   ///     dir * num_units].
   /// output_h: The same shape has input_h.
   /// output_c: The same shape as input_c for LSTM. An empty tensor for other models.
-  /// is_training: Indicates whether this operation is used for inferenece or
+  /// is_training: Indicates whether this operation is used for inference or
   ///   training.
   /// reserve_space: An opaque tensor that can be used in backprop calculation. It
   ///   is only produced if is_training is false.
@@ -6068,9 +7062,8 @@ public enum _Raw {
     isTraining: Bool = true
   ) -> (output: Tensor<T>, outputH: Tensor<T>, outputC: Tensor<T>, reserveSpace: Tensor<T>) {
     _RawTFEager.cudnnRNN(
-      input, inputH: inputH, inputC: inputC, params: params, rnnMode: rnnMode,
-      inputMode: inputMode, direction: direction, dropout: dropout, seed: seed, seed2: seed2,
-      isTraining: isTraining)
+      input, inputH: inputH, inputC: inputC, params: params, rnnMode: rnnMode, inputMode: inputMode,
+      direction: direction, dropout: dropout, seed: seed, seed2: seed2, isTraining: isTraining)
   }
 
   /// Backprop step of CudnnRNN.
@@ -6353,8 +7346,8 @@ public enum _Raw {
     switch commonBackend(
       commonBackend(
         commonBackend(
-          commonBackend(numLayers.handle.backend, numUnits.handle.backend),
-          inputSize.handle.backend), commonBackend(weights)), commonBackend(biases))
+          commonBackend(numLayers.handle.backend, numUnits.handle.backend), inputSize.handle.backend
+        ), commonBackend(weights)), commonBackend(biases))
     {
     case .XLA:
       let output_device = inputSize.device
@@ -6427,8 +7420,8 @@ public enum _Raw {
     switch commonBackend(
       commonBackend(
         commonBackend(
-          commonBackend(numLayers.handle.backend, numUnits.handle.backend),
-          inputSize.handle.backend), commonBackend(weights)), commonBackend(biases))
+          commonBackend(numLayers.handle.backend, numUnits.handle.backend), inputSize.handle.backend
+        ), commonBackend(weights)), commonBackend(biases))
     {
     case .XLA:
       let output_device = inputSize.device
@@ -6644,7 +7637,7 @@ public enum _Raw {
   ///     dir * num_units].
   /// output_h: The same shape has input_h.
   /// output_c: The same shape as input_c for LSTM. An empty tensor for other models.
-  /// is_training: Indicates whether this operation is used for inferenece or
+  /// is_training: Indicates whether this operation is used for inference or
   ///   training.
   /// reserve_space: An opaque tensor that can be used in backprop calculation. It
   ///   is only produced if is_training is true.
@@ -6669,9 +7662,8 @@ public enum _Raw {
     hostReserved: Tensor<Int8>
   ) {
     _RawTFEager.cudnnRNNV2(
-      input, inputH: inputH, inputC: inputC, params: params, rnnMode: rnnMode,
-      inputMode: inputMode, direction: direction, dropout: dropout, seed: seed, seed2: seed2,
-      isTraining: isTraining)
+      input, inputH: inputH, inputC: inputC, params: params, rnnMode: rnnMode, inputMode: inputMode,
+      direction: direction, dropout: dropout, seed: seed, seed2: seed2, isTraining: isTraining)
   }
 
   /// A RNN backed by cuDNN.
@@ -6707,7 +7699,7 @@ public enum _Raw {
   ///     shape is [batch_size, seq_length, dir * num_units].
   /// output_h: The same shape has input_h.
   /// output_c: The same shape as input_c for LSTM. An empty tensor for other models.
-  /// is_training: Indicates whether this operation is used for inferenece or
+  /// is_training: Indicates whether this operation is used for inference or
   ///   training.
   /// time_major: Indicates whether the input/output format is time major or batch
   ///     major.
@@ -6907,10 +7899,144 @@ public enum _Raw {
         copying: _RawTFEager.cumulativeLogsumexp(
           x, axis: axis, exclusive: exclusive, reverse: reverse), to: output_device)
     case .TF_EAGER:
-      return _RawTFEager.cumulativeLogsumexp(
-        x, axis: axis, exclusive: exclusive, reverse: reverse)
+      return _RawTFEager.cumulativeLogsumexp(x, axis: axis, exclusive: exclusive, reverse: reverse)
     }
 
+  }
+
+  @inlinable @inline(__always)
+  public static func customAggregator(
+    _ input: Tensor<Float>,
+    id: String
+  ) -> Tensor<Float> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<Float>(copying: input, to: .defaultTFEager)
+      return Tensor<Float>(copying: _RawTFEager.customAggregator(input, id: id), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.customAggregator(input, id: id)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func dTensorAllGather<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    inputLayout: String,
+    outputLayout: String
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.dTensorAllGather(
+          input, inputLayout: inputLayout, outputLayout: outputLayout), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.dTensorAllGather(
+        input, inputLayout: inputLayout, outputLayout: outputLayout)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func dTensorAllReduce<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    groupAssignment: Tensor<Int32>,
+    reduceOp: ReduceOp,
+    deviceType: String
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, groupAssignment.handle.backend) {
+    case .XLA:
+      let output_device = groupAssignment.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.dTensorAllReduce(
+          input, groupAssignment: groupAssignment, reduceOp: reduceOp, deviceType: deviceType),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.dTensorAllReduce(
+        input, groupAssignment: groupAssignment, reduceOp: reduceOp, deviceType: deviceType)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func dTensorAllScatter<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    inputLayout: String,
+    outputLayout: String
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.dTensorAllScatter(
+          input, inputLayout: inputLayout, outputLayout: outputLayout), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.dTensorAllScatter(
+        input, inputLayout: inputLayout, outputLayout: outputLayout)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func dTensorReduceScatter<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    groupAssignment: Tensor<Int32>,
+    scatterDimension: Tensor<Int32>,
+    reduceOp: ReduceOp,
+    deviceType: String
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, groupAssignment.handle.backend),
+      scatterDimension.handle.backend)
+    {
+    case .XLA:
+      let output_device = scatterDimension.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
+      let scatterDimension = Tensor<Int32>(copying: scatterDimension, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.dTensorReduceScatter(
+          input, groupAssignment: groupAssignment, scatterDimension: scatterDimension,
+          reduceOp: reduceOp, deviceType: deviceType), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.dTensorReduceScatter(
+        input, groupAssignment: groupAssignment, scatterDimension: scatterDimension,
+        reduceOp: reduceOp, deviceType: deviceType)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func dTensorRestoreV2<Dtypes: TensorGroup>(
+    prefix: StringTensor,
+    tensorNames: StringTensor,
+    shapeAndSlices: StringTensor,
+    inputShapes: [TensorShape?],
+    inputLayouts: [String]
+  ) -> Dtypes {
+    _RawTFEager.dTensorRestoreV2(
+      prefix: prefix, tensorNames: tensorNames, shapeAndSlices: shapeAndSlices,
+      inputShapes: inputShapes, inputLayouts: inputLayouts)
+  }
+
+  @inlinable @inline(__always)
+  public static func dTensorShardedPrefix<Dtypes: TensorArrayProtocol>(
+    prefix: StringTensor,
+    tensorNames: StringTensor,
+    shapeAndSlices: StringTensor,
+    mesh: StringTensor,
+    layouts: StringTensor,
+    tensors: Dtypes
+  ) -> StringTensor {
+    _RawTFEager.dTensorShardedPrefix(
+      prefix: prefix, tensorNames: tensorNames, shapeAndSlices: shapeAndSlices, mesh: mesh,
+      layouts: layouts, tensors: tensors)
   }
 
   /// Returns the dimension index in the destination data format given the one in
@@ -6944,9 +8070,28 @@ public enum _Raw {
 
   }
 
-  /// Returns the permuted vector/tensor in the destination data format given the
+  /// Permute input tensor from `src_format` to `dst_format`.
   ///
-  /// one in the source data format.
+  /// Input tensor must be a vector of size 4, or a 4x2 tensor.
+  ///
+  /// For example, with `src_format` of `NHWC`, `dst_format` of `NCHW`, and inputs:
+  /// ```
+  /// [1, 2, 3, 4]
+  /// ```
+  /// and
+  /// ```
+  /// [[1, 2, 3, 4],
+  ///  [5, 6, 7, 8]]
+  /// ```
+  /// , the outputs will be (respectively):
+  /// ```
+  /// [1, 4, 2, 3]
+  /// ```
+  /// and
+  /// ```
+  /// [[1, 4, 2, 3],
+  ///  [5, 8, 6, 7]]
+  /// ```
   ///
   /// - Parameter x: Vector of size 4 or Tensor of shape (4, 2) in source data format.
   ///
@@ -6972,6 +8117,89 @@ public enum _Raw {
       return _RawTFEager.dataFormatVecPermute(x, srcFormat: srcFormat, dstFormat: dstFormat)
     }
 
+  }
+
+  /// Creates a dataset that reads data from the tf.data service.
+  @inlinable @inline(__always)
+  public static func dataServiceDataset(
+    datasetId: Tensor<Int64>,
+    processingMode: StringTensor,
+    address: StringTensor,
+    protocol_: StringTensor,
+    jobName: StringTensor,
+    maxOutstandingRequests: Tensor<Int64>,
+    iterationCounter: ResourceHandle,
+    taskRefreshIntervalHintMs: Int64 = -1,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    dataTransferProtocol: String,
+    targetWorkers: String = "AUTO"
+  ) -> VariantHandle {
+    _RawTFEager.dataServiceDataset(
+      datasetId: datasetId, processingMode: processingMode, address: address, protocol_: protocol_,
+      jobName: jobName, maxOutstandingRequests: maxOutstandingRequests,
+      iterationCounter: iterationCounter, taskRefreshIntervalHintMs: taskRefreshIntervalHintMs,
+      outputTypes: outputTypes, outputShapes: outputShapes,
+      dataTransferProtocol: dataTransferProtocol, targetWorkers: targetWorkers)
+  }
+
+  /// Creates a dataset that reads data from the tf.data service.
+  @inlinable @inline(__always)
+  public static func dataServiceDatasetV2(
+    datasetId: Tensor<Int64>,
+    processingMode: StringTensor,
+    address: StringTensor,
+    protocol_: StringTensor,
+    jobName: StringTensor,
+    consumerIndex: Tensor<Int64>,
+    numConsumers: Tensor<Int64>,
+    maxOutstandingRequests: Tensor<Int64>,
+    iterationCounter: ResourceHandle,
+    taskRefreshIntervalHintMs: Int64 = -1,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    dataTransferProtocol: String,
+    targetWorkers: String = "AUTO"
+  ) -> VariantHandle {
+    _RawTFEager.dataServiceDatasetV2(
+      datasetId: datasetId, processingMode: processingMode, address: address, protocol_: protocol_,
+      jobName: jobName, consumerIndex: consumerIndex, numConsumers: numConsumers,
+      maxOutstandingRequests: maxOutstandingRequests, iterationCounter: iterationCounter,
+      taskRefreshIntervalHintMs: taskRefreshIntervalHintMs, outputTypes: outputTypes,
+      outputShapes: outputShapes, dataTransferProtocol: dataTransferProtocol,
+      targetWorkers: targetWorkers)
+  }
+
+  /// Creates a dataset that reads data from the tf.data service.
+  @inlinable @inline(__always)
+  public static func dataServiceDatasetV3<
+    UncompressfnIn: TensorGroup,
+    UncompressfnOut: TensorGroup
+  >(
+    datasetId: Tensor<Int64>,
+    processingMode: StringTensor,
+    address: StringTensor,
+    protocol_: StringTensor,
+    jobName: StringTensor,
+    consumerIndex: Tensor<Int64>,
+    numConsumers: Tensor<Int64>,
+    maxOutstandingRequests: Tensor<Int64>,
+    iterationCounter: ResourceHandle,
+    taskRefreshIntervalHintMs: Int64 = -1,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    dataTransferProtocol: String,
+    targetWorkers: String = "AUTO",
+    uncompress: Bool = false,
+    uncompressFn: (UncompressfnIn) -> UncompressfnOut
+  ) -> VariantHandle {
+    _RawTFEager.dataServiceDatasetV3(
+      datasetId: datasetId, processingMode: processingMode, address: address, protocol_: protocol_,
+      jobName: jobName, consumerIndex: consumerIndex, numConsumers: numConsumers,
+      maxOutstandingRequests: maxOutstandingRequests, iterationCounter: iterationCounter,
+      taskRefreshIntervalHintMs: taskRefreshIntervalHintMs, outputTypes: outputTypes,
+      outputShapes: outputShapes, dataTransferProtocol: dataTransferProtocol,
+      targetWorkers: targetWorkers, uncompress: uncompress, uncompressFn: uncompressFn)
   }
 
   /// Returns the cardinality of `input_dataset`.
@@ -7048,9 +8276,11 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func datasetToSingleElement<OutputTypes: TensorGroup>(
     dataset: VariantHandle,
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> OutputTypes {
-    _RawTFEager.datasetToSingleElement(dataset: dataset, outputShapes: outputShapes)
+    _RawTFEager.datasetToSingleElement(
+      dataset: dataset, outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Writes the given dataset to the given file using the TFRecord format.
@@ -7068,6 +8298,21 @@ public enum _Raw {
   ) {
     _RawTFEager.datasetToTFRecord(
       inputDataset: inputDataset, filename: filename, compressionType: compressionType)
+  }
+
+  @inlinable @inline(__always)
+  public static func dawsn<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.dawsn(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.dawsn(x)
+    }
+
   }
 
   /// Identity op for gradient debugging.
@@ -7161,7 +8406,9 @@ public enum _Raw {
     opName: String,
     outputSlot: Int64 = -1,
     tensorDebugMode: Int64 = -1,
-    debugUrls: [String]
+    debugUrls: [String],
+    circularBufferSize: Int64 = 1000,
+    tfdbgRunId: String
   ) -> Tensor<T> {
     switch input.handle.backend {
     case .XLA:
@@ -7170,11 +8417,13 @@ public enum _Raw {
       return Tensor<T>(
         copying: _RawTFEager.debugIdentityV2(
           input, tfdbgContextId: tfdbgContextId, opName: opName, outputSlot: outputSlot,
-          tensorDebugMode: tensorDebugMode, debugUrls: debugUrls), to: output_device)
+          tensorDebugMode: tensorDebugMode, debugUrls: debugUrls,
+          circularBufferSize: circularBufferSize, tfdbgRunId: tfdbgRunId), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.debugIdentityV2(
         input, tfdbgContextId: tfdbgContextId, opName: opName, outputSlot: outputSlot,
-        tensorDebugMode: tensorDebugMode, debugUrls: debugUrls)
+        tensorDebugMode: tensorDebugMode, debugUrls: debugUrls,
+        circularBufferSize: circularBufferSize, tfdbgRunId: tfdbgRunId)
     }
 
   }
@@ -7224,7 +8473,7 @@ public enum _Raw {
   /// Provide a basic summary of numeric value types, range and distribution.
   ///
   /// output: A double tensor of shape [14 + nDimensions], where nDimensions is the
-  ///   the number of dimensions of the tensor's shape. The elements of output are:
+  ///   number of dimensions of the tensor's shape. The elements of output are:
   ///   [0]: is initialized (1.0) or not (0.0).
   ///   [1]: total number of elements
   ///   [2]: NaN element count
@@ -7234,7 +8483,7 @@ public enum _Raw {
   ///     -inf. Otherwise, this is the count of elements > lower_bound and < 0.
   ///   [5]: zero element count
   ///   [6]: positive element count (excluding +inf), if upper_bound is the default
-  ///     -inf. Otherwise, this is the count of elements < upper_bound and > 0.
+  ///     +inf. Otherwise, this is the count of elements < upper_bound and > 0.
   ///   [7]: generalized +inf count, elements >= upper_bound. upper_bound is +inf by
   ///     default.
   /// Output elements [1:8] are all zero, if the tensor is uninitialized.
@@ -7300,10 +8549,16 @@ public enum _Raw {
 
   }
 
+  /// Debug Numeric Summary V2 Op.
+  ///
+  /// Computes a numeric summary of the input tensor. The shape of the output
+  /// depends on the tensor_debug_mode attribute.
+  /// This op is used internally by TensorFlow Debugger (tfdbg) v2.
   ///
   /// - Parameter input: Input tensor, to be summarized by the op.
   ///
   /// - Attrs:
+  ///     - output_dtype: Optional. The type of the output. Can be float32 or float64 (default: float32).
   ///     - tensor_debug_mode: Tensor debug mode: the mode in which the input tensor is summarized
   ///           by the op. See the TensorDebugMode enum in
   ///           tensorflow/core/protobuf/debug_event.proto for details.
@@ -7360,16 +8615,19 @@ public enum _Raw {
   ///           nan if any element of the input tensor is nan, or zero otherwise.
   ///     - tensor_id: Optional. An integer identifier for the tensor being summarized by this op.
   @inlinable @inline(__always)
-  public static func debugNumericSummaryV2<T: TensorFlowScalar>(
+  public static func debugNumericSummaryV2<
+    OutputDtype: FloatingPoint & TensorFlowScalar,
+    T: TensorFlowScalar
+  >(
     _ input: Tensor<T>,
     tensorDebugMode: Int64 = -1,
     tensorId: Int64 = -1
-  ) -> Tensor<Float> {
+  ) -> Tensor<OutputDtype> {
     switch input.handle.backend {
     case .XLA:
       let output_device = input.device
       let input = Tensor<T>(copying: input, to: .defaultTFEager)
-      return Tensor<Float>(
+      return Tensor<OutputDtype>(
         copying: _RawTFEager.debugNumericSummaryV2(
           input, tensorDebugMode: tensorDebugMode, tensorId: tensorId), to: output_device)
     case .TF_EAGER:
@@ -7452,8 +8710,9 @@ public enum _Raw {
 
   /// Decode web-safe base64-encoded strings.
   ///
-  /// Input may or may not have padding at the end. See EncodeBase64 for padding.
-  /// Web-safe means that input must use - and _ instead of + and /.
+  /// Input may or may not have padding at the end. See
+  /// [EncodeBase64](https://www.tensorflow.org/api_docs/python/tf/io/encode_base64)
+  /// for padding. Web-safe means that input must use - and _ instead of + and /.
   ///
   /// - Parameter input: Base64 strings to decode.
   ///
@@ -7555,7 +8814,7 @@ public enum _Raw {
   ///     convert $src.gif -coalesce $dst.gif
   ///
   /// This op also supports decoding JPEGs and PNGs, though it is cleaner to use
-  /// `tf.image.decode_image`.
+  /// `tf.io.decode_image`.
   ///
   /// - Parameter contents: 0-D.  The GIF-encoded image.
   ///
@@ -7567,14 +8826,59 @@ public enum _Raw {
     _RawTFEager.decodeGif(contents: contents)
   }
 
+  /// Function for decode_bmp, decode_gif, decode_jpeg, and decode_png.
+  ///
+  /// Detects whether an image is a BMP, GIF, JPEG, or PNG, and performs the
+  /// appropriate operation to convert the input bytes string into a Tensor of type
+  /// dtype.
+  ///
+  /// *NOTE*: decode_gif returns a 4-D array [num_frames, height, width, 3], as
+  /// opposed to decode_bmp, decode_jpeg and decode_png, which return 3-D arrays
+  /// [height, width, num_channels]. Make sure to take this into account when
+  /// constructing your graph if you are intermixing GIF files with BMP, JPEG, and/or
+  /// PNG files. Alternately, set the expand_animations argument of this function to
+  /// False, in which case the op will return 3-dimensional tensors and will truncate
+  /// animated GIF files to the first frame.
+  ///
+  /// *NOTE*: If the first frame of an animated GIF does not occupy the entire
+  /// canvas (maximum frame width x maximum frame height), then it fills the
+  /// unoccupied areas (in the first frame) with zeros (black). For frames after the
+  /// first frame that does not occupy the entire canvas, it uses the previous
+  /// frame to fill the unoccupied areas.
+  ///
+  /// - Parameter contents: 0-D. The encoded image bytes.
+  ///
+  /// - Attrs:
+  ///     - channels: Number of color channels for the decoded image.
+  ///     - dtype: The desired DType of the returned Tensor.
+  ///     - expand_animations: Controls the output shape of the returned op. If True, the returned op will
+  ///         produce a 3-D tensor for PNG, JPEG, and BMP files; and a 4-D tensor for all
+  ///         GIFs, whether animated or not. If, False, the returned op will produce a 3-D
+  ///         tensor for all file types and will truncate animated GIFs to the first frame.
+  ///
+  /// - Output image: 3-D with shape `[height, width, channels]` or 4-D with shape
+  ///     `[frame, height, width, channels]`..
+  @inlinable @inline(__always)
+  public static func decodeImage<Dtype: TensorFlowNumeric>(
+    contents: StringTensor,
+    channels: Int64 = 0,
+    expandAnimations: Bool = true
+  ) -> Tensor<Dtype> {
+    _RawTFEager.decodeImage(
+      contents: contents, channels: channels, expandAnimations: expandAnimations)
+  }
+
   /// Convert JSON-encoded Example records to binary protocol buffer strings.
   ///
-  /// This op translates a tensor containing Example records, encoded using
-  /// the [standard JSON
-  /// mapping](https://developers.google.com/protocol-buffers/docs/proto3#json),
-  /// into a tensor containing the same records encoded as binary protocol
-  /// buffers. The resulting tensor can then be fed to any of the other
-  /// Example-parsing ops.
+  ///
+  /// Note: This is **not** a general purpose JSON parsing op.
+  ///
+  /// This op converts JSON-serialized
+  /// `tf.train.Example` (created with `json_format.MessageToJson`, following the
+  /// [standard JSON mapping](https://developers.google.com/protocol-buffers/docs/proto3#json))
+  /// to a binary-serialized `tf.train.Example` (equivalent to
+  /// `Example.SerializeToString()`) suitable for conversion to tensors with
+  /// `tf.io.parse_example`.
   ///
   /// - Parameter json_examples: Each string is a JSON object serialized according to the JSON
   ///     mapping of the Example proto.
@@ -7608,7 +8912,7 @@ public enum _Raw {
   ///
   ///
   /// This op also supports decoding PNGs and non-animated GIFs since the interface is
-  /// the same, though it is cleaner to use `tf.image.decode_image`.
+  /// the same, though it is cleaner to use `tf.io.decode_image`.
   ///
   /// - Parameter contents: 0-D.  The JPEG-encoded image.
   ///
@@ -7694,7 +8998,7 @@ public enum _Raw {
   /// of color channels.
   ///
   /// This op also supports decoding JPEGs and non-animated GIFs since the interface
-  /// is the same, though it is cleaner to use `tf.image.decode_image`.
+  /// is the same, though it is cleaner to use `tf.io.decode_image`.
   ///
   /// - Parameter contents: 0-D.  The PNG-encoded image.
   ///
@@ -7710,6 +9014,10 @@ public enum _Raw {
   }
 
   /// The op extracts fields from a serialized protocol buffers message into tensors.
+  ///
+  /// Note: This API is designed for orthogonality rather than human-friendliness. It
+  /// can be used to parse input protos by hand, but it is intended for use in
+  /// generated code.
   ///
   /// The `decode_proto` op extracts fields from a serialized protocol buffers
   /// message into tensors.  The fields in `field_names` are decoded and converted
@@ -7741,6 +9049,14 @@ public enum _Raw {
   /// way). Unsigned int32 values can be represented exactly by specifying type
   /// `DT_INT64`, or using twos-complement if the caller specifies `DT_INT32` in
   /// the `output_types` attribute.
+  ///
+  /// - `map` fields are not directly decoded. They are treated as `repeated` fields,
+  /// of the appropriate entry type. The proto-compiler defines entry types for each
+  /// map field. The type-name is the field name, converted to "CamelCase" with
+  /// "Entry" appended. The `tf.train.Features.FeatureEntry` message is an example of
+  /// one of these implicit `Entry` types.
+  ///
+  /// - `enum` fields should be read as int32.
   ///
   /// Both binary and text proto serializations are supported, and can be
   /// chosen using the `format` attribute.
@@ -7913,6 +9229,22 @@ public enum _Raw {
     _RawTFEager.deleteRandomSeedGenerator(handle: handle, deleter: deleter)
   }
 
+  @inlinable @inline(__always)
+  public static func deleteRpcFutureResource(
+    handle: ResourceHandle,
+    deleter: VariantHandle
+  ) {
+    _RawTFEager.deleteRpcFutureResource(handle: handle, deleter: deleter)
+  }
+
+  @inlinable @inline(__always)
+  public static func deleteSeedGenerator(
+    handle: ResourceHandle,
+    deleter: VariantHandle
+  ) {
+    _RawTFEager.deleteSeedGenerator(handle: handle, deleter: deleter)
+  }
+
   /// Delete the tensor specified by its handle in the session.
   ///
   /// - Parameter handle: The handle for a tensor stored in the session state.
@@ -7921,6 +9253,93 @@ public enum _Raw {
     handle: StringTensor
   ) {
     _RawTFEager.deleteSessionTensor(handle: handle)
+  }
+
+  /// Counts the number of occurrences of each value in an integer array.
+  ///
+  /// Outputs a vector with length `size` and the same dtype as `weights`. If
+  /// `weights` are empty, then index `i` stores the number of times the value `i` is
+  /// counted in `arr`. If `weights` are non-empty, then index `i` stores the sum of
+  /// the value in `weights` at each index where the corresponding value in `arr` is
+  /// `i`.
+  ///
+  /// Values in `arr` outside of the range [0, size) are ignored.
+  ///
+  /// - Parameters:
+  ///     - input: 1D or 2D int `Tensor`.
+  ///     - size: non-negative int scalar `Tensor`.
+  ///     - weights: is an int32, int64, float32, or float64 `Tensor` with the same
+  ///         shape as `arr`, or a length-0 `Tensor`, in which case it acts as all weights
+  ///         equal to 1.
+  ///
+  /// - Attr binary_output: bool; Whether the kernel should count the appearance or number of occurrences.
+  ///
+  /// - Output output: 1D `Tensor` with length equal to `size` or 2D `Tensor` with [batch_size, `size`].
+  ///     The counts or summed weights for each value in the range [0, size).
+  @inlinable @inline(__always)
+  public static func denseBincount<
+    Tidx: TensorFlowIndex,
+    T: TensorFlowNumeric
+  >(
+    _ input: Tensor<Tidx>,
+    size: Tensor<Tidx>,
+    weights: Tensor<T>,
+    binaryOutput: Bool = false
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, size.handle.backend), weights.handle.backend)
+    {
+    case .XLA:
+      let output_device = weights.device
+      let input = Tensor<Tidx>(copying: input, to: .defaultTFEager)
+      let size = Tensor<Tidx>(copying: size, to: .defaultTFEager)
+      let weights = Tensor<T>(copying: weights, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.denseBincount(
+          input, size: size, weights: weights, binaryOutput: binaryOutput), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.denseBincount(
+        input, size: size, weights: weights, binaryOutput: binaryOutput)
+    }
+
+  }
+
+  /// Performs sparse-output bin counting for a tf.tensor input.
+  ///
+  ///   Counts the number of times each value occurs in the input.
+  ///
+  /// - Parameters:
+  ///     - values: Tensor containing data to count.
+  ///     - weights: A Tensor of the same shape as indices containing per-index weight values. May
+  ///         also be the empty tensor if no weights are used.
+  ///
+  /// - Attrs:
+  ///     - T: Dtype of the input values tensor.
+  ///     - minlength: Minimum value to count. Can be set to -1 for no minimum.
+  ///     - maxlength: Maximum value to count. Can be set to -1 for no maximum.
+  ///     - binary_output: Whether to output the number of occurrences of each value or 1.
+  ///     - output_type: Dtype of the output values tensor.
+  ///
+  /// - Outputs:
+  ///     - output_indices: Indices tensor for the resulting sparse tensor object.
+  ///     - output_values: Values tensor for the resulting sparse tensor object.
+  ///     - output_dense_shape: Shape tensor for the resulting sparse tensor object.
+  @inlinable @inline(__always)
+  public static func denseCountSparseOutput<
+    T: TensorFlowIndex,
+    OutputType: TensorFlowNumeric
+  >(
+    _ values: Tensor<T>,
+    weights: Tensor<OutputType>,
+    minlength: Int64 = -1,
+    maxlength: Int64 = -1,
+    binaryOutput: Bool
+  ) -> (
+    outputIndices: Tensor<Int64>, outputValues: Tensor<OutputType>, outputDenseShape: Tensor<Int64>
+  ) {
+    _RawTFEager.denseCountSparseOutput(
+      values, weights: weights, minlength: minlength, maxlength: maxlength,
+      binaryOutput: binaryOutput)
   }
 
   /// Converts a dense tensor to a (possibly batched) CSRSparseMatrix.
@@ -8276,19 +9695,20 @@ public enum _Raw {
     _ input: Tensor<T>,
     filter: Tensor<T>,
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
     switch commonBackend(input.handle.backend, filter.handle.backend) {
     case .XLA:
       return _RawXLA.depthwiseConv2dNative(
-        input, filter: filter, strides: strides, padding: padding, dataFormat: dataFormat,
-        dilations: dilations)
+        input, filter: filter, strides: strides, padding: padding,
+        explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
     case .TF_EAGER:
       return _RawTFEager.depthwiseConv2dNative(
-        input, filter: filter, strides: strides, padding: padding, dataFormat: dataFormat,
-        dilations: dilations)
+        input, filter: filter, strides: strides, padding: padding,
+        explicitPaddings: explicitPaddings, dataFormat: dataFormat, dilations: dilations)
     }
 
   }
@@ -8331,7 +9751,8 @@ public enum _Raw {
     filterSizes: Tensor<Int32>,
     outBackprop: Tensor<T>,
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
@@ -8341,11 +9762,13 @@ public enum _Raw {
     case .XLA:
       return _RawXLA.depthwiseConv2dNativeBackpropFilter(
         input, filterSizes: filterSizes, outBackprop: outBackprop, strides: strides,
-        padding: padding, dataFormat: dataFormat, dilations: dilations)
+        padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
+        dilations: dilations)
     case .TF_EAGER:
       return _RawTFEager.depthwiseConv2dNativeBackpropFilter(
         input, filterSizes: filterSizes, outBackprop: outBackprop, strides: strides,
-        padding: padding, dataFormat: dataFormat, dilations: dilations)
+        padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
+        dilations: dilations)
     }
 
   }
@@ -8388,7 +9811,8 @@ public enum _Raw {
     filter: Tensor<T>,
     outBackprop: Tensor<T>,
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc,
     dilations: [Int32] = [1, 1, 1, 1]
   ) -> Tensor<T> {
@@ -8398,28 +9822,90 @@ public enum _Raw {
     case .XLA:
       return _RawXLA.depthwiseConv2dNativeBackpropInput(
         inputSizes: inputSizes, filter: filter, outBackprop: outBackprop, strides: strides,
-        padding: padding, dataFormat: dataFormat, dilations: dilations)
+        padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
+        dilations: dilations)
     case .TF_EAGER:
       return _RawTFEager.depthwiseConv2dNativeBackpropInput(
         inputSizes: inputSizes, filter: filter, outBackprop: outBackprop, strides: strides,
-        padding: padding, dataFormat: dataFormat, dilations: dilations)
+        padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat,
+        dilations: dilations)
     }
 
   }
 
+  /// Dequantize the 'input' tensor into a float or bfloat16 Tensor.
+  ///
+  /// [min_range, max_range] are scalar floats that specify the range for
+  /// the output. The 'mode' attribute controls exactly which calculations are
+  /// used to convert the float values to their quantized equivalents.
+  ///
+  /// In 'MIN_COMBINED' mode, each value of the tensor will undergo the following:
+  ///
+  /// ```
+  /// if T == qint8: in[i] += (range(T) + 1)/ 2.0
+  /// out[i] = min_range + (in[i]* (max_range - min_range) / range(T))
+  /// ```
+  /// here `range(T) = numeric_limits<T>::max() - numeric_limits<T>::min()`
+  ///
+  /// *MIN_COMBINED Mode Example*
+  ///
+  /// If the input comes from a QuantizedRelu6, the output type is
+  /// quint8 (range of 0-255) but the possible range of QuantizedRelu6 is
+  /// 0-6.  The min_range and max_range values are therefore 0.0 and 6.0.
+  /// Dequantize on quint8 will take each value, cast to float, and multiply
+  /// by 6 / 255.
+  /// Note that if quantizedtype is qint8, the operation will additionally add
+  /// each value by 128 prior to casting.
+  ///
+  /// If the mode is 'MIN_FIRST', then this approach is used:
+  ///
+  /// ```c++
+  /// num_discrete_values = 1 << (# of bits in T)
+  /// range_adjust = num_discrete_values / (num_discrete_values - 1)
+  /// range = (range_max - range_min) * range_adjust
+  /// range_scale = range / num_discrete_values
+  /// const double offset_input = static_cast<double>(input) - lowest_quantized;
+  /// result = range_min + ((input - numeric_limits<T>::min()) * range_scale)
+  /// ```
+  ///
+  /// If the mode is `SCALED`, dequantization is performed by multiplying each
+  /// input value by a scaling_factor. (Thus an input of 0 always maps to 0.0).
+  ///
+  /// The scaling_factor is determined from `min_range`, `max_range`, and
+  /// `narrow_range` in a way that is compatible with `QuantizeAndDequantize{V2|V3}`
+  /// and `QuantizeV2`, using the following algorithm:
+  ///
+  /// ```c++
+  ///
+  ///   const int min_expected_T = std::numeric_limits<T>::min() +
+  ///     (narrow_range ? 1 : 0);
+  ///   const int max_expected_T = std::numeric_limits<T>::max();
+  ///   const float max_expected_T = std::numeric_limits<float>::max();
+  ///
+  ///   const float scale_factor =
+  ///     (std::numeric_limits<T>::min() == 0) ? (max_range / max_expected_T)
+  ///                                          : std::max(min_range / min_expected_T,
+  ///                                                     max_range / max_expected_T);
+  /// ```
   ///
   /// - Parameters:
   ///     - min_range: The minimum scalar value possibly produced for the input.
   ///     - max_range: The maximum scalar value possibly produced for the input.
+  ///
+  /// - Attr dtype: Type of the output tensor. Currently Dequantize supports float and bfloat16.
+  ///     If 'dtype' is 'bfloat16', it only supports 'MIN_COMBINED' mode.
   @inlinable @inline(__always)
-  public static func dequantize<T: TensorFlowScalar>(
+  public static func dequantize<
+    T: TensorFlowScalar,
+    Dtype: FloatingPoint & TensorFlowScalar
+  >(
     _ input: Tensor<T>,
     minRange: Tensor<Float>,
     maxRange: Tensor<Float>,
     mode: Mode = .minCombined,
     narrowRange: Bool = false,
     axis: Int64 = -1
-  ) -> Tensor<Float> {
+  ) -> Tensor<Dtype> {
     switch commonBackend(
       commonBackend(input.handle.backend, minRange.handle.backend), maxRange.handle.backend)
     {
@@ -8428,7 +9914,7 @@ public enum _Raw {
       let input = Tensor<T>(copying: input, to: .defaultTFEager)
       let minRange = Tensor<Float>(copying: minRange, to: .defaultTFEager)
       let maxRange = Tensor<Float>(copying: maxRange, to: .defaultTFEager)
-      return Tensor<Float>(
+      return Tensor<Dtype>(
         copying: _RawTFEager.dequantize(
           input, minRange: minRange, maxRange: maxRange, mode: mode, narrowRange: narrowRange,
           axis: axis), to: output_device)
@@ -8637,6 +10123,19 @@ public enum _Raw {
     ignoreLookupError: Bool = true
   ) {
     _RawTFEager.destroyResourceOp(resource: resource, ignoreLookupError: ignoreLookupError)
+  }
+
+  /// Return the index of device the op runs.
+  ///
+  /// Given a list of device names, this operation returns the index of the device
+  /// this op runs. The length of the list is returned in two cases:
+  /// (1) Device does not exist in the given device list.
+  /// (2) It is in XLA compilation.
+  @inlinable @inline(__always)
+  public static func deviceIndex(
+    deviceNames: [String]
+  ) -> Tensor<Int32> {
+    _RawTFEager.deviceIndex(deviceNames: deviceNames)
   }
 
   @inlinable @inline(__always)
@@ -8897,11 +10396,12 @@ public enum _Raw {
     selectorInputDataset: VariantHandle,
     dataInputDatasets: [VariantHandle],
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    stopOnEmptyDataset: Bool = false
   ) -> VariantHandle {
     _RawTFEager.directedInterleaveDataset(
       selectorInputDataset: selectorInputDataset, dataInputDatasets: dataInputDatasets,
-      outputTypes: outputTypes, outputShapes: outputShapes)
+      outputTypes: outputTypes, outputShapes: outputShapes, stopOnEmptyDataset: stopOnEmptyDataset)
   }
 
   /// Returns x / y element-wise.
@@ -9026,6 +10526,90 @@ public enum _Raw {
       return _RawTFEager.drawBoundingBoxesV2(images: images, boxes: boxes, colors: colors)
     }
 
+  }
+
+  @inlinable @inline(__always)
+  public static func dtypeWithDefaultOp<T: TensorFlowScalar>(
+    in_: Tensor<T>
+  ) -> StringTensor {
+    _RawTFEager.dtypeWithDefaultOp(in_: in_)
+  }
+
+  @inlinable @inline(__always)
+  public static func dummyIterationCounter() -> ResourceHandle {
+    _RawTFEager.dummyIterationCounter()
+  }
+
+  @inlinable @inline(__always)
+  public static func dummyMemoryCache() -> ResourceHandle {
+    _RawTFEager.dummyMemoryCache()
+  }
+
+  @inlinable @inline(__always)
+  public static func dummySeedGenerator() -> ResourceHandle {
+    _RawTFEager.dummySeedGenerator()
+  }
+
+  /// Eases the porting of code that uses tf.nn.embedding_lookup_sparse().
+  ///
+  /// embedding_indices[i] and aggregation_weights[i] correspond
+  /// to the ith feature.
+  ///
+  /// The tensors at corresponding positions in the three input lists (sample_indices,
+  /// embedding_indices and aggregation_weights) must have the same shape, i.e. rank 1
+  /// with dim_size() equal to the total number of lookups into the table described by
+  /// the corresponding feature.
+  ///
+  /// - Parameters:
+  ///     - sample_indices_or_row_splits: A list of rank 2 Tensors specifying the training example to which the
+  ///         corresponding embedding_indices and aggregation_weights values belong.
+  ///         If the size of its first dimension is 0, we assume each embedding_indices
+  ///         belongs to a different sample. Both int32 and int64 are allowed and will
+  ///         be converted to int32 internally.
+  ///
+  ///         Or a list of rank 1 Tensors specifying the row splits for splitting
+  ///         embedding_indices and aggregation_weights into rows. It corresponds to
+  ///         ids.row_splits in embedding_lookup(), when ids is a RaggedTensor. When
+  ///         enqueuing N-D ragged tensor, only the last dimension is allowed to be ragged.
+  ///         the row splits is 1-D dense tensor. When empty, we assume a dense tensor is
+  ///         passed to the op Both int32 and int64 are allowed and will be converted to
+  ///         int32 internally.
+  ///     - embedding_indices: A list of rank 1 Tensors, indices into the embedding
+  ///         tables. Both int32 and int64 are allowed and will be converted to
+  ///         int32 internally.
+  ///     - aggregation_weights: A list of rank 1 Tensors containing per training
+  ///         example aggregation weights. Both float32 and float64 are allowed and will
+  ///         be converted to float32 internally.
+  ///     - mode_override: A string input that overrides the mode specified in the
+  ///         TPUEmbeddingConfiguration. Supported values are {'unspecified', 'inference',
+  ///         'training', 'backward_pass_only'}. When set to 'unspecified', the mode set
+  ///         in TPUEmbeddingConfiguration is used, otherwise mode_override is used.
+  ///     - device_ordinal: The TPU device to use. Should be >= 0 and less than the number
+  ///         of TPU cores in the task on which the node is placed.
+  ///
+  /// - Attr combiners: A list of string scalars, one for each embedding table that specify
+  ///     how to normalize the embedding activations after weighted summation.
+  ///     Supported combiners are 'mean', 'sum', or 'sqrtn'. It is invalid to have
+  ///     the sum of the weights be 0 for 'mean' or the sum of the squared weights be
+  ///     0 for 'sqrtn'. If combiners isn't passed, the default is to use 'sum' for
+  ///     all tables.
+  @inlinable @inline(__always)
+  public static func dynamicEnqueueTPUEmbeddingArbitraryTensorBatch<
+    T1: TensorFlowIndex,
+    T2: TensorFlowIndex,
+    T3: FloatingPoint & TensorFlowScalar
+  >(
+    sampleIndicesOrRowSplits: [Tensor<T1>],
+    embeddingIndices: [Tensor<T2>],
+    aggregationWeights: [Tensor<T3>],
+    modeOverride: StringTensor,
+    deviceOrdinal: Tensor<Int32>,
+    combiners: [String]
+  ) {
+    _RawTFEager.dynamicEnqueueTPUEmbeddingArbitraryTensorBatch(
+      sampleIndicesOrRowSplits: sampleIndicesOrRowSplits, embeddingIndices: embeddingIndices,
+      aggregationWeights: aggregationWeights, modeOverride: modeOverride,
+      deviceOrdinal: deviceOrdinal, combiners: combiners)
   }
 
   /// Partitions `data` into `num_partitions` tensors using indices from `partitions`.
@@ -9401,7 +10985,21 @@ public enum _Raw {
     _RawTFEager.einsum(inputs: inputs, equation: equation)
   }
 
-  /// Computes exponential linear: `exp(features) - 1` if < 0, `features` otherwise.
+  /// Computes the exponential linear function.
+  ///
+  /// The ELU function is defined as:
+  ///
+  ///  * $ e ^ x - 1 $ if $ x < 0 $
+  ///  * $ x $ if $ x >= 0 $
+  ///
+  /// Examples:
+  ///
+  /// >>> tf.nn.elu(1.0)
+  /// <tf.Tensor: shape=(), dtype=float32, numpy=1.0>
+  /// >>> tf.nn.elu(0.0)
+  /// <tf.Tensor: shape=(), dtype=float32, numpy=0.0>
+  /// >>> tf.nn.elu(-1000.0)
+  /// <tf.Tensor: shape=(), dtype=float32, numpy=-1.0>
   ///
   /// See [Fast and Accurate Deep Network Learning by Exponential Linear Units (ELUs)
   /// ](http://arxiv.org/abs/1511.07289)
@@ -9484,10 +11082,18 @@ public enum _Raw {
       elementShape: elementShape, maxNumElements: maxNumElements, elementDtype: elementDtype)
   }
 
+  /// Creates and returns an empty tensor map.
+  ///
+  /// handle: an empty tensor map
+  @inlinable @inline(__always)
+  public static func emptyTensorMap() -> VariantHandle {
+    _RawTFEager.emptyTensorMap()
+  }
+
   /// Encode strings into web-safe base64 format.
   ///
-  /// Refer to the following article for more information on base64 format:
-  /// en.wikipedia.org/wiki/Base64. Base64 strings may have padding with '=' at the
+  /// Refer to [this article](https://en.wikipedia.org/wiki/Base64) for more information on
+  /// base64 format. Base64 strings may have padding with '=' at the
   /// end so that the encoded has length multiple of 4. See Padding section of the
   /// link above.
   ///
@@ -9555,8 +11161,8 @@ public enum _Raw {
   ) -> StringTensor {
     _RawTFEager.encodeJpeg(
       image: image, format: format, quality: quality, progressive: progressive,
-      optimizeSize: optimizeSize, chromaDownsampling: chromaDownsampling,
-      densityUnit: densityUnit, xDensity: xDensity, yDensity: yDensity, xmpMetadata: xmpMetadata)
+      optimizeSize: optimizeSize, chromaDownsampling: chromaDownsampling, densityUnit: densityUnit,
+      xDensity: xDensity, yDensity: yDensity, xmpMetadata: xmpMetadata)
   }
 
   /// JPEG encode input image with provided compression quality.
@@ -9694,6 +11300,104 @@ public enum _Raw {
     _RawTFEager.encodeWav(audio: audio, sampleRate: sampleRate)
   }
 
+  /// Eases the porting of code that uses tf.nn.embedding_lookup_sparse().
+  ///
+  /// embedding_indices[i] and aggregation_weights[i] correspond
+  /// to the ith feature.
+  ///
+  /// The tensors at corresponding positions in the three input lists (sample_indices,
+  /// embedding_indices and aggregation_weights) must have the same shape, i.e. rank 1
+  /// with dim_size() equal to the total number of lookups into the table described by
+  /// the corresponding feature.
+  ///
+  /// - Parameters:
+  ///     - sample_indices_or_row_splits: A list of rank 2 Tensors specifying the training example to which the
+  ///         corresponding embedding_indices and aggregation_weights values belong.
+  ///         If the size of its first dimension is 0, we assume each embedding_indices
+  ///         belongs to a different sample. Both int32 and int64 are allowed and will
+  ///         be converted to int32 internally.
+  ///
+  ///         Or a list of rank 1 Tensors specifying the row splits for splitting
+  ///         embedding_indices and aggregation_weights into rows. It corresponds to
+  ///         ids.row_splits in embedding_lookup(), when ids is a RaggedTensor. When
+  ///         enqueuing N-D ragged tensor, only the last dimension is allowed to be ragged.
+  ///         the row splits is 1-D dense tensor. When empty, we assume a dense tensor is
+  ///         passed to the op Both int32 and int64 are allowed and will be converted to
+  ///         int32 internally.
+  ///     - embedding_indices: A list of rank 1 Tensors, indices into the embedding
+  ///         tables. Both int32 and int64 are allowed and will be converted to
+  ///         int32 internally.
+  ///     - aggregation_weights: A list of rank 1 Tensors containing per training
+  ///         example aggregation weights. Both float32 and float64 are allowed and will
+  ///         be converted to float32 internally.
+  ///     - mode_override: A string input that overrides the mode specified in the
+  ///         TPUEmbeddingConfiguration. Supported values are {'unspecified', 'inference',
+  ///         'training', 'backward_pass_only'}. When set to 'unspecified', the mode set
+  ///         in TPUEmbeddingConfiguration is used, otherwise mode_override is used.
+  ///
+  /// - Attrs:
+  ///     - device_ordinal: The TPU device to use. Should be >= 0 and less than the number
+  ///         of TPU cores in the task on which the node is placed.
+  ///     - combiners: A list of string scalars, one for each embedding table that specify
+  ///         how to normalize the embedding activations after weighted summation.
+  ///         Supported combiners are 'mean', 'sum', or 'sqrtn'. It is invalid to have
+  ///         the sum of the weights be 0 for 'mean' or the sum of the squared weights be
+  ///         0 for 'sqrtn'. If combiners isn't passed, the default is to use 'sum' for
+  ///         all tables.
+  @inlinable @inline(__always)
+  public static func enqueueTPUEmbeddingArbitraryTensorBatch<
+    T1: TensorFlowIndex,
+    T2: TensorFlowIndex,
+    T3: FloatingPoint & TensorFlowScalar
+  >(
+    sampleIndicesOrRowSplits: [Tensor<T1>],
+    embeddingIndices: [Tensor<T2>],
+    aggregationWeights: [Tensor<T3>],
+    modeOverride: StringTensor,
+    deviceOrdinal: Int64 = -1,
+    combiners: [String]
+  ) {
+    _RawTFEager.enqueueTPUEmbeddingArbitraryTensorBatch(
+      sampleIndicesOrRowSplits: sampleIndicesOrRowSplits, embeddingIndices: embeddingIndices,
+      aggregationWeights: aggregationWeights, modeOverride: modeOverride,
+      deviceOrdinal: deviceOrdinal, combiners: combiners)
+  }
+
+  /// An op that enqueues a list of input batch tensors to TPUEmbedding.
+  ///
+  /// An op that enqueues a list of input batch tensors to TPUEmbedding.
+  ///
+  /// - Parameters:
+  ///     - batch: A list of 1D tensors, one for each embedding table, containing the
+  ///         batch inputs encoded as dist_belief.SparseFeatures protos. If the weight
+  ///         field in the SparseFeatures proto is not populated for an ID, a weight of
+  ///         1.0 is assumed.
+  ///     - mode_override: A string input that overrides the mode specified in the
+  ///         TPUEmbeddingConfiguration. Supported values are {'unspecified', 'inference',
+  ///         'training', 'backward_pass_only'}. When set to 'unspecified', the mode set
+  ///         in TPUEmbeddingConfiguration is used, otherwise mode_override is used.
+  ///
+  /// - Attrs:
+  ///     - device_ordinal: The TPU device to use. This should be -1 when the Op
+  ///         is running on a TPU device, and >= 0 when the Op is running on the CPU
+  ///         device.
+  ///     - combiners: A list of string scalars, one for each embedding table that specify
+  ///         how to normalize the embedding activations after weighted summation.
+  ///         Supported combiners are 'mean', 'sum', or 'sqrtn'. It is invalid to have
+  ///         the sum of the weights be 0 for 'mean' or the sum of the squared weights be
+  ///         0 for 'sqrtn'. If combiners isn't passed, the default is to use 'sum' for
+  ///         all tables.
+  @inlinable @inline(__always)
+  public static func enqueueTPUEmbeddingBatch(
+    batch: [StringTensor],
+    modeOverride: StringTensor,
+    deviceOrdinal: Int64 = -1,
+    combiners: [String]
+  ) {
+    _RawTFEager.enqueueTPUEmbeddingBatch(
+      batch: batch, modeOverride: modeOverride, deviceOrdinal: deviceOrdinal, combiners: combiners)
+  }
+
   /// An op that enqueues a list of input batch tensors to TPUEmbedding.
   ///
   /// - Parameters:
@@ -9714,6 +11418,70 @@ public enum _Raw {
   ) {
     _RawTFEager.enqueueTPUEmbeddingIntegerBatch(
       batch: batch, modeOverride: modeOverride, deviceOrdinal: deviceOrdinal)
+  }
+
+  /// Eases the porting of code that uses tf.nn.embedding_lookup().
+  ///
+  /// sample_splits[i], embedding_indices[i] and aggregation_weights[i] correspond
+  /// to the ith feature. table_ids[i] indicates which embedding table to look up ith
+  /// feature.
+  ///
+  /// The tensors at corresponding positions in two of the input lists,
+  /// embedding_indices and aggregation_weights, must have the same shape, i.e. rank 1
+  /// with dim_size() equal to the total number of lookups into the table described by
+  /// the corresponding feature.
+  ///
+  /// - Parameters:
+  ///     - sample_splits: A list of rank 1 Tensors specifying the break points for splitting
+  ///         embedding_indices and aggregation_weights into rows.
+  ///         It corresponds to ids.row_splits in embedding_lookup(), when ids is a
+  ///         RaggedTensor.
+  ///     - embedding_indices: A list of rank 1 Tensors, indices into the embedding tables.
+  ///         It corresponds to ids.values in embedding_lookup(), when ids is a RaggedTensor.
+  ///     - aggregation_weights: A list of rank 1 Tensors containing per training example
+  ///         aggregation weights. It corresponds to the values field of a RaggedTensor
+  ///         with the same row_splits as ids in embedding_lookup(), when ids is a
+  ///         RaggedTensor.
+  ///     - mode_override: A string input that overrides the mode specified in the
+  ///         TPUEmbeddingConfiguration. Supported values are {'unspecified', 'inference',
+  ///         'training', 'backward_pass_only'}. When set to 'unspecified', the mode set
+  ///         in TPUEmbeddingConfiguration is used, otherwise mode_override is used.
+  ///
+  /// - Attrs:
+  ///     - device_ordinal: The TPU device to use. Should be >= 0 and less than the number
+  ///         of TPU cores in the task on which the node is placed.
+  ///     - combiners: A list of string scalars, one for each embedding table that specify
+  ///         how to normalize the embedding activations after weighted summation.
+  ///         Supported combiners are 'mean', 'sum', or 'sqrtn'. It is invalid to have
+  ///         the sum of the weights be 0 for 'mean' or the sum of the squared weights be
+  ///         0 for 'sqrtn'. If combiners isn't passed, the default is to use 'sum' for
+  ///         all tables.
+  ///     - table_ids: A list of integers specifying the identifier of the embedding table
+  ///         (offset of TableDescriptor in the TPUEmbeddingConfiguration) to lookup the
+  ///         corresponding input. The ith input is looked up using table_ids[i]. The size
+  ///         of the table_ids list must be equal to that of sample_indices,
+  ///         embedding_indices and aggregation_weights.
+  @inlinable @inline(__always)
+  public static func enqueueTPUEmbeddingRaggedTensorBatch<
+    T1: TensorFlowIndex,
+    T2: TensorFlowIndex,
+    T3: FloatingPoint & TensorFlowScalar
+  >(
+    sampleSplits: [Tensor<T1>],
+    embeddingIndices: [Tensor<T2>],
+    aggregationWeights: [Tensor<T3>],
+    modeOverride: StringTensor,
+    deviceOrdinal: Int64 = -1,
+    combiners: [String],
+    tableIds: [Int32],
+    maxSequenceLengths: [Int32],
+    numFeatures: [Int32]
+  ) {
+    _RawTFEager.enqueueTPUEmbeddingRaggedTensorBatch(
+      sampleSplits: sampleSplits, embeddingIndices: embeddingIndices,
+      aggregationWeights: aggregationWeights, modeOverride: modeOverride,
+      deviceOrdinal: deviceOrdinal, combiners: combiners, tableIds: tableIds,
+      maxSequenceLengths: maxSequenceLengths, numFeatures: numFeatures)
   }
 
   /// An op that enqueues TPUEmbedding input indices from a SparseTensor.
@@ -9822,13 +11590,14 @@ public enum _Raw {
     deviceOrdinal: Int64 = -1,
     combiners: [String],
     tableIds: [Int32],
-    maxSequenceLengths: [Int32]
+    maxSequenceLengths: [Int32],
+    numFeatures: [Int32]
   ) {
     _RawTFEager.enqueueTPUEmbeddingSparseTensorBatch(
       sampleIndices: sampleIndices, embeddingIndices: embeddingIndices,
       aggregationWeights: aggregationWeights, modeOverride: modeOverride,
       deviceOrdinal: deviceOrdinal, combiners: combiners, tableIds: tableIds,
-      maxSequenceLengths: maxSequenceLengths)
+      maxSequenceLengths: maxSequenceLengths, numFeatures: numFeatures)
   }
 
   /// Ensures that the tensor's shape matches the expected shape.
@@ -10363,9 +12132,9 @@ public enum _Raw {
       inputDataset: inputDataset, keyFuncOtherArguments: keyFuncOtherArguments,
       initFuncOtherArguments: initFuncOtherArguments,
       reduceFuncOtherArguments: reduceFuncOtherArguments,
-      finalizeFuncOtherArguments: finalizeFuncOtherArguments, keyFunc: keyFunc,
-      initFunc: initFunc, reduceFunc: reduceFunc, finalizeFunc: finalizeFunc,
-      outputTypes: outputTypes, outputShapes: outputShapes)
+      finalizeFuncOtherArguments: finalizeFuncOtherArguments, keyFunc: keyFunc, initFunc: initFunc,
+      reduceFunc: reduceFunc, finalizeFunc: finalizeFunc, outputTypes: outputTypes,
+      outputShapes: outputShapes)
   }
 
   /// Creates a dataset that computes a windowed group-by on `input_dataset`.
@@ -10409,10 +12178,12 @@ public enum _Raw {
   public static func experimentalIgnoreErrorsDataset(
     inputDataset: VariantHandle,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    logWarning: Bool = false
   ) -> VariantHandle {
     _RawTFEager.experimentalIgnoreErrorsDataset(
-      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes)
+      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes,
+      logWarning: logWarning)
   }
 
   /// Returns the name of the device on which `resource` has been placed.
@@ -10486,8 +12257,8 @@ public enum _Raw {
     _RawTFEager.experimentalMapAndBatchDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, batchSize: batchSize,
       numParallelCalls: numParallelCalls, dropRemainder: dropRemainder, f: f,
-      outputTypes: outputTypes, outputShapes: outputShapes,
-      preserveCardinality: preserveCardinality)
+      outputTypes: outputTypes, outputShapes: outputShapes, preserveCardinality: preserveCardinality
+    )
   }
 
   /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
@@ -10622,10 +12393,10 @@ public enum _Raw {
     sloppy: Bool = false
   ) -> VariantHandle {
     _RawTFEager.experimentalParseExampleDataset(
-      inputDataset: inputDataset, numParallelCalls: numParallelCalls,
-      denseDefaults: denseDefaults, sparseKeys: sparseKeys, denseKeys: denseKeys,
-      sparseTypes: sparseTypes, denseShapes: denseShapes, outputTypes: outputTypes,
-      outputShapes: outputShapes, sloppy: sloppy)
+      inputDataset: inputDataset, numParallelCalls: numParallelCalls, denseDefaults: denseDefaults,
+      sparseKeys: sparseKeys, denseKeys: denseKeys, sparseTypes: sparseTypes,
+      denseShapes: denseShapes, outputTypes: outputTypes, outputShapes: outputShapes, sloppy: sloppy
+    )
   }
 
   /// Creates a dataset that uses a custom thread pool to compute `input_dataset`.
@@ -10701,9 +12472,9 @@ public enum _Raw {
     preserveCardinality: Bool = false
   ) -> VariantHandle {
     _RawTFEager.experimentalScanDataset(
-      inputDataset: inputDataset, initialState: initialState, otherArguments: otherArguments,
-      f: f, outputTypes: outputTypes, outputShapes: outputShapes,
-      preserveCardinality: preserveCardinality)
+      inputDataset: inputDataset, initialState: initialState, otherArguments: otherArguments, f: f,
+      outputTypes: outputTypes, outputShapes: outputShapes, preserveCardinality: preserveCardinality
+    )
   }
 
   @inlinable @inline(__always)
@@ -10882,6 +12653,21 @@ public enum _Raw {
       inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes)
   }
 
+  @inlinable @inline(__always)
+  public static func expint<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.expint(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.expint(x)
+    }
+
+  }
+
   /// Computes `exp(x) - 1` element-wise.
   ///
   ///   i.e. `exp(x) - 1` or `e^(x) - 1`, where `x` is the input tensor.
@@ -10951,7 +12737,7 @@ public enum _Raw {
   ///     - uniform_noise: indicates if the noise should be generated using a
   ///         uniform distribution or a Gaussian distribution.
   ///     - noise: indicates if the noise should `uniform`, `gaussian`, or
-  ///         `zero`. The default is `uniform` which means the the noise type
+  ///         `zero`. The default is `uniform` which means the noise type
   ///         will be decided by `uniform_noise`.
   ///
   /// - Output glimpse: A tensor representing the glimpses `[batch_size,
@@ -10986,6 +12772,82 @@ public enum _Raw {
 
   }
 
+  /// Extracts a glimpse from the input tensor.
+  ///
+  /// Returns a set of windows called glimpses extracted at location
+  /// `offsets` from the input tensor. If the windows only partially
+  /// overlaps the inputs, the non overlapping areas will be filled with
+  /// random noise.
+  ///
+  /// The result is a 4-D tensor of shape `[batch_size, glimpse_height,
+  /// glimpse_width, channels]`. The channels and batch dimensions are the
+  /// same as that of the input tensor. The height and width of the output
+  /// windows are specified in the `size` parameter.
+  ///
+  /// The argument `normalized` and `centered` controls how the windows are built:
+  ///
+  /// * If the coordinates are normalized but not centered, 0.0 and 1.0
+  ///   correspond to the minimum and maximum of each height and width
+  ///   dimension.
+  /// * If the coordinates are both normalized and centered, they range from
+  ///   -1.0 to 1.0. The coordinates (-1.0, -1.0) correspond to the upper
+  ///   left corner, the lower right corner is located at (1.0, 1.0) and the
+  ///   center is at (0, 0).
+  /// * If the coordinates are not normalized they are interpreted as
+  ///   numbers of pixels.
+  ///
+  /// - Parameters:
+  ///     - input: A 4-D float tensor of shape `[batch_size, height, width, channels]`.
+  ///     - size: A 1-D tensor of 2 elements containing the size of the glimpses
+  ///         to extract.  The glimpse height must be specified first, following
+  ///         by the glimpse width.
+  ///     - offsets: A 2-D integer tensor of shape `[batch_size, 2]` containing
+  ///         the y, x locations of the center of each window.
+  ///
+  /// - Attrs:
+  ///     - centered: indicates if the offset coordinates are centered relative to
+  ///         the image, in which case the (0, 0) offset is relative to the center
+  ///         of the input images. If false, the (0,0) offset corresponds to the
+  ///         upper left corner of the input images.
+  ///     - normalized: indicates if the offset coordinates are normalized.
+  ///     - uniform_noise: indicates if the noise should be generated using a
+  ///         uniform distribution or a Gaussian distribution.
+  ///     - noise: indicates if the noise should `uniform`, `gaussian`, or
+  ///         `zero`. The default is `uniform` which means the noise type
+  ///         will be decided by `uniform_noise`.
+  ///
+  /// - Output glimpse: A tensor representing the glimpses `[batch_size,
+  ///     glimpse_height, glimpse_width, channels]`.
+  @inlinable @inline(__always)
+  public static func extractGlimpseV2(
+    _ input: Tensor<Float>,
+    size: Tensor<Int32>,
+    offsets: Tensor<Float>,
+    centered: Bool = true,
+    normalized: Bool = true,
+    uniformNoise: Bool = true,
+    noise: String = "uniform"
+  ) -> Tensor<Float> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, size.handle.backend), offsets.handle.backend)
+    {
+    case .XLA:
+      let output_device = offsets.device
+      let input = Tensor<Float>(copying: input, to: .defaultTFEager)
+      let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
+      let offsets = Tensor<Float>(copying: offsets, to: .defaultTFEager)
+      return Tensor<Float>(
+        copying: _RawTFEager.extractGlimpseV2(
+          input, size: size, offsets: offsets, centered: centered, normalized: normalized,
+          uniformNoise: uniformNoise, noise: noise), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.extractGlimpseV2(
+        input, size: size, offsets: offsets, centered: centered, normalized: normalized,
+        uniformNoise: uniformNoise, noise: noise)
+    }
+
+  }
+
   /// Extract `patches` from `images` and put them in the "depth" output dimension.
   ///
   /// - Parameter images: 4-D Tensor with shape `[batch, in_rows, in_cols, depth]`.
@@ -11007,7 +12869,7 @@ public enum _Raw {
   ///     `ksize_rows x ksize_cols x depth` vectorized in the "depth" dimension. Note
   ///     `out_rows` and `out_cols` are the dimensions of the output patches.
   @inlinable @inline(__always)
-  public static func extractImagePatches<T: TensorFlowNumeric>(
+  public static func extractImagePatches<T: TensorFlowScalar>(
     images: Tensor<T>,
     ksizes: [Int32],
     strides: [Int32],
@@ -11046,7 +12908,7 @@ public enum _Raw {
     _RawTFEager.extractJpegShape(contents: contents)
   }
 
-  /// Extract `patches` from `input` and put them in the "depth" output dimension. 3D extension of `extract_image_patches`.
+  /// Extract `patches` from `input` and put them in the `"depth"` output dimension. 3D extension of `extract_image_patches`.
   ///
   /// - Parameter input: 5-D Tensor with shape `[batch, in_planes, in_rows, in_cols, depth]`.
   ///
@@ -11056,11 +12918,11 @@ public enum _Raw {
   ///         `input`. Must be: `[1, stride_planes, stride_rows, stride_cols, 1]`.
   ///     - padding: The type of padding algorithm to use.
   ///
-  ///         We specify the size-related attributes as:
+  ///         The size-related attributes are specified as follows:
   ///
   ///         ```python
-  ///               ksizes = [1, ksize_planes, ksize_rows, ksize_cols, 1]
-  ///               strides = [1, stride_planes, strides_rows, strides_cols, 1]
+  ///         ksizes = [1, ksize_planes, ksize_rows, ksize_cols, 1]
+  ///         strides = [1, stride_planes, strides_rows, strides_cols, 1]
   ///         ```
   ///
   /// - Output patches: 5-D Tensor with shape `[batch, out_planes, out_rows, out_cols,
@@ -11228,19 +13090,23 @@ public enum _Raw {
 
   /// Fake-quantize the 'inputs' tensor, type float to 'outputs' tensor of same type.
   ///
-  /// Attributes `[min; max]` define the clamping range for the `inputs` data.
-  /// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
-  /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
-  /// then de-quantized and output as floats in `[min; max]` interval.
-  /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
+  /// Attributes
+  ///
+  /// *   `[min; max]` define the clamping range for the `inputs` data.
+  /// *   `inputs` values are quantized into the quantization range (
+  /// `[0; 2^num_bits - 1]` when `narrow_range` is false and `[1; 2^num_bits - 1]`
+  /// when it is true) and then de-quantized and output as floats in `[min; max]`
+  /// interval.
+  /// *   `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
   ///
   /// Before quantization, `min` and `max` values are adjusted with the following
   /// logic.
   /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
   /// the behavior can be unexpected:
-  /// If `0 < min < max`: `min_adj = 0` and `max_adj = max - min`.
-  /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
-  /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
+  ///
+  /// *   If `0 < min < max`: `min_adj = 0` and `max_adj = max - min`.
+  /// *   If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
+  /// *   If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
   /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
   ///
   /// Quantization is called fake since the output is still in floating point.
@@ -11301,23 +13167,28 @@ public enum _Raw {
 
   }
 
-  /// Fake-quantize the 'inputs' tensor of type float via global float scalars `min`
+  /// Fake-quantize the 'inputs' tensor of type float via global float scalars
   ///
-  /// and `max` to 'outputs' tensor of same shape as `inputs`.
+  /// Fake-quantize the `inputs` tensor of type float via global float scalars
+  /// `min` and `max` to `outputs` tensor of same shape as `inputs`.
   ///
-  /// `[min; max]` define the clamping range for the `inputs` data.
-  /// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
-  /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
-  /// then de-quantized and output as floats in `[min; max]` interval.
-  /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
+  /// Attributes
+  ///
+  /// *   `[min; max]` define the clamping range for the `inputs` data.
+  /// *   `inputs` values are quantized into the quantization range (
+  /// `[0; 2^num_bits - 1]` when `narrow_range` is false and `[1; 2^num_bits - 1]`
+  /// when it is true) and then de-quantized and output as floats in `[min; max]`
+  /// interval.
+  /// *   `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
   ///
   /// Before quantization, `min` and `max` values are adjusted with the following
   /// logic.
   /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
   /// the behavior can be unexpected:
-  /// If `0 < min < max`: `min_adj = 0` and `max_adj = max - min`.
-  /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
-  /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
+  ///
+  /// *   If `0 < min < max`: `min_adj = 0` and `max_adj = max - min`.
+  /// *   If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
+  /// *   If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
   /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
   ///
   /// This operation has a gradient and thus allows for training `min` and `max`
@@ -11383,24 +13254,29 @@ public enum _Raw {
       narrowRange: narrowRange)
   }
 
-  /// Fake-quantize the 'inputs' tensor of type float and one of the shapes: `[d]`,
+  /// Fake-quantize the 'inputs' tensor of type float via per-channel floats
   ///
-  /// `[b, d]` `[b, h, w, d]` via per-channel floats `min` and `max` of shape `[d]`
-  /// to 'outputs' tensor of same shape as `inputs`.
+  /// Fake-quantize the `inputs` tensor of type float per-channel and one of the
+  /// shapes: `[d]`, `[b, d]` `[b, h, w, d]` via per-channel floats `min` and `max`
+  /// of shape `[d]` to `outputs` tensor of same shape as `inputs`.
   ///
-  /// `[min; max]` define the clamping range for the `inputs` data.
-  /// `inputs` values are quantized into the quantization range (`[0; 2^num_bits - 1]`
-  /// when `narrow_range` is false and `[1; 2^num_bits - 1]` when it is true) and
-  /// then de-quantized and output as floats in `[min; max]` interval.
-  /// `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
+  /// Attributes
+  ///
+  /// *   `[min; max]` define the clamping range for the `inputs` data.
+  /// *   `inputs` values are quantized into the quantization range (
+  /// `[0; 2^num_bits - 1]` when `narrow_range` is false and `[1; 2^num_bits - 1]`
+  /// when it is true) and then de-quantized and output as floats in `[min; max]`
+  /// interval.
+  /// *   `num_bits` is the bitwidth of the quantization; between 2 and 16, inclusive.
   ///
   /// Before quantization, `min` and `max` values are adjusted with the following
   /// logic.
   /// It is suggested to have `min <= 0 <= max`. If `0` is not in the range of values,
   /// the behavior can be unexpected:
-  /// If `0 < min < max`: `min_adj = 0` and `max_adj = max - min`.
-  /// If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
-  /// If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
+  ///
+  /// *   If `0 < min < max`: `min_adj = 0` and `max_adj = max - min`.
+  /// *   If `min < max < 0`: `min_adj = min - max` and `max_adj = 0`.
+  /// *   If `min <= 0 <= max`: `scale = (max - min) / (2^num_bits - 1) `,
   /// `min_adj = scale * round(min / scale)` and `max_adj = max + min_adj - min`.
   ///
   /// This operation has a gradient and thus allows for training `min` and `max`
@@ -11467,6 +13343,21 @@ public enum _Raw {
     _RawTFEager.fakeQuantWithMinMaxVarsPerChannelGradient(
       gradients: gradients, inputs: inputs, min: min, max: max, numBits: numBits,
       narrowRange: narrowRange)
+  }
+
+  /// Set configuration of the file system.
+  ///
+  /// - Parameters:
+  ///     - scheme: File system scheme.
+  ///     - key: The name of the configuration option.
+  ///     - value: The value of the configuration option.
+  @inlinable @inline(__always)
+  public static func fileSystemSetConfiguration(
+    scheme: StringTensor,
+    key: StringTensor,
+    value: StringTensor
+  ) {
+    _RawTFEager.fileSystemSetConfiguration(scheme: scheme, key: key, value: value)
   }
 
   /// Creates a tensor filled with a scalar value.
@@ -11548,11 +13439,27 @@ public enum _Raw {
     otherArguments: Targuments,
     predicate: (PredicateIn) -> PredicateOut,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.filterDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, predicate: predicate,
-      outputTypes: outputTypes, outputShapes: outputShapes)
+      outputTypes: outputTypes, outputShapes: outputShapes, metadata: metadata)
+  }
+
+  /// Creates a dataset by applying `tf.data.Options` to `input_dataset`.
+  ///
+  /// - Parameter input_dataset: A variant tensor representing the input dataset.
+  @inlinable @inline(__always)
+  public static func finalizeDataset(
+    inputDataset: VariantHandle,
+    hasCapturedRef: Bool = false,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.finalizeDataset(
+      inputDataset: inputDataset, hasCapturedRef: hasCapturedRef, outputTypes: outputTypes,
+      outputShapes: outputShapes)
   }
 
   /// Generates fingerprint values.
@@ -11639,11 +13546,12 @@ public enum _Raw {
     headerBytes: Tensor<Int64>,
     recordBytes: Tensor<Int64>,
     footerBytes: Tensor<Int64>,
-    bufferSize: Tensor<Int64>
+    bufferSize: Tensor<Int64>,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.fixedLengthRecordDataset(
       filenames: filenames, headerBytes: headerBytes, recordBytes: recordBytes,
-      footerBytes: footerBytes, bufferSize: bufferSize)
+      footerBytes: footerBytes, bufferSize: bufferSize, metadata: metadata)
   }
 
   @inlinable @inline(__always)
@@ -11653,11 +13561,13 @@ public enum _Raw {
     recordBytes: Tensor<Int64>,
     footerBytes: Tensor<Int64>,
     bufferSize: Tensor<Int64>,
-    compressionType: StringTensor
+    compressionType: StringTensor,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.fixedLengthRecordDatasetV2(
       filenames: filenames, headerBytes: headerBytes, recordBytes: recordBytes,
-      footerBytes: footerBytes, bufferSize: bufferSize, compressionType: compressionType)
+      footerBytes: footerBytes, bufferSize: bufferSize, compressionType: compressionType,
+      metadata: metadata)
   }
 
   /// A Reader that outputs fixed-length records from a file.
@@ -11801,11 +13711,12 @@ public enum _Raw {
     otherArguments: Targuments,
     f: (FIn) -> FOut,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.flatMapDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, f: f, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   @inlinable @inline(__always)
@@ -11918,6 +13829,8 @@ public enum _Raw {
     _RawTFEager.foo3(a, b, c: c)
   }
 
+  /// Applies a for loop.
+  ///
   ///   ```python
   ///    output = input;
   ///    for i in range(start, limit, delta)
@@ -12209,6 +14122,36 @@ public enum _Raw {
   }
 
   @inlinable @inline(__always)
+  public static func fresnelCos<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.fresnelCos(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.fresnelCos(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func fresnelSin<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.fresnelSin(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.fresnelSin(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
   public static func funcAttr<
     FIn: TensorGroup,
     FOut: TensorGroup
@@ -12257,6 +14200,7 @@ public enum _Raw {
     mean: Tensor<T>,
     variance: Tensor<T>,
     epsilon: Double = 0.0001,
+    exponentialAvgFactor: Double = 1,
     dataFormat: DataFormat = .nhwc,
     isTraining: Bool = true
   ) -> (
@@ -12265,7 +14209,7 @@ public enum _Raw {
   ) {
     _RawTFEager.fusedBatchNorm(
       x, scale: scale, offset: offset, mean: mean, variance: variance, epsilon: epsilon,
-      dataFormat: dataFormat, isTraining: isTraining)
+      exponentialAvgFactor: exponentialAvgFactor, dataFormat: dataFormat, isTraining: isTraining)
   }
 
   /// Gradient for batch normalization.
@@ -12318,8 +14262,8 @@ public enum _Raw {
   ) {
     _RawTFEager.fusedBatchNormGrad(
       yBackprop: yBackprop, x, scale: scale, reserveSpace1: reserveSpace1,
-      reserveSpace2: reserveSpace2, epsilon: epsilon, dataFormat: dataFormat,
-      isTraining: isTraining)
+      reserveSpace2: reserveSpace2, epsilon: epsilon, dataFormat: dataFormat, isTraining: isTraining
+    )
   }
 
   /// Gradient for batch normalization.
@@ -12376,8 +14320,8 @@ public enum _Raw {
   ) {
     _RawTFEager.fusedBatchNormGradV2(
       yBackprop: yBackprop, x, scale: scale, reserveSpace1: reserveSpace1,
-      reserveSpace2: reserveSpace2, epsilon: epsilon, dataFormat: dataFormat,
-      isTraining: isTraining)
+      reserveSpace2: reserveSpace2, epsilon: epsilon, dataFormat: dataFormat, isTraining: isTraining
+    )
   }
 
   /// Gradient for batch normalization.
@@ -12430,7 +14374,7 @@ public enum _Raw {
     reserveSpace2: Tensor<U>,
     reserveSpace3: Tensor<U>,
     epsilon: Double = 0.0001,
-    dataFormat: DataFormat = .nhwc,
+    dataFormat: DataFormat3 = .nhwc,
     isTraining: Bool = true
   ) -> (
     xBackprop: Tensor<T>, scaleBackprop: Tensor<U>, offsetBackprop: Tensor<U>,
@@ -12485,6 +14429,7 @@ public enum _Raw {
     mean: Tensor<U>,
     variance: Tensor<U>,
     epsilon: Double = 0.0001,
+    exponentialAvgFactor: Double = 1,
     dataFormat: DataFormat = .nhwc,
     isTraining: Bool = true
   ) -> (
@@ -12493,7 +14438,7 @@ public enum _Raw {
   ) {
     _RawTFEager.fusedBatchNormV2(
       x, scale: scale, offset: offset, mean: mean, variance: variance, epsilon: epsilon,
-      dataFormat: dataFormat, isTraining: isTraining)
+      exponentialAvgFactor: exponentialAvgFactor, dataFormat: dataFormat, isTraining: isTraining)
   }
 
   /// Batch normalization.
@@ -12541,7 +14486,8 @@ public enum _Raw {
     mean: Tensor<U>,
     variance: Tensor<U>,
     epsilon: Double = 0.0001,
-    dataFormat: DataFormat = .nhwc,
+    exponentialAvgFactor: Double = 1,
+    dataFormat: DataFormat3 = .nhwc,
     isTraining: Bool = true
   ) -> (
     y: Tensor<T>, batchMean: Tensor<U>, batchVariance: Tensor<U>, reserveSpace1: Tensor<U>,
@@ -12549,7 +14495,7 @@ public enum _Raw {
   ) {
     _RawTFEager.fusedBatchNormV3(
       x, scale: scale, offset: offset, mean: mean, variance: variance, epsilon: epsilon,
-      dataFormat: dataFormat, isTraining: isTraining)
+      exponentialAvgFactor: exponentialAvgFactor, dataFormat: dataFormat, isTraining: isTraining)
   }
 
   /// Performs a padding as a preprocess during a convolution.
@@ -12596,8 +14542,8 @@ public enum _Raw {
       let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.fusedPadConv2D(
-          input, paddings: paddings, filter: filter, mode: mode, strides: strides,
-          padding: padding), to: output_device)
+          input, paddings: paddings, filter: filter, mode: mode, strides: strides, padding: padding),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.fusedPadConv2D(
         input, paddings: paddings, filter: filter, mode: mode, strides: strides, padding: padding)
@@ -12865,8 +14811,7 @@ public enum _Raw {
     case .XLA:
       return _RawXLA.gather(params: params, indices: indices, validateIndices: validateIndices)
     case .TF_EAGER:
-      return _RawTFEager.gather(
-        params: params, indices: indices, validateIndices: validateIndices)
+      return _RawTFEager.gather(params: params, indices: indices, validateIndices: validateIndices)
     }
 
   }
@@ -13008,8 +14953,8 @@ public enum _Raw {
   /// Gather slices from `params` axis `axis` according to `indices`.
   ///
   /// `indices` must be an integer tensor of any dimension (usually 0-D or 1-D).
-  /// Produces an output tensor with shape `params.shape[:axis] + indices.shape +
-  /// params.shape[axis + 1:]` where:
+  /// Produces an output tensor with shape `params.shape[:axis] +
+  /// indices.shape[batch_dims:] + params.shape[axis + 1:]` where:
   ///
   /// ```python
   ///     # Scalar indices (output is rank(params) - 1).
@@ -13074,7 +15019,7 @@ public enum _Raw {
   ///       `nms_threshold` intersection-over-union (iou) value, discarding boxes where shorter
   ///       side is less than `min_size`.
   ///       Inputs:
-  ///       `scores`: A 4D tensor of shape [Batch, Height, Width, Num Anchors] containing the scores per anchor at given postion
+  ///       `scores`: A 4D tensor of shape [Batch, Height, Width, Num Anchors] containing the scores per anchor at given position
   ///       `bbox_deltas`: is a tensor of shape [Batch, Height, Width, 4 x Num Anchors] boxes encoded to each anchor
   ///       `anchors`: A 1D tensor of shape [4 x Num Anchors], representing the anchors.
   ///       Outputs:
@@ -13111,8 +15056,8 @@ public enum _Raw {
   ) -> (rois: Tensor<Float>, roiProbabilities: Tensor<Float>) {
     _RawTFEager.generateBoundingBoxProposals(
       scores: scores, bboxDeltas: bboxDeltas, imageInfo: imageInfo, anchors: anchors,
-      nmsThreshold: nmsThreshold, preNmsTopn: preNmsTopn, minSize: minSize,
-      postNmsTopn: postNmsTopn)
+      nmsThreshold: nmsThreshold, preNmsTopn: preNmsTopn, minSize: minSize, postNmsTopn: postNmsTopn
+    )
   }
 
   /// Given a path to new and old vocabulary files, returns a remapping Tensor of
@@ -13194,12 +15139,14 @@ public enum _Raw {
     nextFunc: (NextfuncIn) -> NextfuncOut,
     finalizeFunc: (FinalizefuncIn) -> FinalizefuncOut,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.generatorDataset(
       initFuncOtherArgs: initFuncOtherArgs, nextFuncOtherArgs: nextFuncOtherArgs,
       finalizeFuncOtherArgs: finalizeFuncOtherArgs, initFunc: initFunc, nextFunc: nextFunc,
-      finalizeFunc: finalizeFunc, outputTypes: outputTypes, outputShapes: outputShapes)
+      finalizeFunc: finalizeFunc, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Returns calibration data for the given resource name
@@ -13208,6 +15155,31 @@ public enum _Raw {
     resourceName: StringTensor
   ) -> StringTensor {
     _RawTFEager.getCalibrationDataOp(resourceName: resourceName)
+  }
+
+  @inlinable @inline(__always)
+  public static func getDeadline() -> Tensor<Int64> {
+    _RawTFEager.getDeadline()
+  }
+
+  /// Gets the element at the specified index in a dataset.
+  @inlinable @inline(__always)
+  public static func getElementAtIndex<OutputTypes: TensorGroup>(
+    dataset: VariantHandle,
+    index: Tensor<Int64>,
+    outputShapes: [TensorShape?]
+  ) -> OutputTypes {
+    _RawTFEager.getElementAtIndex(dataset: dataset, index: index, outputShapes: outputShapes)
+  }
+
+  /// Returns the `tf.data.Options` attached to `input_dataset`.
+  ///
+  /// - Parameter input_dataset: A variant tensor representing the input dataset.
+  @inlinable @inline(__always)
+  public static func getOptions(
+    inputDataset: VariantHandle
+  ) -> StringTensor {
+    _RawTFEager.getOptions(inputDataset: inputDataset)
   }
 
   /// Store the input tensor in the state of the current session.
@@ -13369,9 +15341,9 @@ public enum _Raw {
       inputDataset: inputDataset, keyFuncOtherArguments: keyFuncOtherArguments,
       initFuncOtherArguments: initFuncOtherArguments,
       reduceFuncOtherArguments: reduceFuncOtherArguments,
-      finalizeFuncOtherArguments: finalizeFuncOtherArguments, keyFunc: keyFunc,
-      initFunc: initFunc, reduceFunc: reduceFunc, finalizeFunc: finalizeFunc,
-      outputTypes: outputTypes, outputShapes: outputShapes)
+      finalizeFuncOtherArguments: finalizeFuncOtherArguments, keyFunc: keyFunc, initFunc: initFunc,
+      reduceFunc: reduceFunc, finalizeFunc: finalizeFunc, outputTypes: outputTypes,
+      outputShapes: outputShapes)
   }
 
   /// Creates a dataset that computes a windowed group-by on `input_dataset`.
@@ -13400,14 +15372,15 @@ public enum _Raw {
     reduceFunc: (ReducefuncIn) -> ReducefuncOut,
     windowSizeFunc: (WindowsizefuncIn) -> WindowsizefuncOut,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.groupByWindowDataset(
       inputDataset: inputDataset, keyFuncOtherArguments: keyFuncOtherArguments,
       reduceFuncOtherArguments: reduceFuncOtherArguments,
       windowSizeFuncOtherArguments: windowSizeFuncOtherArguments, keyFunc: keyFunc,
       reduceFunc: reduceFunc, windowSizeFunc: windowSizeFunc, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Gives a guarantee to the TF runtime that the input tensor is a constant.
@@ -13889,8 +15862,7 @@ public enum _Raw {
     outputShapes: [TensorShape?]
   ) -> Tout {
     _RawTFEager.if_(
-      cond: cond, input, thenBranch: thenBranch, elseBranch: elseBranch,
-      outputShapes: outputShapes)
+      cond: cond, input, thenBranch: thenBranch, elseBranch: elseBranch, outputShapes: outputShapes)
   }
 
   /// Compute the lower regularized incomplete Gamma function `P(a, x)`.
@@ -13951,9 +15923,9 @@ public enum _Raw {
   ///
   /// where
   ///
-  /// \\(Gamma(a, x) = int_{x}^{\infty} t^{a-1} exp(-t) dt\\)
+  /// \\(Gamma(a, x) = \int_{x}^{\infty} t^{a-1} exp(-t) dt\\)
   ///
-  /// is the upper incomplete Gama function.
+  /// is the upper incomplete Gamma function.
   ///
   /// Note, above `P(a, x)` (`Igamma`) is the lower regularized complete
   /// Gamma function.
@@ -13979,10 +15951,12 @@ public enum _Raw {
   public static func ignoreErrorsDataset(
     inputDataset: VariantHandle,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    logWarning: Bool = false
   ) -> VariantHandle {
     _RawTFEager.ignoreErrorsDataset(
-      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes)
+      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes,
+      logWarning: logWarning)
   }
 
   /// Returns the imaginary part of a complex number.
@@ -14012,6 +15986,111 @@ public enum _Raw {
       return Tensor<Tout>(copying: _RawTFEager.imag(input), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.imag(input)
+    }
+
+  }
+
+  /// Applies the given transform to each of the images.
+  ///
+  /// If one row of `transforms` is `[a0, a1, a2, b0, b1, b2, c0, c1]`, then it maps
+  /// the *output* point `(x, y)` to a transformed *input* point
+  /// `(x', y') = ((a0 x + a1 y + a2) / k, (b0 x + b1 y + b2) / k)`, where
+  /// `k = c0 x + c1 y + 1`. If the transformed point lays outside of the input
+  /// image, the output pixel is set to 0.
+  ///
+  /// - Parameters:
+  ///     - images: 4-D with shape `[batch, height, width, channels]`.
+  ///     - transforms: 2-D Tensor, `[batch, 8]` or `[1, 8]` matrix, where each row corresponds to a 3 x 3
+  ///         projective transformation matrix, with the last entry assumed to be 1. If there
+  ///         is one row, the same transformation will be applied to all images.
+  ///     - output_shape: 1-D Tensor [new_height, new_width].
+  ///
+  /// - Attrs:
+  ///     - dtype: Input dtype.
+  ///     - interpolation: Interpolation method, "NEAREST" or "BILINEAR".
+  ///     - fill_mode: Fill mode, "REFLECT", "WRAP", or "CONSTANT".
+  ///
+  /// - Output transformed_images: 4-D with shape
+  ///     `[batch, new_height, new_width, channels]`.
+  @inlinable @inline(__always)
+  public static func imageProjectiveTransformV2<Dtype: TensorFlowNumeric>(
+    images: Tensor<Dtype>,
+    transforms: Tensor<Float>,
+    outputShape: Tensor<Int32>,
+    interpolation: String,
+    fillMode: String = "CONSTANT"
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(images.handle.backend, transforms.handle.backend), outputShape.handle.backend)
+    {
+    case .XLA:
+      let output_device = outputShape.device
+      let images = Tensor<Dtype>(copying: images, to: .defaultTFEager)
+      let transforms = Tensor<Float>(copying: transforms, to: .defaultTFEager)
+      let outputShape = Tensor<Int32>(copying: outputShape, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.imageProjectiveTransformV2(
+          images: images, transforms: transforms, outputShape: outputShape,
+          interpolation: interpolation, fillMode: fillMode), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.imageProjectiveTransformV2(
+        images: images, transforms: transforms, outputShape: outputShape,
+        interpolation: interpolation, fillMode: fillMode)
+    }
+
+  }
+
+  /// Applies the given transform to each of the images.
+  ///
+  /// If one row of `transforms` is `[a0, a1, a2, b0, b1, b2, c0, c1]`, then it maps
+  /// the *output* point `(x, y)` to a transformed *input* point
+  /// `(x', y') = ((a0 x + a1 y + a2) / k, (b0 x + b1 y + b2) / k)`, where
+  /// `k = c0 x + c1 y + 1`. If the transformed point lays outside of the input
+  /// image, the output pixel is set to fill_value.
+  ///
+  /// - Parameters:
+  ///     - images: 4-D with shape `[batch, height, width, channels]`.
+  ///     - transforms: 2-D Tensor, `[batch, 8]` or `[1, 8]` matrix, where each row corresponds to a 3 x 3
+  ///         projective transformation matrix, with the last entry assumed to be 1. If there
+  ///         is one row, the same transformation will be applied to all images.
+  ///     - output_shape: 1-D Tensor [new_height, new_width].
+  ///     - fill_value: float, the value to be filled when fill_mode is constant".
+  ///
+  /// - Attrs:
+  ///     - dtype: Input dtype.
+  ///     - interpolation: Interpolation method, "NEAREST" or "BILINEAR".
+  ///     - fill_mode: Fill mode, "REFLECT", "WRAP", "CONSTANT", or "NEAREST".
+  ///
+  /// - Output transformed_images: 4-D with shape
+  ///     `[batch, new_height, new_width, channels]`.
+  @inlinable @inline(__always)
+  public static func imageProjectiveTransformV3<Dtype: TensorFlowNumeric>(
+    images: Tensor<Dtype>,
+    transforms: Tensor<Float>,
+    outputShape: Tensor<Int32>,
+    fillValue: Tensor<Float>,
+    interpolation: String,
+    fillMode: String = "CONSTANT"
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(images.handle.backend, transforms.handle.backend), outputShape.handle.backend),
+      fillValue.handle.backend)
+    {
+    case .XLA:
+      let output_device = fillValue.device
+      let images = Tensor<Dtype>(copying: images, to: .defaultTFEager)
+      let transforms = Tensor<Float>(copying: transforms, to: .defaultTFEager)
+      let outputShape = Tensor<Int32>(copying: outputShape, to: .defaultTFEager)
+      let fillValue = Tensor<Float>(copying: fillValue, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.imageProjectiveTransformV3(
+          images: images, transforms: transforms, outputShape: outputShape, fillValue: fillValue,
+          interpolation: interpolation, fillMode: fillMode), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.imageProjectiveTransformV3(
+        images: images, transforms: transforms, outputShape: outputShape, fillValue: fillValue,
+        interpolation: interpolation, fillMode: fillMode)
     }
 
   }
@@ -14240,6 +16319,14 @@ public enum _Raw {
       maxCachedEnginesCount: maxCachedEnginesCount)
   }
 
+  @inlinable @inline(__always)
+  public static func initializeTableFromDataset(
+    tableHandle: ResourceHandle,
+    dataset: VariantHandle
+  ) {
+    _RawTFEager.initializeTableFromDataset(tableHandle: tableHandle, dataset: dataset)
+  }
+
   /// Initializes a table from a text file.
   ///
   /// It inserts one key-value pair into the table for each line of the file.
@@ -14270,11 +16357,12 @@ public enum _Raw {
     keyIndex: Int64,
     valueIndex: Int64,
     vocabSize: Int64 = -1,
-    delimiter: String = "\t"
+    delimiter: String = "\t",
+    offset: Int64 = 0
   ) {
     _RawTFEager.initializeTableFromTextFileV2(
       tableHandle: tableHandle, filename: filename, keyIndex: keyIndex, valueIndex: valueIndex,
-      vocabSize: vocabSize, delimiter: delimiter)
+      vocabSize: vocabSize, delimiter: delimiter, offset: offset)
   }
 
   /// Table initializer that takes two tensors for keys and values respectively.
@@ -14295,7 +16383,7 @@ public enum _Raw {
     _RawTFEager.initializeTableV2(tableHandle: tableHandle, keys: keys, values)
   }
 
-  ///     Adds v into specified rows of x.
+  /// Adds v into specified rows of x.
   ///
   ///     Computes y = x; y[i, :] += v; return y.
   ///
@@ -14353,9 +16441,12 @@ public enum _Raw {
 
   }
 
-  ///     Updates specified rows with values in `v`.
+  /// Updates specified rows 'i' with values 'v'.
   ///
-  ///     Computes `x[i, :] = v; return x`.
+  /// Computes `x[i, :] = v; return x`.
+  ///
+  /// Originally this function is mutative however for compilation we make this
+  /// operation create / operate on a copy of `x`.
   ///
   /// - Parameters:
   ///     - x: A tensor of type `T`.
@@ -14457,11 +16548,13 @@ public enum _Raw {
     blockLength: Tensor<Int64>,
     f: (FIn) -> FOut,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.interleaveDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, cycleLength: cycleLength,
-      blockLength: blockLength, f: f, outputTypes: outputTypes, outputShapes: outputShapes)
+      blockLength: blockLength, f: f, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Computes the reciprocal of x element-wise.
@@ -14695,6 +16788,45 @@ public enum _Raw {
 
   }
 
+  @inlinable @inline(__always)
+  public static func isResourceHandleRefCounting(
+    handle: ResourceHandle
+  ) -> Tensor<Bool> {
+    _RawTFEager.isResourceHandleRefCounting(handle: handle)
+  }
+
+  /// Whether TPU Embedding is initialized in a distributed TPU system.
+  @inlinable @inline(__always)
+  public static func isTPUEmbeddingInitialized(
+    config: String
+  ) -> Tensor<Bool> {
+    _RawTFEager.isTPUEmbeddingInitialized(config: config)
+  }
+
+  @inlinable @inline(__always)
+  public static func isTensorFloat32Enabled() -> Tensor<Bool> {
+    _RawTFEager.isTensorFloat32Enabled()
+  }
+
+  /// Solves a batch of isotonic regression problems.
+  ///
+  /// - Parameter input: A (batch_size, dim)-tensor holding a batch of inputs.
+  ///
+  /// - Attr output_dtype: Dtype of output.
+  ///
+  /// - Outputs:
+  ///     - output: A (batch_size, dim)-tensor holding the per-batch element solutions.
+  ///     - segments: An int32 (batch_size, dim)-tensor with the segments.
+  @inlinable @inline(__always)
+  public static func isotonicRegression<
+    T: TensorFlowNumeric,
+    OutputDtype: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> (output: Tensor<OutputDtype>, segments: Tensor<Int32>) {
+    _RawTFEager.isotonicRegression(input)
+  }
+
   /// A container for an iterator resource.
   ///
   /// - Output handle: A handle to the iterator that can be passed to a "MakeIterator"
@@ -14899,6 +17031,38 @@ public enum _Raw {
 
   }
 
+  /// Computes the Kth order statistic of a data set. The current
+  ///
+  /// implementation uses a binary search requiring exactly 32 passes over
+  /// the input data. The running time is linear with respect to input
+  /// size. The median-of-medians algorithm is probably faster, but is
+  /// difficult to implement efficiently in XLA. The implementation imposes
+  /// a total ordering on floats. The ordering is consistent with the usual
+  /// partial order.  Positive NaNs are greater than positive
+  /// infinity. Negative NaNs are less than negative infinity. NaNs with
+  /// distinct payloads are treated as distinct. Subnormal numbers are
+  /// preserved (not flushed to zero). Positive infinity is greater than all
+  /// numbers. Negative infinity is less than all numbers. Positive is
+  /// greater than negative zero. There are less than k values greater than
+  /// the kth order statistic. There are at least k values greater than or
+  /// equal to the Kth order statistic. The semantics are not the same as
+  /// top_k_unique.
+  @inlinable @inline(__always)
+  public static func kthOrderStatistic(
+    _ input: Tensor<Float>,
+    k: Int64
+  ) -> Tensor<Float> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<Float>(copying: input, to: .defaultTFEager)
+      return Tensor<Float>(copying: _RawTFEager.kthOrderStatistic(input, k: k), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.kthOrderStatistic(input, k: k)
+    }
+
+  }
+
   /// L2 Loss.
   ///
   /// Computes half the L2 norm of a tensor without the `sqrt`:
@@ -14983,11 +17147,9 @@ public enum _Raw {
       let input = Tensor<T>(copying: input, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.lRN(
-          input, depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta),
-        to: output_device)
+          input, depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta), to: output_device)
     case .TF_EAGER:
-      return _RawTFEager.lRN(
-        input, depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta)
+      return _RawTFEager.lRN(input, depthRadius: depthRadius, bias: bias, alpha: alpha, beta: beta)
     }
 
   }
@@ -15322,6 +17484,44 @@ public enum _Raw {
 
   }
 
+  /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
+  ///
+  /// The resulting dataset is similar to the `InterleaveDataset`, with the exception
+  /// that if retrieving the next value from a dataset would cause the requester to
+  /// block, it will skip that input dataset. This dataset is especially useful
+  /// when loading data from a variable-latency datastores (e.g. HDFS, GCS), as it
+  /// allows the training step to proceed so long as some data is available.
+  ///
+  /// !! WARNING !! This dataset is not deterministic!
+  ///
+  /// - Attr f: A function mapping elements of `input_dataset`, concatenated with
+  ///     `other_arguments`, to a Dataset variant that contains elements matching
+  ///     `output_types` and `output_shapes`.
+  @inlinable @inline(__always)
+  public static func legacyParallelInterleaveDatasetV2<
+    FIn: TensorGroup,
+    FOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    cycleLength: Tensor<Int64>,
+    blockLength: Tensor<Int64>,
+    bufferOutputElements: Tensor<Int64>,
+    prefetchInputElements: Tensor<Int64>,
+    f: (FIn) -> FOut,
+    deterministic: String = "default",
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.legacyParallelInterleaveDatasetV2(
+      inputDataset: inputDataset, otherArguments: otherArguments, cycleLength: cycleLength,
+      blockLength: blockLength, bufferOutputElements: bufferOutputElements,
+      prefetchInputElements: prefetchInputElements, f: f, deterministic: deterministic,
+      outputTypes: outputTypes, outputShapes: outputShapes, metadata: metadata)
+  }
+
   /// Returns the truth value of (x < y) element-wise.
   ///
   /// *NOTE*: `Less` supports broadcasting. More about broadcasting
@@ -15500,6 +17700,84 @@ public enum _Raw {
     _RawTFEager.listOutput()
   }
 
+  /// An op that loads optimization parameters into embedding memory.
+  ///
+  /// An op that loads optimization parameters into embedding memory. Must be
+  /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct embedding
+  /// table configuration. For example, this op is used to install parameters that are
+  /// loaded from a checkpoint before a training loop is executed.  For Adagrad,
+  /// auxiliary1 should be the accumulators. For SGD, all of the auxiliary* values
+  /// should be empty. For FTRL, auxiliary1 should be the accumulators and auxiliary2
+  /// should be the linear terms. For ADAM, auxiliary1 should be the momenta and
+  /// auxiliary2 should be the velocities.
+  ///
+  /// - Parameters:
+  ///     - parameters: A list of tensors, one for each embedding table,
+  ///         containing the initial embedding table parameters to use in embedding
+  ///         lookups.
+  ///     - auxiliary1: A list of tensors, one for each embedding table, containing the
+  ///         initial values of the first auxiliary optimization parameter to use in embedding
+  ///         training loop updates. The shape of each entry is ignored (and thus can be
+  ///         empty) for those tables whose optimization algorithms do not have at least one
+  ///         auxiliary parameter.
+  ///     - auxiliary2: A list of tensors, one for each embedding table, containing the
+  ///         initial values of the second auxiliary optimization parameter to use in
+  ///         embedding training loop updates. The shape of each entry is ignored (and thus
+  ///         can be empty) for those tables whose optimization algorithms do not have at
+  ///         least two auxiliary
+  ///     - auxiliary3: A list of tensors, one for each embedding table, containing the
+  ///         initial values of the third auxiliary optimization parameter to use in embedding
+  ///         training loop updates. The shape of each entry is ignored (and thus can be
+  ///         empty) for those tables whose optimization algorithms do not have three
+  ///         auxiliary parameters.
+  ///     - auxiliary4: A list of tensors, one for each embedding table, containing the
+  ///         initial values of the second auxiliary optimization parameter to use in
+  ///         embedding training loop updates. The shape of each entry is ignored (and thus
+  ///         can be empty) for those tables whose optimization algorithms do not have at
+  ///         least four auxiliary
+  ///     - auxiliary5: A list of tensors, one for each embedding table, containing the
+  ///         initial values of the third auxiliary optimization parameter to use in embedding
+  ///         training loop updates. The shape of each entry is ignored (and thus can be
+  ///         empty) for those tables whose optimization algorithms do not have five
+  ///         auxiliary parameters.
+  ///     - auxiliary6: A list of tensors, one for each embedding table, containing the
+  ///         initial values of the second auxiliary optimization parameter to use in
+  ///         embedding training loop updates. The shape of each entry is ignored (and thus
+  ///         can be empty) for those tables whose optimization algorithms do not have at
+  ///         least six auxiliary
+  ///     - auxiliary7: A list of tensors, one for each embedding table, containing the
+  ///         initial values of the third auxiliary optimization parameter to use in embedding
+  ///         training loop updates. The shape of each entry is ignored (and thus can be
+  ///         empty) for those tables whose optimization algorithms do not have sevan
+  ///         auxiliary parameters.
+  ///
+  /// - Attrs:
+  ///     - NumTables: The number of embedding tables.
+  ///     - config: An TPUEmbeddingConfiguration proto describing the
+  ///         table parameters being loaded, serialized to a string.
+  ///     - num_shards: Number of shards into which the embedding tables are divided.
+  ///     - shard_id: Identifier of shard for this operation.
+  @inlinable @inline(__always)
+  public static func loadAllTPUEmbeddingParameters(
+    parameters: [Tensor<Float>],
+    auxiliary1: [Tensor<Float>],
+    auxiliary2: [Tensor<Float>],
+    auxiliary3: [Tensor<Float>],
+    auxiliary4: [Tensor<Float>],
+    auxiliary5: [Tensor<Float>],
+    auxiliary6: [Tensor<Float>],
+    auxiliary7: [Tensor<Float>],
+    config: String,
+    numShards: Int64,
+    shardId: Int64
+  ) {
+    _RawTFEager.loadAllTPUEmbeddingParameters(
+      parameters: parameters, auxiliary1: auxiliary1, auxiliary2: auxiliary2,
+      auxiliary3: auxiliary3, auxiliary4: auxiliary4, auxiliary5: auxiliary5,
+      auxiliary6: auxiliary6, auxiliary7: auxiliary7, config: config, numShards: numShards,
+      shardId: shardId)
+  }
+
   /// Loads a 2-D (matrix) `Tensor` with name `old_tensor_name` from the checkpoint
   ///
   /// at `ckpt_path` and potentially reorders its rows and columns using the
@@ -15595,6 +17873,24 @@ public enum _Raw {
 
   }
 
+  @inlinable @inline(__always)
+  public static func loadDataset<
+    ReaderfuncIn: TensorGroup,
+    ReaderfuncOut: TensorGroup,
+    TreaderFuncArgs: TensorArrayProtocol
+  >(
+    path: StringTensor,
+    readerFuncOtherArgs: TreaderFuncArgs,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    compression: String,
+    readerFunc: (ReaderfuncIn) -> ReaderfuncOut
+  ) -> VariantHandle {
+    _RawTFEager.loadDataset(
+      path: path, readerFuncOtherArgs: readerFuncOtherArgs, outputTypes: outputTypes,
+      outputShapes: outputShapes, compression: compression, readerFunc: readerFunc)
+  }
+
   /// Load ADAM embedding parameters.
   ///
   /// An op that loads optimization parameters into HBM for embedding. Must be
@@ -15621,37 +17917,6 @@ public enum _Raw {
     _RawTFEager.loadTPUEmbeddingADAMParameters(
       parameters: parameters, momenta: momenta, velocities: velocities, tableId: tableId,
       tableName: tableName, numShards: numShards, shardId: shardId, config: config)
-  }
-
-  /// Load ADAM embedding parameters with debug support.
-  ///
-  /// An op that loads optimization parameters into HBM for embedding. Must be
-  /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
-  /// embedding table configuration. For example, this op is used to install
-  /// parameters that are loaded from a checkpoint before a training loop is
-  /// executed.
-  ///
-  /// - Parameters:
-  ///     - parameters: Value of parameters used in the ADAM optimization algorithm.
-  ///     - momenta: Value of momenta used in the ADAM optimization algorithm.
-  ///     - velocities: Value of velocities used in the ADAM optimization algorithm.
-  ///     - gradient_accumulators: Value of gradient_accumulators used in the ADAM optimization algorithm.
-  @inlinable @inline(__always)
-  public static func loadTPUEmbeddingADAMParametersGradAccumDebug(
-    parameters: Tensor<Float>,
-    momenta: Tensor<Float>,
-    velocities: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>,
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) {
-    _RawTFEager.loadTPUEmbeddingADAMParametersGradAccumDebug(
-      parameters: parameters, momenta: momenta, velocities: velocities,
-      gradientAccumulators: gradientAccumulators, tableId: tableId, tableName: tableName,
-      numShards: numShards, shardId: shardId, config: config)
   }
 
   /// Load Adadelta embedding parameters.
@@ -15682,7 +17947,7 @@ public enum _Raw {
       tableName: tableName, numShards: numShards, shardId: shardId, config: config)
   }
 
-  /// Load Adadelta parameters with debug support.
+  /// Load Adagrad Momentum embedding parameters.
   ///
   /// An op that loads optimization parameters into HBM for embedding. Must be
   /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
@@ -15691,26 +17956,23 @@ public enum _Raw {
   /// executed.
   ///
   /// - Parameters:
-  ///     - parameters: Value of parameters used in the Adadelta optimization algorithm.
-  ///     - accumulators: Value of accumulators used in the Adadelta optimization algorithm.
-  ///     - updates: Value of updates used in the Adadelta optimization algorithm.
-  ///     - gradient_accumulators: Value of gradient_accumulators used in the Adadelta optimization algorithm.
+  ///     - parameters: Value of parameters used in the Adagrad Momentum optimization algorithm.
+  ///     - accumulators: Value of accumulators used in the Adagrad Momentum optimization algorithm.
+  ///     - momenta: Value of momenta used in the Adagrad Momentum optimization algorithm.
   @inlinable @inline(__always)
-  public static func loadTPUEmbeddingAdadeltaParametersGradAccumDebug(
+  public static func loadTPUEmbeddingAdagradMomentumParameters(
     parameters: Tensor<Float>,
     accumulators: Tensor<Float>,
-    updates: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>,
+    momenta: Tensor<Float>,
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
     shardId: Int64,
     config: String
   ) {
-    _RawTFEager.loadTPUEmbeddingAdadeltaParametersGradAccumDebug(
-      parameters: parameters, accumulators: accumulators, updates: updates,
-      gradientAccumulators: gradientAccumulators, tableId: tableId, tableName: tableName,
-      numShards: numShards, shardId: shardId, config: config)
+    _RawTFEager.loadTPUEmbeddingAdagradMomentumParameters(
+      parameters: parameters, accumulators: accumulators, momenta: momenta, tableId: tableId,
+      tableName: tableName, numShards: numShards, shardId: shardId, config: config)
   }
 
   /// Load Adagrad embedding parameters.
@@ -15736,35 +17998,6 @@ public enum _Raw {
   ) {
     _RawTFEager.loadTPUEmbeddingAdagradParameters(
       parameters: parameters, accumulators: accumulators, tableId: tableId, tableName: tableName,
-      numShards: numShards, shardId: shardId, config: config)
-  }
-
-  /// Load Adagrad embedding parameters with debug support.
-  ///
-  /// An op that loads optimization parameters into HBM for embedding. Must be
-  /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
-  /// embedding table configuration. For example, this op is used to install
-  /// parameters that are loaded from a checkpoint before a training loop is
-  /// executed.
-  ///
-  /// - Parameters:
-  ///     - parameters: Value of parameters used in the Adagrad optimization algorithm.
-  ///     - accumulators: Value of accumulators used in the Adagrad optimization algorithm.
-  ///     - gradient_accumulators: Value of gradient_accumulators used in the Adagrad optimization algorithm.
-  @inlinable @inline(__always)
-  public static func loadTPUEmbeddingAdagradParametersGradAccumDebug(
-    parameters: Tensor<Float>,
-    accumulators: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>,
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) {
-    _RawTFEager.loadTPUEmbeddingAdagradParametersGradAccumDebug(
-      parameters: parameters, accumulators: accumulators,
-      gradientAccumulators: gradientAccumulators, tableId: tableId, tableName: tableName,
       numShards: numShards, shardId: shardId, config: config)
   }
 
@@ -15826,7 +18059,7 @@ public enum _Raw {
       tableName: tableName, numShards: numShards, shardId: shardId, config: config)
   }
 
-  /// Load FTRL embedding parameters with debug support.
+  /// Load frequency estimator embedding parameters.
   ///
   /// An op that loads optimization parameters into HBM for embedding. Must be
   /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
@@ -15835,25 +18068,20 @@ public enum _Raw {
   /// executed.
   ///
   /// - Parameters:
-  ///     - parameters: Value of parameters used in the FTRL optimization algorithm.
-  ///     - accumulators: Value of accumulators used in the FTRL optimization algorithm.
-  ///     - linears: Value of linears used in the FTRL optimization algorithm.
-  ///     - gradient_accumulators: Value of gradient_accumulators used in the FTRL optimization algorithm.
+  ///     - parameters: Value of parameters used in the frequency estimator optimization algorithm.
+  ///     - last_hit_step: Value of last_hit_step used in the frequency estimator optimization algorithm.
   @inlinable @inline(__always)
-  public static func loadTPUEmbeddingFTRLParametersGradAccumDebug(
+  public static func loadTPUEmbeddingFrequencyEstimatorParameters(
     parameters: Tensor<Float>,
-    accumulators: Tensor<Float>,
-    linears: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>,
+    lastHitStep: Tensor<Float>,
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
     shardId: Int64,
     config: String
   ) {
-    _RawTFEager.loadTPUEmbeddingFTRLParametersGradAccumDebug(
-      parameters: parameters, accumulators: accumulators, linears: linears,
-      gradientAccumulators: gradientAccumulators, tableId: tableId, tableName: tableName,
+    _RawTFEager.loadTPUEmbeddingFrequencyEstimatorParameters(
+      parameters: parameters, lastHitStep: lastHitStep, tableId: tableId, tableName: tableName,
       numShards: numShards, shardId: shardId, config: config)
   }
 
@@ -15884,8 +18112,8 @@ public enum _Raw {
   ) {
     _RawTFEager.loadTPUEmbeddingMDLAdagradLightParameters(
       parameters: parameters, accumulators: accumulators, weights: weights, benefits: benefits,
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Load Momentum embedding parameters.
@@ -15914,35 +18142,6 @@ public enum _Raw {
       numShards: numShards, shardId: shardId, config: config)
   }
 
-  /// Load Momentum embedding parameters with debug support.
-  ///
-  /// An op that loads optimization parameters into HBM for embedding. Must be
-  /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
-  /// embedding table configuration. For example, this op is used to install
-  /// parameters that are loaded from a checkpoint before a training loop is
-  /// executed.
-  ///
-  /// - Parameters:
-  ///     - parameters: Value of parameters used in the Momentum optimization algorithm.
-  ///     - momenta: Value of momenta used in the Momentum optimization algorithm.
-  ///     - gradient_accumulators: Value of gradient_accumulators used in the Momentum optimization algorithm.
-  @inlinable @inline(__always)
-  public static func loadTPUEmbeddingMomentumParametersGradAccumDebug(
-    parameters: Tensor<Float>,
-    momenta: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>,
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) {
-    _RawTFEager.loadTPUEmbeddingMomentumParametersGradAccumDebug(
-      parameters: parameters, momenta: momenta, gradientAccumulators: gradientAccumulators,
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
-  }
-
   /// Load proximal Adagrad embedding parameters.
   ///
   /// An op that loads optimization parameters into HBM for embedding. Must be
@@ -15969,32 +18168,19 @@ public enum _Raw {
       numShards: numShards, shardId: shardId, config: config)
   }
 
-  /// Load proximal Adagrad embedding parameters with debug support.
-  ///
-  /// An op that loads optimization parameters into HBM for embedding. Must be
-  /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
-  /// embedding table configuration. For example, this op is used to install
-  /// parameters that are loaded from a checkpoint before a training loop is
-  /// executed.
-  ///
-  /// - Parameters:
-  ///     - parameters: Value of parameters used in the proximal Adagrad optimization algorithm.
-  ///     - accumulators: Value of accumulators used in the proximal Adagrad optimization algorithm.
-  ///     - gradient_accumulators: Value of gradient_accumulators used in the proximal Adagrad optimization algorithm.
   @inlinable @inline(__always)
-  public static func loadTPUEmbeddingProximalAdagradParametersGradAccumDebug(
+  public static func loadTPUEmbeddingProximalYogiParameters(
     parameters: Tensor<Float>,
-    accumulators: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>,
+    v: Tensor<Float>,
+    m: Tensor<Float>,
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
     shardId: Int64,
     config: String
   ) {
-    _RawTFEager.loadTPUEmbeddingProximalAdagradParametersGradAccumDebug(
-      parameters: parameters, accumulators: accumulators,
-      gradientAccumulators: gradientAccumulators, tableId: tableId, tableName: tableName,
+    _RawTFEager.loadTPUEmbeddingProximalYogiParameters(
+      parameters: parameters, v: v, m: m, tableId: tableId, tableName: tableName,
       numShards: numShards, shardId: shardId, config: config)
   }
 
@@ -16024,37 +18210,6 @@ public enum _Raw {
     _RawTFEager.loadTPUEmbeddingRMSPropParameters(
       parameters: parameters, ms: ms, mom: mom, tableId: tableId, tableName: tableName,
       numShards: numShards, shardId: shardId, config: config)
-  }
-
-  /// Load RMSProp embedding parameters with debug support.
-  ///
-  /// An op that loads optimization parameters into HBM for embedding. Must be
-  /// preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
-  /// embedding table configuration. For example, this op is used to install
-  /// parameters that are loaded from a checkpoint before a training loop is
-  /// executed.
-  ///
-  /// - Parameters:
-  ///     - parameters: Value of parameters used in the RMSProp optimization algorithm.
-  ///     - ms: Value of ms used in the RMSProp optimization algorithm.
-  ///     - mom: Value of mom used in the RMSProp optimization algorithm.
-  ///     - gradient_accumulators: Value of gradient_accumulators used in the RMSProp optimization algorithm.
-  @inlinable @inline(__always)
-  public static func loadTPUEmbeddingRMSPropParametersGradAccumDebug(
-    parameters: Tensor<Float>,
-    ms: Tensor<Float>,
-    mom: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>,
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) {
-    _RawTFEager.loadTPUEmbeddingRMSPropParametersGradAccumDebug(
-      parameters: parameters, ms: ms, mom: mom, gradientAccumulators: gradientAccumulators,
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
   }
 
   /// Load SGD embedding parameters.
@@ -16133,9 +18288,9 @@ public enum _Raw {
   /// The input is a tensor of shape `[N, M, M]` whose inner-most 2 dimensions
   /// form square matrices. The outputs are two tensors containing the signs and
   /// absolute values of the log determinants for all N input submatrices
-  /// `[..., :, :]` such that the determinant = sign*exp(log_abs_determinant).
-  /// The log_abs_determinant is computed as det(P)*sum(log(diag(LU))) where LU
-  /// is the LU decomposition of the input and P is the corresponding
+  /// `[..., :, :]` such that `determinant = sign*exp(log_abs_determinant)`.
+  /// The `log_abs_determinant` is computed as `det(P)*sum(log(diag(LU)))` where `LU`
+  /// is the `LU` decomposition of the input and `P` is the corresponding
   /// permutation matrix.
   ///
   /// - Parameter input: Shape is `[N, M, M]`.
@@ -16536,6 +18691,34 @@ public enum _Raw {
     _RawTFEager.makeIterator(dataset: dataset, iterator: iterator)
   }
 
+  /// Make all elements in the non-Batch dimension unique, but \"close\" to
+  ///
+  /// their initial value. Never returns a sub-normal number. Never returns
+  /// zero. The sign of each input element is always identical to the sign
+  /// of the corresponding output element. Behavior for infinite elements is
+  /// undefined. Behavior for subnormal elements is undefined.
+  @inlinable @inline(__always)
+  public static func makeUnique(
+    _ input: Tensor<Float>
+  ) -> Tensor<Float> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<Float>(copying: input, to: .defaultTFEager)
+      return Tensor<Float>(copying: _RawTFEager.makeUnique(input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.makeUnique(input)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func makeWeakResourceHandle(
+    handle: ResourceHandle
+  ) -> ResourceHandle {
+    _RawTFEager.makeWeakResourceHandle(handle: handle)
+  }
+
   /// Creates a dataset that fuses mapping with batching.
   ///
   /// Creates a dataset that applies `f` to the outputs of `input_dataset` and then
@@ -16572,13 +18755,14 @@ public enum _Raw {
     f: (FIn) -> FOut,
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?],
-    preserveCardinality: Bool = false
+    preserveCardinality: Bool = false,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.mapAndBatchDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, batchSize: batchSize,
       numParallelCalls: numParallelCalls, dropRemainder: dropRemainder, f: f,
       outputTypes: outputTypes, outputShapes: outputShapes,
-      preserveCardinality: preserveCardinality)
+      preserveCardinality: preserveCardinality, metadata: metadata)
   }
 
   /// Op removes all elements in the underlying container.
@@ -16608,12 +18792,13 @@ public enum _Raw {
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?],
     useInterOpParallelism: Bool = true,
-    preserveCardinality: Bool = false
+    preserveCardinality: Bool = false,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.mapDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, f: f, outputTypes: outputTypes,
       outputShapes: outputShapes, useInterOpParallelism: useInterOpParallelism,
-      preserveCardinality: preserveCardinality)
+      preserveCardinality: preserveCardinality, metadata: metadata)
   }
 
   ///   Maps a function on the list of tensors unpacked from arguments on dimension 0.
@@ -16825,9 +19010,7 @@ public enum _Raw {
     _RawTFEager.matchingFilesDataset(patterns: patterns)
   }
 
-  /// Copy a tensor setting everything outside a central band in each innermost matrix
-  ///
-  /// to zero.
+  /// Copy a tensor setting everything outside a central band in each innermost matrix to zero.
   ///
   /// The `band` part is computed as follows:
   /// Assume `input` has `k` dimensions `[I, J, K, ..., M, N]`, then the output is a
@@ -16844,16 +19027,16 @@ public enum _Raw {
   ///
   /// ```
   /// # if 'input' is [[ 0,  1,  2, 3]
-  ///                  [-1,  0,  1, 2]
-  ///                  [-2, -1,  0, 1]
-  ///                  [-3, -2, -1, 0]],
+  /// #                [-1,  0,  1, 2]
+  /// #                [-2, -1,  0, 1]
+  /// #                [-3, -2, -1, 0]],
   ///
-  /// tf.matrix_band_part(input, 1, -1) ==> [[ 0,  1,  2, 3]
+  /// tf.linalg.band_part(input, 1, -1) ==> [[ 0,  1,  2, 3]
   ///                                        [-1,  0,  1, 2]
   ///                                        [ 0, -1,  0, 1]
   ///                                        [ 0,  0, -1, 0]],
   ///
-  /// tf.matrix_band_part(input, 2, 1) ==> [[ 0,  1,  0, 0]
+  /// tf.linalg.band_part(input, 2, 1) ==> [[ 0,  1,  0, 0]
   ///                                       [-1,  0,  1, 0]
   ///                                       [-2, -1,  0, 1]
   ///                                       [ 0, -2, -1, 0]]
@@ -16862,9 +19045,9 @@ public enum _Raw {
   /// Useful special cases:
   ///
   /// ```
-  ///  tf.matrix_band_part(input, 0, -1) ==> Upper triangular part.
-  ///  tf.matrix_band_part(input, -1, 0) ==> Lower triangular part.
-  ///  tf.matrix_band_part(input, 0, 0) ==> Diagonal.
+  ///  tf.linalg.band_part(input, 0, -1) ==> Upper triangular part.
+  ///  tf.linalg.band_part(input, -1, 0) ==> Lower triangular part.
+  ///  tf.linalg.band_part(input, 0, 0) ==> Diagonal.
   /// ```
   ///
   /// - Parameters:
@@ -17126,6 +19309,150 @@ public enum _Raw {
 
   }
 
+  /// Returns the batched diagonal part of a batched tensor.
+  ///
+  /// Returns a tensor with the `k[0]`-th to `k[1]`-th diagonals of the batched
+  /// `input`.
+  ///
+  /// Assume `input` has `r` dimensions `[I, J, ..., L, M, N]`.
+  /// Let `max_diag_len` be the maximum length among all diagonals to be extracted,
+  /// `max_diag_len = min(M + min(k[1], 0), N + min(-k[0], 0))`
+  /// Let `num_diags` be the number of diagonals to extract,
+  /// `num_diags = k[1] - k[0] + 1`.
+  ///
+  /// If `num_diags == 1`, the output tensor is of rank `r - 1` with shape
+  /// `[I, J, ..., L, max_diag_len]` and values:
+  ///
+  /// ```
+  /// diagonal[i, j, ..., l, n]
+  ///   = input[i, j, ..., l, n+y, n+x] ; if 0 <= n+y < M and 0 <= n+x < N,
+  ///     padding_value                 ; otherwise.
+  /// ```
+  /// where `y = max(-k[1], 0)`, `x = max(k[1], 0)`.
+  ///
+  /// Otherwise, the output tensor has rank `r` with dimensions
+  /// `[I, J, ..., L, num_diags, max_diag_len]` with values:
+  ///
+  /// ```
+  /// diagonal[i, j, ..., l, m, n]
+  ///   = input[i, j, ..., l, n+y, n+x] ; if 0 <= n+y < M and 0 <= n+x < N,
+  ///     padding_value                 ; otherwise.
+  /// ```
+  /// where `d = k[1] - m`, `y = max(-d, 0) - offset`, and `x = max(d, 0) - offset`.
+  ///
+  /// `offset` is zero except when the alignment of the diagonal is to the right.
+  /// ```
+  /// offset = max_diag_len - diag_len(d) ; if (`align` in {RIGHT_LEFT, RIGHT_RIGHT}
+  ///                                            and `d >= 0`) or
+  ///                                          (`align` in {LEFT_RIGHT, RIGHT_RIGHT}
+  ///                                            and `d <= 0`)
+  ///          0                          ; otherwise
+  /// ```
+  /// where `diag_len(d) = min(cols - max(d, 0), rows + min(d, 0))`.
+  ///
+  /// The input must be at least a matrix.
+  ///
+  /// For example:
+  ///
+  /// ```
+  /// input = np.array([[[1, 2, 3, 4],  # Input shape: (2, 3, 4)
+  ///                    [5, 6, 7, 8],
+  ///                    [9, 8, 7, 6]],
+  ///                   [[5, 4, 3, 2],
+  ///                    [1, 2, 3, 4],
+  ///                    [5, 6, 7, 8]]])
+  ///
+  /// # A main diagonal from each batch.
+  /// tf.matrix_diag_part(input) ==> [[1, 6, 7],  # Output shape: (2, 3)
+  ///                                 [5, 2, 7]]
+  ///
+  /// # A superdiagonal from each batch.
+  /// tf.matrix_diag_part(input, k = 1)
+  ///   ==> [[2, 7, 6],  # Output shape: (2, 3)
+  ///        [4, 3, 8]]
+  ///
+  /// # A band from each batch.
+  /// tf.matrix_diag_part(input, k = (-1, 2))
+  ///   ==> [[[0, 3, 8],  # Output shape: (2, 4, 3)
+  ///         [2, 7, 6],
+  ///         [1, 6, 7],
+  ///         [5, 8, 0]],
+  ///        [[0, 3, 4],
+  ///         [4, 3, 8],
+  ///         [5, 2, 7],
+  ///         [1, 6, 0]]]
+  ///
+  /// # LEFT_RIGHT alignment.
+  /// tf.matrix_diag_part(input, k = (-1, 2), align="LEFT_RIGHT")
+  ///   ==> [[[3, 8, 0],  # Output shape: (2, 4, 3)
+  ///         [2, 7, 6],
+  ///         [1, 6, 7],
+  ///         [0, 5, 8]],
+  ///        [[3, 4, 0],
+  ///         [4, 3, 8],
+  ///         [5, 2, 7],
+  ///         [0, 1, 6]]]
+  ///
+  /// # max_diag_len can be shorter than the main diagonal.
+  /// tf.matrix_diag_part(input, k = (-2, -1))
+  ///   ==> [[[5, 8],
+  ///         [9, 0]],
+  ///        [[1, 6],
+  ///         [5, 0]]]
+  ///
+  /// # padding_value = 9
+  /// tf.matrix_diag_part(input, k = (1, 3), padding_value = 9)
+  ///   ==> [[[9, 9, 4],  # Output shape: (2, 3, 3)
+  ///         [9, 3, 8],
+  ///         [2, 7, 6]],
+  ///        [[9, 9, 2],
+  ///         [9, 3, 4],
+  ///         [4, 3, 8]]]
+  ///
+  /// ```
+  ///
+  /// - Parameters:
+  ///     - input: Rank `r` tensor where `r >= 2`.
+  ///     - k: Diagonal offset(s). Positive value means superdiagonal, 0 refers to the main
+  ///         diagonal, and negative value means subdiagonals. `k` can be a single integer
+  ///         (for a single diagonal) or a pair of integers specifying the low and high ends
+  ///         of a matrix band. `k[0]` must not be larger than `k[1]`.
+  ///     - padding_value: The value to fill the area outside the specified diagonal band with.
+  ///         Default is 0.
+  ///
+  /// - Attr align: Some diagonals are shorter than `max_diag_len` and need to be padded. `align` is
+  ///     a string specifying how superdiagonals and subdiagonals should be aligned,
+  ///     respectively. There are four possible alignments: "RIGHT_LEFT" (default),
+  ///     "LEFT_RIGHT", "LEFT_LEFT", and "RIGHT_RIGHT". "RIGHT_LEFT" aligns superdiagonals
+  ///     to the right (left-pads the row) and subdiagonals to the left (right-pads the
+  ///     row). It is the packing format LAPACK uses. cuSPARSE uses "LEFT_RIGHT", which is
+  ///     the opposite alignment.
+  ///
+  /// - Output diagonal: The extracted diagonal(s).
+  @inlinable @inline(__always)
+  public static func matrixDiagPartV3<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    k: Tensor<Int32>,
+    paddingValue: Tensor<T>,
+    align: Align = .rightLeft
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, k.handle.backend), paddingValue.handle.backend)
+    {
+    case .XLA:
+      let output_device = paddingValue.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let k = Tensor<Int32>(copying: k, to: .defaultTFEager)
+      let paddingValue = Tensor<T>(copying: paddingValue, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.matrixDiagPartV3(
+          input, k: k, paddingValue: paddingValue, align: align), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.matrixDiagPartV3(input, k: k, paddingValue: paddingValue, align: align)
+    }
+
+  }
+
   /// Returns a batched diagonal tensor with given batched diagonal values.
   ///
   /// Returns a tensor with the contents in `diagonal` as `k[0]`-th to `k[1]`-th
@@ -17255,11 +19582,188 @@ public enum _Raw {
       let paddingValue = Tensor<T>(copying: paddingValue, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.matrixDiagV2(
-          diagonal: diagonal, k: k, numRows: numRows, numCols: numCols, paddingValue: paddingValue
-        ), to: output_device)
+          diagonal: diagonal, k: k, numRows: numRows, numCols: numCols, paddingValue: paddingValue),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.matrixDiagV2(
         diagonal: diagonal, k: k, numRows: numRows, numCols: numCols, paddingValue: paddingValue)
+    }
+
+  }
+
+  /// Returns a batched diagonal tensor with given batched diagonal values.
+  ///
+  /// Returns a tensor with the contents in `diagonal` as `k[0]`-th to `k[1]`-th
+  /// diagonals of a matrix, with everything else padded with `padding`. `num_rows`
+  /// and `num_cols` specify the dimension of the innermost matrix of the output. If
+  /// both are not specified, the op assumes the innermost matrix is square and infers
+  /// its size from `k` and the innermost dimension of `diagonal`. If only one of them
+  /// is specified, the op assumes the unspecified value is the smallest possible
+  /// based on other criteria.
+  ///
+  /// Let `diagonal` have `r` dimensions `[I, J, ..., L, M, N]`. The output tensor has
+  /// rank `r+1` with shape `[I, J, ..., L, M, num_rows, num_cols]` when only one
+  /// diagonal is given (`k` is an integer or `k[0] == k[1]`). Otherwise, it has rank
+  /// `r` with shape `[I, J, ..., L, num_rows, num_cols]`.
+  ///
+  /// The second innermost dimension of `diagonal` has double meaning.
+  /// When `k` is scalar or `k[0] == k[1]`, `M` is part of the batch size
+  /// [I, J, ..., M], and the output tensor is:
+  ///
+  /// ```
+  /// output[i, j, ..., l, m, n]
+  ///   = diagonal[i, j, ..., l, n-max(d_upper, 0)] ; if n - m == d_upper
+  ///     padding_value                             ; otherwise
+  /// ```
+  ///
+  /// Otherwise, `M` is treated as the number of diagonals for the matrix in the
+  /// same batch (`M = k[1]-k[0]+1`), and the output tensor is:
+  ///
+  /// ```
+  /// output[i, j, ..., l, m, n]
+  ///   = diagonal[i, j, ..., l, diag_index, index_in_diag] ; if k[0] <= d <= k[1]
+  ///     padding_value                                     ; otherwise
+  /// ```
+  /// where `d = n - m`, `diag_index = [k] - d`, and
+  /// `index_in_diag = n - max(d, 0) + offset`.
+  ///
+  /// `offset` is zero except when the alignment of the diagonal is to the right.
+  /// ```
+  /// offset = max_diag_len - diag_len(d) ; if (`align` in {RIGHT_LEFT, RIGHT_RIGHT}
+  ///                                            and `d >= 0`) or
+  ///                                          (`align` in {LEFT_RIGHT, RIGHT_RIGHT}
+  ///                                            and `d <= 0`)
+  ///          0                          ; otherwise
+  /// ```
+  /// where `diag_len(d) = min(cols - max(d, 0), rows + min(d, 0))`.
+  ///
+  /// For example:
+  ///
+  /// ```
+  /// # The main diagonal.
+  /// diagonal = np.array([[1, 2, 3, 4],            # Input shape: (2, 4)
+  ///                      [5, 6, 7, 8]])
+  /// tf.matrix_diag(diagonal) ==> [[[1, 0, 0, 0],  # Output shape: (2, 4, 4)
+  ///                                [0, 2, 0, 0],
+  ///                                [0, 0, 3, 0],
+  ///                                [0, 0, 0, 4]],
+  ///                               [[5, 0, 0, 0],
+  ///                                [0, 6, 0, 0],
+  ///                                [0, 0, 7, 0],
+  ///                                [0, 0, 0, 8]]]
+  ///
+  /// # A superdiagonal (per batch).
+  /// diagonal = np.array([[1, 2, 3],  # Input shape: (2, 3)
+  ///                      [4, 5, 6]])
+  /// tf.matrix_diag(diagonal, k = 1)
+  ///   ==> [[[0, 1, 0, 0],  # Output shape: (2, 4, 4)
+  ///         [0, 0, 2, 0],
+  ///         [0, 0, 0, 3],
+  ///         [0, 0, 0, 0]],
+  ///        [[0, 4, 0, 0],
+  ///         [0, 0, 5, 0],
+  ///         [0, 0, 0, 6],
+  ///         [0, 0, 0, 0]]]
+  ///
+  /// # A tridiagonal band (per batch).
+  /// diagonals = np.array([[[0, 8, 9],  # Input shape: (2, 2, 3)
+  ///                        [1, 2, 3],
+  ///                        [4, 5, 0]],
+  ///                       [[0, 2, 3],
+  ///                        [6, 7, 9],
+  ///                        [9, 1, 0]]])
+  /// tf.matrix_diag(diagonals, k = (-1, 1))
+  ///   ==> [[[1, 8, 0],  # Output shape: (2, 3, 3)
+  ///         [4, 2, 9],
+  ///         [0, 5, 3]],
+  ///        [[6, 2, 0],
+  ///         [9, 7, 3],
+  ///         [0, 1, 9]]]
+  ///
+  /// # LEFT_RIGHT alignment.
+  /// diagonals = np.array([[[8, 9, 0],  # Input shape: (2, 2, 3)
+  ///                        [1, 2, 3],
+  ///                        [0, 4, 5]],
+  ///                       [[2, 3, 0],
+  ///                        [6, 7, 9],
+  ///                        [0, 9, 1]]])
+  /// tf.matrix_diag(diagonals, k = (-1, 1), align="LEFT_RIGHT")
+  ///   ==> [[[1, 8, 0],  # Output shape: (2, 3, 3)
+  ///         [4, 2, 9],
+  ///         [0, 5, 3]],
+  ///        [[6, 2, 0],
+  ///         [9, 7, 3],
+  ///         [0, 1, 9]]]
+  ///
+  /// # Rectangular matrix.
+  /// diagonal = np.array([1, 2])  # Input shape: (2)
+  /// tf.matrix_diag(diagonal, k = -1, num_rows = 3, num_cols = 4)
+  ///   ==> [[0, 0, 0, 0],  # Output shape: (3, 4)
+  ///        [1, 0, 0, 0],
+  ///        [0, 2, 0, 0]]
+  ///
+  /// # Rectangular matrix with inferred num_cols and padding_value = 9.
+  /// tf.matrix_diag(diagonal, k = -1, num_rows = 3, padding_value = 9)
+  ///   ==> [[9, 9],  # Output shape: (3, 2)
+  ///        [1, 9],
+  ///        [9, 2]]
+  ///
+  /// ```
+  ///
+  /// - Parameters:
+  ///     - diagonal: Rank `r`, where `r >= 1`
+  ///     - k: Diagonal offset(s). Positive value means superdiagonal, 0 refers to the main
+  ///         diagonal, and negative value means subdiagonals. `k` can be a single integer
+  ///         (for a single diagonal) or a pair of integers specifying the low and high ends
+  ///         of a matrix band. `k[0]` must not be larger than `k[1]`.
+  ///     - num_rows: The number of rows of the output matrix. If it is not provided, the op assumes
+  ///         the output matrix is a square matrix and infers the matrix size from k and the
+  ///         innermost dimension of `diagonal`.
+  ///     - num_cols: The number of columns of the output matrix. If it is not provided, the op
+  ///         assumes the output matrix is a square matrix and infers the matrix size from
+  ///         k and the innermost dimension of `diagonal`.
+  ///     - padding_value: The number to fill the area outside the specified diagonal band with.
+  ///         Default is 0.
+  ///
+  /// - Attr align: Some diagonals are shorter than `max_diag_len` and need to be padded. `align` is
+  ///     a string specifying how superdiagonals and subdiagonals should be aligned,
+  ///     respectively. There are four possible alignments: "RIGHT_LEFT" (default),
+  ///     "LEFT_RIGHT", "LEFT_LEFT", and "RIGHT_RIGHT". "RIGHT_LEFT" aligns superdiagonals
+  ///     to the right (left-pads the row) and subdiagonals to the left (right-pads the
+  ///     row). It is the packing format LAPACK uses. cuSPARSE uses "LEFT_RIGHT", which is
+  ///     the opposite alignment.
+  ///
+  /// - Output output: Has rank `r+1` when `k` is an integer or `k[0] == k[1]`, rank `r` otherwise.
+  @inlinable @inline(__always)
+  public static func matrixDiagV3<T: TensorFlowScalar>(
+    diagonal: Tensor<T>,
+    k: Tensor<Int32>,
+    numRows: Tensor<Int32>,
+    numCols: Tensor<Int32>,
+    paddingValue: Tensor<T>,
+    align: Align = .rightLeft
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(
+          commonBackend(diagonal.handle.backend, k.handle.backend), numRows.handle.backend),
+        numCols.handle.backend), paddingValue.handle.backend)
+    {
+    case .XLA:
+      let output_device = paddingValue.device
+      let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
+      let k = Tensor<Int32>(copying: k, to: .defaultTFEager)
+      let numRows = Tensor<Int32>(copying: numRows, to: .defaultTFEager)
+      let numCols = Tensor<Int32>(copying: numCols, to: .defaultTFEager)
+      let paddingValue = Tensor<T>(copying: paddingValue, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.matrixDiagV3(
+          diagonal: diagonal, k: k, numRows: numRows, numCols: numCols, paddingValue: paddingValue,
+          align: align), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.matrixDiagV3(
+        diagonal: diagonal, k: k, numRows: numRows, numCols: numCols, paddingValue: paddingValue,
+        align: align)
     }
 
   }
@@ -17280,9 +19784,8 @@ public enum _Raw {
 
   }
 
-  /// Computes the inverse of one or more square invertible matrices or their
+  /// Computes the inverse of one or more square invertible matrices or their adjoints (conjugate transposes).
   ///
-  /// adjoints (conjugate transposes).
   ///
   /// The input is a tensor of shape `[..., M, M]` whose inner-most 2 dimensions
   /// form square matrices. The output is a tensor of the same shape as the input
@@ -17498,6 +20001,155 @@ public enum _Raw {
         copying: _RawTFEager.matrixSetDiagV2(input, diagonal: diagonal, k: k), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.matrixSetDiagV2(input, diagonal: diagonal, k: k)
+    }
+
+  }
+
+  /// Returns a batched matrix tensor with new batched diagonal values.
+  ///
+  /// Given `input` and `diagonal`, this operation returns a tensor with the
+  /// same shape and values as `input`, except for the specified diagonals of the
+  /// innermost matrices. These will be overwritten by the values in `diagonal`.
+  ///
+  /// `input` has `r+1` dimensions `[I, J, ..., L, M, N]`. When `k` is scalar or
+  /// `k[0] == k[1]`, `diagonal` has `r` dimensions `[I, J, ..., L, max_diag_len]`.
+  /// Otherwise, it has `r+1` dimensions `[I, J, ..., L, num_diags, max_diag_len]`.
+  /// `num_diags` is the number of diagonals, `num_diags = k[1] - k[0] + 1`.
+  /// `max_diag_len` is the longest diagonal in the range `[k[0], k[1]]`,
+  /// `max_diag_len = min(M + min(k[1], 0), N + min(-k[0], 0))`
+  ///
+  /// The output is a tensor of rank `k+1` with dimensions `[I, J, ..., L, M, N]`.
+  /// If `k` is scalar or `k[0] == k[1]`:
+  ///
+  /// ```
+  /// output[i, j, ..., l, m, n]
+  ///   = diagonal[i, j, ..., l, n-max(k[1], 0)] ; if n - m == k[1]
+  ///     input[i, j, ..., l, m, n]              ; otherwise
+  /// ```
+  ///
+  /// Otherwise,
+  ///
+  /// ```
+  /// output[i, j, ..., l, m, n]
+  ///   = diagonal[i, j, ..., l, diag_index, index_in_diag] ; if k[0] <= d <= k[1]
+  ///     input[i, j, ..., l, m, n]                         ; otherwise
+  /// ```
+  /// where `d = n - m`, `diag_index = k[1] - d`, and
+  /// `index_in_diag = n - max(d, 0) + offset`.
+  ///
+  /// `offset` is zero except when the alignment of the diagonal is to the right.
+  /// ```
+  /// offset = max_diag_len - diag_len(d) ; if (`align` in {RIGHT_LEFT, RIGHT_RIGHT}
+  ///                                            and `d >= 0`) or
+  ///                                          (`align` in {LEFT_RIGHT, RIGHT_RIGHT}
+  ///                                            and `d <= 0`)
+  ///          0                          ; otherwise
+  /// ```
+  /// where `diag_len(d) = min(cols - max(d, 0), rows + min(d, 0))`.
+  ///
+  /// For example:
+  ///
+  /// ```
+  /// # The main diagonal.
+  /// input = np.array([[[7, 7, 7, 7],              # Input shape: (2, 3, 4)
+  ///                    [7, 7, 7, 7],
+  ///                    [7, 7, 7, 7]],
+  ///                   [[7, 7, 7, 7],
+  ///                    [7, 7, 7, 7],
+  ///                    [7, 7, 7, 7]]])
+  /// diagonal = np.array([[1, 2, 3],               # Diagonal shape: (2, 3)
+  ///                      [4, 5, 6]])
+  /// tf.matrix_set_diag(input, diagonal)
+  ///   ==> [[[1, 7, 7, 7],  # Output shape: (2, 3, 4)
+  ///         [7, 2, 7, 7],
+  ///         [7, 7, 3, 7]],
+  ///        [[4, 7, 7, 7],
+  ///         [7, 5, 7, 7],
+  ///         [7, 7, 6, 7]]]
+  ///
+  /// # A superdiagonal (per batch).
+  /// tf.matrix_set_diag(input, diagonal, k = 1)
+  ///   ==> [[[7, 1, 7, 7],  # Output shape: (2, 3, 4)
+  ///         [7, 7, 2, 7],
+  ///         [7, 7, 7, 3]],
+  ///        [[7, 4, 7, 7],
+  ///         [7, 7, 5, 7],
+  ///         [7, 7, 7, 6]]]
+  ///
+  /// # A band of diagonals.
+  /// diagonals = np.array([[[0, 9, 1],  # Diagonal shape: (2, 4, 3)
+  ///                        [6, 5, 8],
+  ///                        [1, 2, 3],
+  ///                        [4, 5, 0]],
+  ///                       [[0, 1, 2],
+  ///                        [5, 6, 4],
+  ///                        [6, 1, 2],
+  ///                        [3, 4, 0]]])
+  /// tf.matrix_set_diag(input, diagonals, k = (-1, 2))
+  ///   ==> [[[1, 6, 9, 7],  # Output shape: (2, 3, 4)
+  ///         [4, 2, 5, 1],
+  ///         [7, 5, 3, 8]],
+  ///        [[6, 5, 1, 7],
+  ///         [3, 1, 6, 2],
+  ///         [7, 4, 2, 4]]]
+  ///
+  /// # LEFT_RIGHT alignment.
+  /// diagonals = np.array([[[9, 1, 0],  # Diagonal shape: (2, 4, 3)
+  ///                        [6, 5, 8],
+  ///                        [1, 2, 3],
+  ///                        [0, 4, 5]],
+  ///                       [[1, 2, 0],
+  ///                        [5, 6, 4],
+  ///                        [6, 1, 2],
+  ///                        [0, 3, 4]]])
+  /// tf.matrix_set_diag(input, diagonals, k = (-1, 2), align="LEFT_RIGHT")
+  ///   ==> [[[1, 6, 9, 7],  # Output shape: (2, 3, 4)
+  ///         [4, 2, 5, 1],
+  ///         [7, 5, 3, 8]],
+  ///        [[6, 5, 1, 7],
+  ///         [3, 1, 6, 2],
+  ///         [7, 4, 2, 4]]]
+  ///
+  /// ```
+  ///
+  /// - Parameters:
+  ///     - input: Rank `r+1`, where `r >= 1`.
+  ///     - diagonal: Rank `r` when `k` is an integer or `k[0] == k[1]`. Otherwise, it has rank `r+1`.
+  ///         `k >= 1`.
+  ///     - k: Diagonal offset(s). Positive value means superdiagonal, 0 refers to the main
+  ///         diagonal, and negative value means subdiagonals. `k` can be a single integer
+  ///         (for a single diagonal) or a pair of integers specifying the low and high ends
+  ///         of a matrix band. `k[0]` must not be larger than `k[1]`.
+  ///
+  /// - Attr align: Some diagonals are shorter than `max_diag_len` and need to be padded. `align` is
+  ///     a string specifying how superdiagonals and subdiagonals should be aligned,
+  ///     respectively. There are four possible alignments: "RIGHT_LEFT" (default),
+  ///     "LEFT_RIGHT", "LEFT_LEFT", and "RIGHT_RIGHT". "RIGHT_LEFT" aligns superdiagonals
+  ///     to the right (left-pads the row) and subdiagonals to the left (right-pads the
+  ///     row). It is the packing format LAPACK uses. cuSPARSE uses "LEFT_RIGHT", which is
+  ///     the opposite alignment.
+  ///
+  /// - Output output: Rank `r+1`, with `output.shape = input.shape`.
+  @inlinable @inline(__always)
+  public static func matrixSetDiagV3<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    diagonal: Tensor<T>,
+    k: Tensor<Int32>,
+    align: Align = .rightLeft
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, diagonal.handle.backend), k.handle.backend)
+    {
+    case .XLA:
+      let output_device = k.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let diagonal = Tensor<T>(copying: diagonal, to: .defaultTFEager)
+      let k = Tensor<Int32>(copying: k, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.matrixSetDiagV3(input, diagonal: diagonal, k: k, align: align),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.matrixSetDiagV3(input, diagonal: diagonal, k: k, align: align)
     }
 
   }
@@ -17806,7 +20458,8 @@ public enum _Raw {
     _ input: Tensor<T>,
     ksize: [Int32],
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat2 = .nhwc
   ) -> Tensor<T> {
     switch input.handle.backend {
@@ -17815,11 +20468,12 @@ public enum _Raw {
       let input = Tensor<T>(copying: input, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.maxPool(
-          input, ksize: ksize, strides: strides, padding: padding, dataFormat: dataFormat),
-        to: output_device)
+          input, ksize: ksize, strides: strides, padding: padding,
+          explicitPaddings: explicitPaddings, dataFormat: dataFormat), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.maxPool(
-        input, ksize: ksize, strides: strides, padding: padding, dataFormat: dataFormat)
+        input, ksize: ksize, strides: strides, padding: padding, explicitPaddings: explicitPaddings,
+        dataFormat: dataFormat)
     }
 
   }
@@ -17860,7 +20514,7 @@ public enum _Raw {
 
   }
 
-  /// Computes gradients of max pooling function.
+  /// Computes gradients of 3D max pooling function.
   ///
   /// - Parameters:
   ///     - orig_input: The original input tensor.
@@ -17946,8 +20600,8 @@ public enum _Raw {
       let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.maxPool3DGradGrad(
-          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-          strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
+          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
+          padding: padding, dataFormat: dataFormat), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.maxPool3DGradGrad(
         origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
@@ -17982,7 +20636,8 @@ public enum _Raw {
     grad: Tensor<T>,
     ksize: [Int32],
     strides: [Int32],
-    padding: Padding,
+    padding: Padding1,
+    explicitPaddings: [Int32],
     dataFormat: DataFormat = .nhwc
   ) -> Tensor<T> {
     switch commonBackend(
@@ -17995,12 +20650,13 @@ public enum _Raw {
       let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.maxPoolGrad(
-          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-          strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
+          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
+          padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.maxPoolGrad(
         origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
-        padding: padding, dataFormat: dataFormat)
+        padding: padding, explicitPaddings: explicitPaddings, dataFormat: dataFormat)
     }
 
   }
@@ -18044,8 +20700,8 @@ public enum _Raw {
       let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.maxPoolGradGrad(
-          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-          strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
+          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
+          padding: padding, dataFormat: dataFormat), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.maxPoolGradGrad(
         origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
@@ -18098,8 +20754,8 @@ public enum _Raw {
       let strides = Tensor<Int32>(copying: strides, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.maxPoolGradGradV2(
-          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize,
-          strides: strides, padding: padding, dataFormat: dataFormat), to: output_device)
+          origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
+          padding: padding, dataFormat: dataFormat), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.maxPoolGradGradV2(
         origInput: origInput, origOutput: origOutput, grad: grad, ksize: ksize, strides: strides,
@@ -18490,13 +21146,13 @@ public enum _Raw {
         copying: _RawTFEager.mfcc(
           spectrogram: spectrogram, sampleRate: sampleRate,
           upperFrequencyLimit: upperFrequencyLimit, lowerFrequencyLimit: lowerFrequencyLimit,
-          filterbankChannelCount: filterbankChannelCount, dctCoefficientCount: dctCoefficientCount
-        ), to: output_device)
+          filterbankChannelCount: filterbankChannelCount, dctCoefficientCount: dctCoefficientCount),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.mfcc(
-        spectrogram: spectrogram, sampleRate: sampleRate,
-        upperFrequencyLimit: upperFrequencyLimit, lowerFrequencyLimit: lowerFrequencyLimit,
-        filterbankChannelCount: filterbankChannelCount, dctCoefficientCount: dctCoefficientCount)
+        spectrogram: spectrogram, sampleRate: sampleRate, upperFrequencyLimit: upperFrequencyLimit,
+        lowerFrequencyLimit: lowerFrequencyLimit, filterbankChannelCount: filterbankChannelCount,
+        dctCoefficientCount: dctCoefficientCount)
     }
 
   }
@@ -18691,7 +21347,7 @@ public enum _Raw {
   ///
   /// @tf.function
   /// def foo(x, y):
-  ///   return = mlir_passthrough_op([x, y], mlir_module, Toutputs=[tf.float32])
+  ///   return mlir_passthrough_op([x, y], mlir_module, Toutputs=[tf.float32])
   ///
   /// graph_def = foo.get_concrete_function(tf.TensorSpec([10], tf.float32), tf.TensorSpec([10], tf.float32)).graph.as_graph_def()
   /// ```
@@ -18737,11 +21393,12 @@ public enum _Raw {
     inputDataset: VariantHandle,
     algorithm: Int64 = 0,
     cpuBudget: Int64 = 0,
+    ramBudget: Int64 = 0,
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?]
   ) -> VariantHandle {
     _RawTFEager.modelDataset(
-      inputDataset: inputDataset, algorithm: algorithm, cpuBudget: cpuBudget,
+      inputDataset: inputDataset, algorithm: algorithm, cpuBudget: cpuBudget, ramBudget: ramBudget,
       outputTypes: outputTypes, outputShapes: outputShapes)
   }
 
@@ -18873,8 +21530,8 @@ public enum _Raw {
       let maxBufferSize = Tensor<Int64>(copying: maxBufferSize, to: .defaultTFEager)
       return Tensor<Int64>(
         copying: _RawTFEager.multiDeviceIteratorInit(
-          dataset: dataset, multiDeviceIterator: multiDeviceIterator, maxBufferSize: maxBufferSize
-        ), to: output_device)
+          dataset: dataset, multiDeviceIterator: multiDeviceIterator, maxBufferSize: maxBufferSize),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.multiDeviceIteratorInit(
         dataset: dataset, multiDeviceIterator: multiDeviceIterator, maxBufferSize: maxBufferSize)
@@ -19596,8 +22253,8 @@ public enum _Raw {
     switch commonBackend(
       commonBackend(
         commonBackend(
-          commonBackend(boxes.handle.backend, scores.handle.backend), maxOutputSize.handle.backend
-        ), iouThreshold.handle.backend), scoreThreshold.handle.backend)
+          commonBackend(boxes.handle.backend, scores.handle.backend), maxOutputSize.handle.backend),
+        iouThreshold.handle.backend), scoreThreshold.handle.backend)
     {
     case .XLA:
       let output_device = scoreThreshold.device
@@ -19838,19 +22495,6 @@ public enum _Raw {
       return _RawTFEager.notEqual(x, y, incompatibleShapeError: incompatibleShapeError)
     }
 
-  }
-
-  /// Returns the truth value of (x != y) element-wise.
-  ///
-  /// *NOTE*: `NotEqual` supports broadcasting. More about broadcasting
-  /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
-  @inlinable @inline(__always)
-  public static func notEqual(
-    _ x: StringTensor,
-    _ y: StringTensor,
-    incompatibleShapeError: Bool = true
-  ) -> Tensor<Bool> {
-    _RawTFEager.notEqual(x, y, incompatibleShapeError: incompatibleShapeError)
   }
 
   /// Finds values of the `n`-th order statistic for the last dimension.
@@ -20112,6 +22756,32 @@ public enum _Raw {
       outputShapes: outputShapes, optimizationConfigs: optimizationConfigs)
   }
 
+  /// Creates a dataset by applying related optimizations to `input_dataset`.
+  ///
+  /// Creates a dataset by applying related optimizations to `input_dataset`.
+  ///
+  /// - Parameters:
+  ///     - input_dataset: A variant tensor representing the input dataset.
+  ///     - optimizations_enabled: A `tf.string` vector `tf.Tensor` identifying user enabled optimizations.
+  ///     - optimizations_disabled: A `tf.string` vector `tf.Tensor` identifying user disabled optimizations.
+  ///     - optimizations_default: A `tf.string` vector `tf.Tensor` identifying optimizations by default.
+  @inlinable @inline(__always)
+  public static func optimizeDatasetV2(
+    inputDataset: VariantHandle,
+    optimizationsEnabled: StringTensor,
+    optimizationsDisabled: StringTensor,
+    optimizationsDefault: StringTensor,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    optimizationConfigs: [String]
+  ) -> VariantHandle {
+    _RawTFEager.optimizeDatasetV2(
+      inputDataset: inputDataset, optimizationsEnabled: optimizationsEnabled,
+      optimizationsDisabled: optimizationsDisabled, optimizationsDefault: optimizationsDefault,
+      outputTypes: outputTypes, outputShapes: outputShapes, optimizationConfigs: optimizationConfigs
+    )
+  }
+
   /// Constructs an Optional variant from a tuple of tensors.
   @inlinable @inline(__always)
   public static func optionalFromValue<ToutputTypes: TensorArrayProtocol>(
@@ -20141,6 +22811,24 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func optionalNone() -> VariantHandle {
     _RawTFEager.optionalNone()
+  }
+
+  /// Creates a dataset by attaching tf.data.Options to `input_dataset`.
+  ///
+  /// - Parameter input_dataset: A variant tensor representing the input dataset.
+  ///
+  /// - Attr serialized_options: A `tf.string` scalar `tf.Tensor` of serialized `tf.data.Options` protocol buffer.
+  @inlinable @inline(__always)
+  public static func optionsDataset(
+    inputDataset: VariantHandle,
+    serializedOptions: String,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.optionsDataset(
+      inputDataset: inputDataset, serializedOptions: serializedOptions, outputTypes: outputTypes,
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Op removes all elements in the underlying container.
@@ -20326,6 +23014,61 @@ public enum _Raw {
     _RawTFEager.outfeedDequeueTuple(shapes: shapes, deviceOrdinal: deviceOrdinal)
   }
 
+  /// Retrieve multiple values from the computation outfeed. Device ordinal is a
+  /// tensor allowing dynamic outfeed.
+  ///
+  /// This operation will block indefinitely until data is available. Output `i`
+  /// corresponds to XLA tuple element `i`.
+  ///
+  /// - Parameter device_ordinal: An int scalar tensor, representing the TPU device to use. This should be -1 when
+  ///     the Op is running on a TPU device, and >= 0 when the Op is running on the CPU
+  ///     device.
+  ///
+  /// - Attrs:
+  ///     - dtypes: The element types of each element in `outputs`.
+  ///     - shapes: The shapes of each tensor in `outputs`.
+  ///
+  /// - Output outputs: A list of tensors that will be read from the outfeed.
+  @inlinable @inline(__always)
+  public static func outfeedDequeueTupleV2<Dtypes: TensorGroup>(
+    deviceOrdinal: Tensor<Int32>,
+    shapes: [TensorShape?]
+  ) -> Dtypes {
+    _RawTFEager.outfeedDequeueTupleV2(deviceOrdinal: deviceOrdinal, shapes: shapes)
+  }
+
+  /// Retrieves a single tensor from the computation outfeed. Device ordinal is a
+  /// tensor allowing dynamic outfeed.
+  ///
+  /// This operation will block indefinitely until data is available.
+  ///
+  /// - Parameter device_ordinal: An int scalar tensor, representing the TPU device to use. This should be -1 when
+  ///     the Op is running on a TPU device, and >= 0 when the Op is running on the CPU
+  ///     device.
+  ///
+  /// - Attrs:
+  ///     - dtype: The type of elements in the tensor.
+  ///     - shape: The shape of the tensor.
+  ///
+  /// - Output output: A tensor that will be read from the device outfeed.
+  @inlinable @inline(__always)
+  public static func outfeedDequeueV2<Dtype: TensorFlowScalar>(
+    deviceOrdinal: Tensor<Int32>,
+    shape: TensorShape?
+  ) -> Tensor<Dtype> {
+    switch deviceOrdinal.handle.backend {
+    case .XLA:
+      let output_device = deviceOrdinal.device
+      let deviceOrdinal = Tensor<Int32>(copying: deviceOrdinal, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.outfeedDequeueV2(deviceOrdinal: deviceOrdinal, shape: shape),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.outfeedDequeueV2(deviceOrdinal: deviceOrdinal, shape: shape)
+    }
+
+  }
+
   /// Enqueue a Tensor on the computation outfeed.
   ///
   /// - Parameter input: A tensor that will be inserted into the outfeed queue.
@@ -20494,11 +23237,12 @@ public enum _Raw {
     batchSize: Tensor<Int64>,
     paddedShapes: [Tensor<Int64>],
     paddingValues: ToutputTypes,
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.paddedBatchDataset(
       inputDataset: inputDataset, batchSize: batchSize, paddedShapes: paddedShapes,
-      paddingValues: paddingValues, outputShapes: outputShapes)
+      paddingValues: paddingValues, outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Creates a dataset that batches and pads `batch_size` elements from the input.
@@ -20522,12 +23266,13 @@ public enum _Raw {
     paddingValues: ToutputTypes,
     dropRemainder: Tensor<Bool>,
     parallelCopy: Bool = false,
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.paddedBatchDatasetV2(
       inputDataset: inputDataset, batchSize: batchSize, paddedShapes: paddedShapes,
       paddingValues: paddingValues, dropRemainder: dropRemainder, parallelCopy: parallelCopy,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// A queue that produces elements in first-in first-out order.
@@ -20565,6 +23310,24 @@ public enum _Raw {
     _RawTFEager.paddingFIFOQueueV2(
       componentTypes: componentTypes, shapes: shapes, capacity: capacity, container: container,
       sharedName: sharedName)
+  }
+
+  @inlinable @inline(__always)
+  public static func parallelBatchDataset(
+    inputDataset: VariantHandle,
+    batchSize: Tensor<Int64>,
+    numParallelCalls: Tensor<Int64>,
+    dropRemainder: Tensor<Bool>,
+    parallelCopy: Bool = false,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    deterministic: String = "default",
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.parallelBatchDataset(
+      inputDataset: inputDataset, batchSize: batchSize, numParallelCalls: numParallelCalls,
+      dropRemainder: dropRemainder, parallelCopy: parallelCopy, outputTypes: outputTypes,
+      outputShapes: outputShapes, deterministic: deterministic, metadata: metadata)
   }
 
   /// Concatenates a list of `N` tensors along the first dimension.
@@ -20672,6 +23435,52 @@ public enum _Raw {
     _RawTFEager.parallelDynamicStitch(indices: indices, data: data)
   }
 
+  /// Creates a dataset containing elements of `input_dataset` matching `predicate`.
+  ///
+  /// The `predicate` function must return a scalar boolean and accept the
+  /// following arguments:
+  ///
+  /// * One tensor for each component of an element of `input_dataset`.
+  /// * One tensor for each value in `other_arguments`.
+  ///
+  /// Unlike a "FilterDataset", which applies `predicate` sequentially, this dataset
+  /// invokes up to `num_parallel_calls` copies of `predicate` in parallel.
+  ///
+  ///
+  /// - Parameters:
+  ///     - other_arguments: A list of tensors, typically values that were captured when
+  ///         building a closure for `predicate`.
+  ///     - num_parallel_calls: The number of concurrent invocations of `predicate` that process
+  ///         elements from `input_dataset` in parallel.
+  ///
+  /// - Attrs:
+  ///     - predicate: A function returning a scalar boolean.
+  ///     - deterministic: A string indicating the op-level determinism to use. Deterministic controls
+  ///         whether the interleave is allowed to return elements out of order if the next
+  ///         element to be returned isn't available, but a later element is. Options are
+  ///         "true", "false", and "default". "default" indicates that determinism should be
+  ///         decided by the `experimental_deterministic` parameter of `tf.data.Options`.
+  @inlinable @inline(__always)
+  public static func parallelFilterDataset<
+    PredicateIn: TensorGroup,
+    PredicateOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    numParallelCalls: Tensor<Int64>,
+    predicate: (PredicateIn) -> PredicateOut,
+    deterministic: String = "default",
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.parallelFilterDataset(
+      inputDataset: inputDataset, otherArguments: otherArguments,
+      numParallelCalls: numParallelCalls, predicate: predicate, deterministic: deterministic,
+      outputTypes: outputTypes, outputShapes: outputShapes, metadata: metadata)
+  }
+
   /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
   ///
   /// The resulting dataset is similar to the `InterleaveDataset`, with the exception
@@ -20728,13 +23537,14 @@ public enum _Raw {
     prefetchInputElements: Tensor<Int64>,
     f: (FIn) -> FOut,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.parallelInterleaveDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, cycleLength: cycleLength,
       blockLength: blockLength, sloppy: sloppy, bufferOutputElements: bufferOutputElements,
       prefetchInputElements: prefetchInputElements, f: f, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
@@ -20784,12 +23594,146 @@ public enum _Raw {
     f: (FIn) -> FOut,
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?],
-    sloppy: Bool = false
+    sloppy: Bool = false,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.parallelInterleaveDatasetV2(
       inputDataset: inputDataset, otherArguments: otherArguments, cycleLength: cycleLength,
+      blockLength: blockLength, numParallelCalls: numParallelCalls, f: f, outputTypes: outputTypes,
+      outputShapes: outputShapes, sloppy: sloppy, metadata: metadata)
+  }
+
+  /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
+  ///
+  /// The resulting dataset is similar to the `InterleaveDataset`, except that the
+  /// dataset will fetch records from the interleaved datasets in parallel.
+  ///
+  /// The `tf.data` Python API creates instances of this op from
+  /// `Dataset.interleave()` when the `num_parallel_calls` parameter of that method
+  /// is set to any value other than `None`.
+  ///
+  /// By default, the output of this dataset will be deterministic, which may result
+  /// in the dataset blocking if the next data item to be returned isn't available.
+  /// In order to avoid head-of-line blocking, one can either set the `deterministic`
+  /// attribute to "false", or leave it as "default" and set the
+  /// `experimental_deterministic` parameter of `tf.data.Options` to `False`.
+  /// This can improve performance at the expense of non-determinism.
+  ///
+  /// - Parameters:
+  ///     - input_dataset: Dataset that produces a stream of arguments for the function `f`.
+  ///     - other_arguments: Additional arguments to pass to `f` beyond those produced by `input_dataset`.
+  ///         Evaluated once when the dataset is instantiated.
+  ///     - cycle_length: Number of datasets (each created by applying `f` to the elements of
+  ///         `input_dataset`) among which the `ParallelInterleaveDatasetV2` will cycle in a
+  ///         round-robin fashion.
+  ///     - block_length: Number of elements at a time to produce from each interleaved invocation of a
+  ///         dataset returned by `f`.
+  ///     - num_parallel_calls: Determines the number of threads that should be used for fetching data from
+  ///         input datasets in parallel. The Python API `tf.data.experimental.AUTOTUNE`
+  ///         constant can be used to indicate that the level of parallelism should be autotuned.
+  ///
+  /// - Attrs:
+  ///     - f: A function mapping elements of `input_dataset`, concatenated with
+  ///         `other_arguments`, to a Dataset variant that contains elements matching
+  ///         `output_types` and `output_shapes`.
+  ///     - deterministic: A string indicating the op-level determinism to use. Deterministic controls
+  ///         whether the interleave is allowed to return elements out of order if the next
+  ///         element to be returned isn't available, but a later element is. Options are
+  ///         "true", "false", and "default". "default" indicates that determinism should be
+  ///         decided by the `experimental_deterministic` parameter of `tf.data.Options`.
+  ///     - Targuments: Types of the elements of `other_arguments`.
+  @inlinable @inline(__always)
+  public static func parallelInterleaveDatasetV3<
+    FIn: TensorGroup,
+    FOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    cycleLength: Tensor<Int64>,
+    blockLength: Tensor<Int64>,
+    numParallelCalls: Tensor<Int64>,
+    f: (FIn) -> FOut,
+    deterministic: String = "default",
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.parallelInterleaveDatasetV3(
+      inputDataset: inputDataset, otherArguments: otherArguments, cycleLength: cycleLength,
       blockLength: blockLength, numParallelCalls: numParallelCalls, f: f,
-      outputTypes: outputTypes, outputShapes: outputShapes, sloppy: sloppy)
+      deterministic: deterministic, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
+  }
+
+  /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
+  ///
+  /// The resulting dataset is similar to the `InterleaveDataset`, except that the
+  /// dataset will fetch records from the interleaved datasets in parallel.
+  ///
+  /// The `tf.data` Python API creates instances of this op from
+  /// `Dataset.interleave()` when the `num_parallel_calls` parameter of that method
+  /// is set to any value other than `None`.
+  ///
+  /// By default, the output of this dataset will be deterministic, which may result
+  /// in the dataset blocking if the next data item to be returned isn't available.
+  /// In order to avoid head-of-line blocking, one can either set the `deterministic`
+  /// attribute to "false", or leave it as "default" and set the
+  /// `experimental_deterministic` parameter of `tf.data.Options` to `False`.
+  /// This can improve performance at the expense of non-determinism.
+  ///
+  /// - Parameters:
+  ///     - input_dataset: Dataset that produces a stream of arguments for the function `f`.
+  ///     - other_arguments: Additional arguments to pass to `f` beyond those produced by `input_dataset`.
+  ///         Evaluated once when the dataset is instantiated.
+  ///     - cycle_length: Number of datasets (each created by applying `f` to the elements of
+  ///         `input_dataset`) among which the `ParallelInterleaveDatasetV2` will cycle in a
+  ///         round-robin fashion.
+  ///     - block_length: Number of elements at a time to produce from each interleaved invocation of a
+  ///         dataset returned by `f`.
+  ///     - buffer_output_elements: The number of elements each iterator being interleaved should buffer (similar
+  ///         to the `.prefetch()` transformation for each interleaved iterator).
+  ///     - prefetch_input_elements: Determines the number of iterators to prefetch, allowing buffers to warm up and
+  ///         data to be pre-fetched without blocking the main thread.
+  ///     - num_parallel_calls: Determines the number of threads that should be used for fetching data from
+  ///         input datasets in parallel. The Python API `tf.data.experimental.AUTOTUNE`
+  ///         constant can be used to indicate that the level of parallelism should be autotuned.
+  ///
+  /// - Attrs:
+  ///     - f: A function mapping elements of `input_dataset`, concatenated with
+  ///         `other_arguments`, to a Dataset variant that contains elements matching
+  ///         `output_types` and `output_shapes`.
+  ///     - deterministic: A string indicating the op-level determinism to use. Deterministic controls
+  ///         whether the interleave is allowed to return elements out of order if the next
+  ///         element to be returned isn't available, but a later element is. Options are
+  ///         "true", "false", and "default". "default" indicates that determinism should be
+  ///         decided by the `experimental_deterministic` parameter of `tf.data.Options`.
+  ///     - Targuments: Types of the elements of `other_arguments`.
+  @inlinable @inline(__always)
+  public static func parallelInterleaveDatasetV4<
+    FIn: TensorGroup,
+    FOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    cycleLength: Tensor<Int64>,
+    blockLength: Tensor<Int64>,
+    bufferOutputElements: Tensor<Int64>,
+    prefetchInputElements: Tensor<Int64>,
+    numParallelCalls: Tensor<Int64>,
+    f: (FIn) -> FOut,
+    deterministic: String = "default",
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.parallelInterleaveDatasetV4(
+      inputDataset: inputDataset, otherArguments: otherArguments, cycleLength: cycleLength,
+      blockLength: blockLength, bufferOutputElements: bufferOutputElements,
+      prefetchInputElements: prefetchInputElements, numParallelCalls: numParallelCalls, f: f,
+      deterministic: deterministic, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
@@ -20813,13 +23757,45 @@ public enum _Raw {
     outputShapes: [TensorShape?],
     useInterOpParallelism: Bool = true,
     sloppy: Bool = false,
-    preserveCardinality: Bool = false
+    preserveCardinality: Bool = false,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.parallelMapDataset(
       inputDataset: inputDataset, otherArguments: otherArguments,
       numParallelCalls: numParallelCalls, f: f, outputTypes: outputTypes,
       outputShapes: outputShapes, useInterOpParallelism: useInterOpParallelism, sloppy: sloppy,
-      preserveCardinality: preserveCardinality)
+      preserveCardinality: preserveCardinality, metadata: metadata)
+  }
+
+  /// Creates a dataset that applies `f` to the outputs of `input_dataset`.
+  ///
+  /// Unlike a "MapDataset", which applies `f` sequentially, this dataset invokes up
+  /// to `num_parallel_calls` copies of `f` in parallel.
+  ///
+  /// - Parameter num_parallel_calls: The number of concurrent invocations of `f` that process
+  ///     elements from `input_dataset` in parallel.
+  @inlinable @inline(__always)
+  public static func parallelMapDatasetV2<
+    FIn: TensorGroup,
+    FOut: TensorGroup,
+    Targuments: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    otherArguments: Targuments,
+    numParallelCalls: Tensor<Int64>,
+    f: (FIn) -> FOut,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    useInterOpParallelism: Bool = true,
+    deterministic: String = "default",
+    preserveCardinality: Bool = false,
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.parallelMapDatasetV2(
+      inputDataset: inputDataset, otherArguments: otherArguments,
+      numParallelCalls: numParallelCalls, f: f, outputTypes: outputTypes,
+      outputShapes: outputShapes, useInterOpParallelism: useInterOpParallelism,
+      deterministic: deterministic, preserveCardinality: preserveCardinality, metadata: metadata)
   }
 
   /// Outputs random values from a normal distribution. The parameters may each be a
@@ -20876,8 +23852,8 @@ public enum _Raw {
           seed: seed, seed2: seed2), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.parameterizedTruncatedNormal(
-        shape: shape, means: means, stdevs: stdevs, minvals: minvals, maxvals: maxvals,
-        seed: seed, seed2: seed2)
+        shape: shape, means: means, stdevs: stdevs, minvals: minvals, maxvals: maxvals, seed: seed,
+        seed2: seed2)
     }
 
   }
@@ -20991,11 +23967,68 @@ public enum _Raw {
     raggedSplitTypes: [TensorDataType]
   ) -> VariantHandle {
     _RawTFEager.parseExampleDataset(
-      inputDataset: inputDataset, numParallelCalls: numParallelCalls,
-      denseDefaults: denseDefaults, sparseKeys: sparseKeys, denseKeys: denseKeys,
-      sparseTypes: sparseTypes, denseShapes: denseShapes, outputTypes: outputTypes,
-      outputShapes: outputShapes, sloppy: sloppy, raggedKeys: raggedKeys,
-      raggedValueTypes: raggedValueTypes, raggedSplitTypes: raggedSplitTypes)
+      inputDataset: inputDataset, numParallelCalls: numParallelCalls, denseDefaults: denseDefaults,
+      sparseKeys: sparseKeys, denseKeys: denseKeys, sparseTypes: sparseTypes,
+      denseShapes: denseShapes, outputTypes: outputTypes, outputShapes: outputShapes,
+      sloppy: sloppy, raggedKeys: raggedKeys, raggedValueTypes: raggedValueTypes,
+      raggedSplitTypes: raggedSplitTypes)
+  }
+
+  /// Transforms `input_dataset` containing `Example` protos as vectors of DT_STRING into a dataset of `Tensor` or `SparseTensor` objects representing the parsed features.
+  ///
+  /// - Parameter dense_defaults: A dict mapping string keys to `Tensor`s.
+  ///     The keys of the dict must match the dense_keys of the feature.
+  ///
+  /// - Attrs:
+  ///     - sparse_keys: A list of string keys in the examples features.
+  ///         The results for these keys will be returned as `SparseTensor` objects.
+  ///     - dense_keys: A list of Ndense string Tensors (scalars).
+  ///         The keys expected in the Examples features associated with dense values.
+  ///     - sparse_types: A list of `DTypes` of the same length as `sparse_keys`.
+  ///         Only `tf.float32` (`FloatList`), `tf.int64` (`Int64List`),
+  ///         and `tf.string` (`BytesList`) are supported.
+  ///     - Tdense: A list of DTypes of the same length as `dense_keys`.
+  ///         Only `tf.float32` (`FloatList`), `tf.int64` (`Int64List`),
+  ///         and `tf.string` (`BytesList`) are supported.
+  ///
+  ///     - dense_shapes: List of tuples with the same length as `dense_keys`.
+  ///         The shape of the data for each dense feature referenced by `dense_keys`.
+  ///         Required for any input tensors identified by `dense_keys`.  Must be
+  ///         either fully defined, or may contain an unknown first dimension.
+  ///         An unknown first dimension means the feature is treated as having
+  ///         a variable number of blocks, and the output shape along this dimension
+  ///         is considered unknown at graph build time.  Padding is applied for
+  ///         minibatch elements smaller than the maximum number of blocks for the
+  ///         given feature along this dimension.
+  ///     - output_types: The type list for the return values.
+  ///     - output_shapes: The list of shapes being produced.
+  ///     - deterministic: A string indicating the op-level determinism to use. Deterministic controls
+  ///         whether the dataset is allowed to return elements out of order if the next
+  ///         element to be returned isn't available, but a later element is. Options are
+  ///         "true", "false", and "default". "default" indicates that determinism should be
+  ///         decided by the `experimental_deterministic` parameter of `tf.data.Options`.
+  @inlinable @inline(__always)
+  public static func parseExampleDatasetV2<Tdense: TensorArrayProtocol>(
+    inputDataset: VariantHandle,
+    numParallelCalls: Tensor<Int64>,
+    denseDefaults: Tdense,
+    sparseKeys: [String],
+    denseKeys: [String],
+    sparseTypes: [TensorDataType],
+    denseShapes: [TensorShape?],
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    deterministic: String = "default",
+    raggedKeys: [String],
+    raggedValueTypes: [TensorDataType],
+    raggedSplitTypes: [TensorDataType]
+  ) -> VariantHandle {
+    _RawTFEager.parseExampleDatasetV2(
+      inputDataset: inputDataset, numParallelCalls: numParallelCalls, denseDefaults: denseDefaults,
+      sparseKeys: sparseKeys, denseKeys: denseKeys, sparseTypes: sparseTypes,
+      denseShapes: denseShapes, outputTypes: outputTypes, outputShapes: outputShapes,
+      deterministic: deterministic, raggedKeys: raggedKeys, raggedValueTypes: raggedValueTypes,
+      raggedSplitTypes: raggedSplitTypes)
   }
 
   /// Transforms a vector of tf.Example protos (as strings) into typed tensors.
@@ -21189,7 +24222,7 @@ public enum _Raw {
   ///     - feature_list_dense_keys: The keys expected in the SequenceExamples' feature_lists associated
   ///         with lists of dense values.
   ///     - feature_list_ragged_keys: The keys expected in the FeatureLists associated with ragged values.
-  ///     - feature_list_dense_missing_assumed_empty: A vector corresponding 1:1 with featue_list_dense_keys, indicating which
+  ///     - feature_list_dense_missing_assumed_empty: A vector corresponding 1:1 with feature_list_dense_keys, indicating which
   ///         features may be missing from the SequenceExamples.  If the associated
   ///         FeatureList is missing, it is treated as empty.
   ///     - context_dense_defaults: A list of Ncontext_dense Tensors (some may be empty).
@@ -21256,8 +24289,7 @@ public enum _Raw {
     contextRaggedValues: ContextRaggedValueTypes, contextRaggedRowSplits: ContextRaggedSplitTypes,
     featureListSparseIndices: [Tensor<Int64>], featureListSparseValues: FeatureListSparseTypes,
     featureListSparseShapes: [Tensor<Int64>], featureListDenseValues: FeatureListDenseTypes,
-    featureListDenseLengths: [Tensor<Int64>],
-    featureListRaggedValues: FeatureListRaggedValueTypes,
+    featureListDenseLengths: [Tensor<Int64>], featureListRaggedValues: FeatureListRaggedValueTypes,
     featureListRaggedOuterSplits: FeatureListRaggedSplitTypes,
     featureListRaggedInnerSplits: FeatureListRaggedSplitTypes
   ) {
@@ -21432,6 +24464,10 @@ public enum _Raw {
   }
 
   /// returns `f(inputs)`, where `f`'s body is placed and partitioned.
+  ///
+  /// Asynchronously executes a function, potentially across multiple devices but
+  /// within a single process. The kernel places and partitions a given function's
+  /// underlying graph, and executes each of the partitioned subgraphs as a function.
   ///
   /// - Parameter args: A list of input tensors.
   ///
@@ -21634,11 +24670,14 @@ public enum _Raw {
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?],
     slackPeriod: Int64 = 0,
-    legacyAutotune: Bool = true
+    legacyAutotune: Bool = true,
+    bufferSizeMin: Int64 = 0,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.prefetchDataset(
       inputDataset: inputDataset, bufferSize: bufferSize, outputTypes: outputTypes,
-      outputShapes: outputShapes, slackPeriod: slackPeriod, legacyAutotune: legacyAutotune)
+      outputShapes: outputShapes, slackPeriod: slackPeriod, legacyAutotune: legacyAutotune,
+      bufferSizeMin: bufferSizeMin, metadata: metadata)
   }
 
   /// An op which linearizes one Tensor value to an opaque variant tensor.
@@ -21726,7 +24765,7 @@ public enum _Raw {
   ///     - first_n: Only log `first_n` number of times. -1 disables logging.
   ///     - summarize: Only print this many entries of each tensor.
   ///
-  /// - Output output: = The unmodified `input` tensor
+  /// - Output output: The unmodified `input` tensor
   @inlinable @inline(__always)
   public static func print<
     T: TensorFlowScalar,
@@ -21894,6 +24933,10 @@ public enum _Raw {
   /// Computes the QR decomposition of each inner matrix in `tensor` such that
   /// `tensor[..., :, :] = q[..., :, :] * r[..., :,:])`
   ///
+  /// Currently, the gradient for the QR decomposition is well-defined only when
+  /// the first `P` columns of the inner matrix are linearly independent, where
+  /// `P` is the minimum of `M` and `N`, the 2 inner-most dimmensions of `tensor`.
+  ///
   /// ```python
   /// # a is a tensor.
   /// # q is a tensor of orthonormal matrices.
@@ -22058,9 +25101,9 @@ public enum _Raw {
       let inputMax = Tensor<T>(copying: inputMax, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.quantizeAndDequantizeV2(
-          input, inputMin: inputMin, inputMax: inputMax, signedInput: signedInput,
-          numBits: numBits, rangeGiven: rangeGiven, roundMode: roundMode,
-          narrowRange: narrowRange, axis: axis), to: output_device)
+          input, inputMin: inputMin, inputMax: inputMax, signedInput: signedInput, numBits: numBits,
+          rangeGiven: rangeGiven, roundMode: roundMode, narrowRange: narrowRange, axis: axis),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.quantizeAndDequantizeV2(
         input, inputMin: inputMin, inputMax: inputMax, signedInput: signedInput, numBits: numBits,
@@ -22097,15 +25140,95 @@ public enum _Raw {
       let numBits = Tensor<Int32>(copying: numBits, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.quantizeAndDequantizeV3(
-          input, inputMin: inputMin, inputMax: inputMax, numBits: numBits,
-          signedInput: signedInput, rangeGiven: rangeGiven, narrowRange: narrowRange, axis: axis),
-        to: output_device)
+          input, inputMin: inputMin, inputMax: inputMax, numBits: numBits, signedInput: signedInput,
+          rangeGiven: rangeGiven, narrowRange: narrowRange, axis: axis), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.quantizeAndDequantizeV3(
         input, inputMin: inputMin, inputMax: inputMax, numBits: numBits, signedInput: signedInput,
         rangeGiven: rangeGiven, narrowRange: narrowRange, axis: axis)
     }
 
+  }
+
+  /// Quantizes then dequantizes a tensor.
+  ///
+  /// This is almost identical to QuantizeAndDequantizeV2, except that it returns a
+  /// gradient of 1 for inputs that are within the quantization range, or 0 otherwise.
+  ///
+  /// - Parameters:
+  ///     - input: Tensor to quantize and then dequantize.
+  ///     - input_min: If `range_given == True`, this specifies the minimum input value that needs to
+  ///         be represented, otherwise it is determined from the min value of the `input`
+  ///         tensor.
+  ///     - input_max: If `range_given == True`, this specifies the maximum input value that needs to
+  ///         be represented, otherwise it is determined from the max value of the `input`
+  ///         tensor.
+  ///
+  /// - Attrs:
+  ///     - signed_input: Whether the quantization is signed or unsigned. (actually this parameter should
+  ///         have been called <b>`signed_output`</b>)
+  ///     - num_bits: The bitwidth of the quantization.
+  ///     - range_given: Whether the range is given or should be determined from the `input` tensor.
+  ///     - round_mode: The 'round_mode' attribute controls which rounding tie-breaking algorithm is
+  ///         used when rounding float values to their quantized equivalents. The following
+  ///         rounding modes are currently supported:
+  ///
+  ///         *   HALF_TO_EVEN: this is the default round_mode.
+  ///         *   HALF_UP: round towards positive. In this mode 7.5 rounds up to 8 and -7.5
+  ///             rounds up to -7.
+  ///
+  ///     - narrow_range: If True, then the absolute value of the quantized minimum value is the same as
+  ///         the quantized maximum value, instead of 1 greater.
+  ///         i.e. for 8 bit quantization, the minimum value is -127 instead of -128.
+  ///     - axis: If specified, this axis is treated as a channel or slice axis, and a separate
+  ///         quantization range is used for each channel or slice along this axis.
+  @inlinable @inline(__always)
+  public static func quantizeAndDequantizeV4<T: FloatingPoint & TensorFlowScalar>(
+    _ input: Tensor<T>,
+    inputMin: Tensor<T>,
+    inputMax: Tensor<T>,
+    signedInput: Bool = true,
+    numBits: Int64 = 8,
+    rangeGiven: Bool = false,
+    roundMode: RoundMode = .halfToEven,
+    narrowRange: Bool = false,
+    axis: Int64 = -1
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, inputMin.handle.backend), inputMax.handle.backend)
+    {
+    case .XLA:
+      let output_device = inputMax.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let inputMin = Tensor<T>(copying: inputMin, to: .defaultTFEager)
+      let inputMax = Tensor<T>(copying: inputMax, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.quantizeAndDequantizeV4(
+          input, inputMin: inputMin, inputMax: inputMax, signedInput: signedInput, numBits: numBits,
+          rangeGiven: rangeGiven, roundMode: roundMode, narrowRange: narrowRange, axis: axis),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.quantizeAndDequantizeV4(
+        input, inputMin: inputMin, inputMax: inputMax, signedInput: signedInput, numBits: numBits,
+        rangeGiven: rangeGiven, roundMode: roundMode, narrowRange: narrowRange, axis: axis)
+    }
+
+  }
+
+  /// Returns the gradient of `QuantizeAndDequantizeV4`.
+  ///
+  /// Returns a gradient of 1 for inputs that are within the quantization range,
+  /// or 0 otherwise.
+  @inlinable @inline(__always)
+  public static func quantizeAndDequantizeV4Grad<T: FloatingPoint & TensorFlowScalar>(
+    gradients: Tensor<T>,
+    _ input: Tensor<T>,
+    inputMin: Tensor<T>,
+    inputMax: Tensor<T>,
+    axis: Int64 = -1
+  ) -> (inputBackprop: Tensor<T>, inputMinBackprop: Tensor<T>, inputMaxBackprop: Tensor<T>) {
+    _RawTFEager.quantizeAndDequantizeV4Grad(
+      gradients: gradients, input, inputMin: inputMin, inputMax: inputMax, axis: axis)
   }
 
   /// Convert the quantized 'input' tensor into a lower-precision 'output', using the
@@ -22471,8 +25594,7 @@ public enum _Raw {
     maxBias: Tensor<Float>
   ) -> (output: Tensor<OutType>, minOut: Tensor<Float>, maxOut: Tensor<Float>) {
     _RawTFEager.quantizedBiasAdd(
-      input, bias: bias, minInput: minInput, maxInput: maxInput, minBias: minBias,
-      maxBias: maxBias)
+      input, bias: bias, minInput: minInput, maxInput: maxInput, minBias: minBias, maxBias: maxBias)
   }
 
   /// Concatenates quantized tensors along one dimension.
@@ -22500,6 +25622,19 @@ public enum _Raw {
   ) -> (output: Tensor<T>, outputMin: Tensor<Float>, outputMax: Tensor<Float>) {
     _RawTFEager.quantizedConcat(
       concatDim: concatDim, values, inputMins: inputMins, inputMaxes: inputMaxes)
+  }
+
+  @inlinable @inline(__always)
+  public static func quantizedConcatV2<
+    T: TensorFlowScalar,
+    Tidx: TensorFlowIndex
+  >(
+    _ values: [Tensor<T>],
+    axis: Tensor<Tidx>,
+    inputMins: [Tensor<Float>],
+    inputMaxes: [Tensor<Float>]
+  ) -> (output: Tensor<T>, outputMin: Tensor<Float>, outputMax: Tensor<Float>) {
+    _RawTFEager.quantizedConcatV2(values, axis: axis, inputMins: inputMins, inputMaxes: inputMaxes)
   }
 
   /// Computes a 2D convolution given quantized 4D input and filter tensors.
@@ -22594,9 +25729,8 @@ public enum _Raw {
   ) -> (output: Tensor<OutType>, minOutput: Tensor<Float>, maxOutput: Tensor<Float>) {
     _RawTFEager.quantizedConv2DAndReluAndRequantize(
       input, filter: filter, minInput: minInput, maxInput: maxInput, minFilter: minFilter,
-      maxFilter: maxFilter, minFreezedOutput: minFreezedOutput,
-      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding,
-      dilations: dilations, paddingList: paddingList)
+      maxFilter: maxFilter, minFreezedOutput: minFreezedOutput, maxFreezedOutput: maxFreezedOutput,
+      strides: strides, padding: padding, dilations: dilations, paddingList: paddingList)
   }
 
   @inlinable @inline(__always)
@@ -22620,9 +25754,8 @@ public enum _Raw {
   ) -> (output: Tensor<OutType>, minOutput: Tensor<Float>, maxOutput: Tensor<Float>) {
     _RawTFEager.quantizedConv2DAndRequantize(
       input, filter: filter, minInput: minInput, maxInput: maxInput, minFilter: minFilter,
-      maxFilter: maxFilter, minFreezedOutput: minFreezedOutput,
-      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding,
-      dilations: dilations, paddingList: paddingList)
+      maxFilter: maxFilter, minFreezedOutput: minFreezedOutput, maxFreezedOutput: maxFreezedOutput,
+      strides: strides, padding: padding, dilations: dilations, paddingList: paddingList)
   }
 
   /// Computes QuantizedConv2D per channel.
@@ -22739,8 +25872,8 @@ public enum _Raw {
     _RawTFEager.quantizedConv2DWithBiasAndReluAndRequantize(
       input, filter: filter, bias: bias, minInput: minInput, maxInput: maxInput,
       minFilter: minFilter, maxFilter: maxFilter, minFreezedOutput: minFreezedOutput,
-      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding,
-      dilations: dilations, paddingList: paddingList)
+      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding, dilations: dilations,
+      paddingList: paddingList)
   }
 
   @inlinable @inline(__always)
@@ -22767,8 +25900,8 @@ public enum _Raw {
     _RawTFEager.quantizedConv2DWithBiasAndRequantize(
       input, filter: filter, bias: bias, minInput: minInput, maxInput: maxInput,
       minFilter: minFilter, maxFilter: maxFilter, minFreezedOutput: minFreezedOutput,
-      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding,
-      dilations: dilations, paddingList: paddingList)
+      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding, dilations: dilations,
+      paddingList: paddingList)
   }
 
   @inlinable @inline(__always)
@@ -22986,12 +26119,13 @@ public enum _Raw {
     maxFilter: Tensor<Float>,
     strides: [Int32],
     padding: Padding,
-    dilations: [Int32] = [1, 1, 1, 1]
+    dilations: [Int32] = [1, 1, 1, 1],
+    paddingList: [Int32]
   ) -> (output: Tensor<OutType>, minOutput: Tensor<Float>, maxOutput: Tensor<Float>) {
     _RawTFEager.quantizedDepthwiseConv2DWithBiasAndRelu(
       input, filter: filter, bias: bias, minInput: minInput, maxInput: maxInput,
       minFilter: minFilter, maxFilter: maxFilter, strides: strides, padding: padding,
-      dilations: dilations)
+      dilations: dilations, paddingList: paddingList)
   }
 
   /// Computes quantized depthwise Conv2D with Bias, Relu and Requantize.
@@ -23037,13 +26171,14 @@ public enum _Raw {
     maxFreezedOutput: Tensor<Float>,
     strides: [Int32],
     padding: Padding,
-    dilations: [Int32] = [1, 1, 1, 1]
+    dilations: [Int32] = [1, 1, 1, 1],
+    paddingList: [Int32]
   ) -> (output: Tensor<OutType>, minOutput: Tensor<Float>, maxOutput: Tensor<Float>) {
     _RawTFEager.quantizedDepthwiseConv2DWithBiasAndReluAndRequantize(
       input, filter: filter, bias: bias, minInput: minInput, maxInput: maxInput,
       minFilter: minFilter, maxFilter: maxFilter, minFreezedOutput: minFreezedOutput,
-      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding, dilations: dilations
-    )
+      maxFreezedOutput: maxFreezedOutput, strides: strides, padding: padding, dilations: dilations,
+      paddingList: paddingList)
   }
 
   /// Quantized Instance normalization.
@@ -23134,7 +26269,7 @@ public enum _Raw {
   /// dimension of `a` (after being transposed if `transpose_a` is non-zero) must
   /// match the outer dimension of `b` (after being transposed if `transposed_b` is
   /// non-zero). Then do broadcast add operation with bias values on the matrix
-  /// mulplication result. The bias size must match inner dimension of `b`.
+  /// multiplication result. The bias size must match inner dimension of `b`.
   ///
   /// - Parameters:
   ///     - a: A matrix to be multiplied. Must be a two-dimensional tensor of type `quint8`.
@@ -23177,6 +26312,63 @@ public enum _Raw {
       transposeB: transposeB, inputQuantMode: inputQuantMode)
   }
 
+  @inlinable @inline(__always)
+  public static func quantizedMatMulWithBiasAndDequantize<
+    T1: TensorFlowScalar,
+    T2: TensorFlowScalar,
+    Tbias: FloatingPoint & TensorFlowScalar,
+    Toutput: FloatingPoint & TensorFlowScalar
+  >(
+    _ a: Tensor<T1>,
+    _ b: Tensor<T2>,
+    bias: Tensor<Tbias>,
+    minA: Tensor<Float>,
+    maxA: Tensor<Float>,
+    minB: Tensor<Float>,
+    maxB: Tensor<Float>,
+    minFreezedOutput: Tensor<Float>,
+    maxFreezedOutput: Tensor<Float>,
+    transposeA: Bool = false,
+    transposeB: Bool = false,
+    inputQuantMode: InputQuantMode = .minFirst
+  ) -> Tensor<Toutput> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(
+          commonBackend(
+            commonBackend(
+              commonBackend(
+                commonBackend(
+                  commonBackend(a.handle.backend, b.handle.backend), bias.handle.backend),
+                minA.handle.backend), maxA.handle.backend), minB.handle.backend),
+          maxB.handle.backend), minFreezedOutput.handle.backend), maxFreezedOutput.handle.backend)
+    {
+    case .XLA:
+      let output_device = maxFreezedOutput.device
+      let a = Tensor<T1>(copying: a, to: .defaultTFEager)
+      let b = Tensor<T2>(copying: b, to: .defaultTFEager)
+      let bias = Tensor<Tbias>(copying: bias, to: .defaultTFEager)
+      let minA = Tensor<Float>(copying: minA, to: .defaultTFEager)
+      let maxA = Tensor<Float>(copying: maxA, to: .defaultTFEager)
+      let minB = Tensor<Float>(copying: minB, to: .defaultTFEager)
+      let maxB = Tensor<Float>(copying: maxB, to: .defaultTFEager)
+      let minFreezedOutput = Tensor<Float>(copying: minFreezedOutput, to: .defaultTFEager)
+      let maxFreezedOutput = Tensor<Float>(copying: maxFreezedOutput, to: .defaultTFEager)
+      return Tensor<Toutput>(
+        copying: _RawTFEager.quantizedMatMulWithBiasAndDequantize(
+          a, b, bias: bias, minA: minA, maxA: maxA, minB: minB, maxB: maxB,
+          minFreezedOutput: minFreezedOutput, maxFreezedOutput: maxFreezedOutput,
+          transposeA: transposeA, transposeB: transposeB, inputQuantMode: inputQuantMode),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.quantizedMatMulWithBiasAndDequantize(
+        a, b, bias: bias, minA: minA, maxA: maxA, minB: minB, maxB: maxB,
+        minFreezedOutput: minFreezedOutput, maxFreezedOutput: maxFreezedOutput,
+        transposeA: transposeA, transposeB: transposeB, inputQuantMode: inputQuantMode)
+    }
+
+  }
+
   /// Perform a quantized matrix multiplication of  `a` by the matrix `b` with bias
   /// add and relu fusion.
   ///
@@ -23184,7 +26376,7 @@ public enum _Raw {
   /// dimension of `a` (after being transposed if `transpose_a` is non-zero) must
   /// match the outer dimension of `b` (after being transposed if `transposed_b` is
   /// non-zero). Then do broadcast add operation with bias values on the matrix
-  /// mulplication result. The bias size must match inner dimension of `b`. Then do
+  /// multiplication result. The bias size must match inner dimension of `b`. Then do
   /// relu activation to get non-negative result.
   ///
   /// - Parameters:
@@ -23234,7 +26426,7 @@ public enum _Raw {
   /// dimension of `a` (after being transposed if `transpose_a` is non-zero) must
   /// match the outer dimension of `b` (after being transposed if `transposed_b` is
   /// non-zero). Then do broadcast add operation with bias values on the matrix
-  /// mulplication result. The bias size must match inner dimension of `b`.  Then do
+  /// multiplication result. The bias size must match inner dimension of `b`.  Then do
   /// relu activation to get non-negative result. Then do requantize operation to get
   /// final uint8 result.
   ///
@@ -23278,6 +26470,32 @@ public enum _Raw {
     inputQuantMode: InputQuantMode = .minFirst
   ) -> (out: Tensor<Toutput>, minOut: Tensor<Float>, maxOut: Tensor<Float>) {
     _RawTFEager.quantizedMatMulWithBiasAndReluAndRequantize(
+      a, b, bias: bias, minA: minA, maxA: maxA, minB: minB, maxB: maxB,
+      minFreezedOutput: minFreezedOutput, maxFreezedOutput: maxFreezedOutput,
+      transposeA: transposeA, transposeB: transposeB, inputQuantMode: inputQuantMode)
+  }
+
+  @inlinable @inline(__always)
+  public static func quantizedMatMulWithBiasAndRequantize<
+    T1: TensorFlowScalar,
+    T2: TensorFlowScalar,
+    Tbias: FloatingPoint & TensorFlowScalar,
+    Toutput: TensorFlowScalar
+  >(
+    _ a: Tensor<T1>,
+    _ b: Tensor<T2>,
+    bias: Tensor<Tbias>,
+    minA: Tensor<Float>,
+    maxA: Tensor<Float>,
+    minB: Tensor<Float>,
+    maxB: Tensor<Float>,
+    minFreezedOutput: Tensor<Float>,
+    maxFreezedOutput: Tensor<Float>,
+    transposeA: Bool = false,
+    transposeB: Bool = false,
+    inputQuantMode: InputQuantMode = .minFirst
+  ) -> (out: Tensor<Toutput>, minOut: Tensor<Float>, maxOut: Tensor<Float>) {
+    _RawTFEager.quantizedMatMulWithBiasAndRequantize(
       a, b, bias: bias, minA: minA, maxA: maxA, minB: minB, maxB: maxB,
       minFreezedOutput: minFreezedOutput, maxFreezedOutput: maxFreezedOutput,
       transposeA: transposeA, transposeB: transposeB, inputQuantMode: inputQuantMode)
@@ -23362,9 +26580,8 @@ public enum _Raw {
     features: Tensor<Tinput>,
     minFeatures: Tensor<Float>,
     maxFeatures: Tensor<Float>
-  ) -> (
-    activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>
-  ) {
+  ) -> (activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>)
+  {
     _RawTFEager.quantizedRelu(
       features: features, minFeatures: minFeatures, maxFeatures: maxFeatures)
   }
@@ -23387,9 +26604,8 @@ public enum _Raw {
     features: Tensor<Tinput>,
     minFeatures: Tensor<Float>,
     maxFeatures: Tensor<Float>
-  ) -> (
-    activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>
-  ) {
+  ) -> (activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>)
+  {
     _RawTFEager.quantizedRelu6(
       features: features, minFeatures: minFeatures, maxFeatures: maxFeatures)
   }
@@ -23413,9 +26629,8 @@ public enum _Raw {
     maxValue: Tensor<Float>,
     minFeatures: Tensor<Float>,
     maxFeatures: Tensor<Float>
-  ) -> (
-    activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>
-  ) {
+  ) -> (activations: Tensor<OutType>, minActivations: Tensor<Float>, maxActivations: Tensor<Float>)
+  {
     _RawTFEager.quantizedReluX(
       features: features, maxValue: maxValue, minFeatures: minFeatures, maxFeatures: maxFeatures)
   }
@@ -23852,6 +27067,195 @@ public enum _Raw {
 
   }
 
+  /// Counts the number of occurrences of each value in an integer array.
+  ///
+  /// Outputs a vector with length `size` and the same dtype as `weights`. If
+  /// `weights` are empty, then index `i` stores the number of times the value `i` is
+  /// counted in `arr`. If `weights` are non-empty, then index `i` stores the sum of
+  /// the value in `weights` at each index where the corresponding value in `arr` is
+  /// `i`.
+  ///
+  /// Values in `arr` outside of the range [0, size) are ignored.
+  ///
+  /// - Parameters:
+  ///     - splits: 1D int64 `Tensor`.
+  ///     - values: 2D int `Tensor`.
+  ///     - size: non-negative int scalar `Tensor`.
+  ///     - weights: is an int32, int64, float32, or float64 `Tensor` with the same
+  ///         shape as `input`, or a length-0 `Tensor`, in which case it acts as all weights
+  ///         equal to 1.
+  ///
+  /// - Attr binary_output: bool; Whether the kernel should count the appearance or number of occurrences.
+  ///
+  /// - Output output: 1D `Tensor` with length equal to `size` or 2D `Tensor` with [batch_size, `size`].
+  ///     The counts or summed weights for each value in the range [0, size).
+  @inlinable @inline(__always)
+  public static func raggedBincount<
+    Tidx: TensorFlowIndex,
+    T: TensorFlowNumeric
+  >(
+    splits: Tensor<Int64>,
+    _ values: Tensor<Tidx>,
+    size: Tensor<Tidx>,
+    weights: Tensor<T>,
+    binaryOutput: Bool = false
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(splits.handle.backend, values.handle.backend), size.handle.backend),
+      weights.handle.backend)
+    {
+    case .XLA:
+      let output_device = weights.device
+      let splits = Tensor<Int64>(copying: splits, to: .defaultTFEager)
+      let values = Tensor<Tidx>(copying: values, to: .defaultTFEager)
+      let size = Tensor<Tidx>(copying: size, to: .defaultTFEager)
+      let weights = Tensor<T>(copying: weights, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.raggedBincount(
+          splits: splits, values, size: size, weights: weights, binaryOutput: binaryOutput),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.raggedBincount(
+        splits: splits, values, size: size, weights: weights, binaryOutput: binaryOutput)
+    }
+
+  }
+
+  /// Performs sparse-output bin counting for a ragged tensor input.
+  ///
+  ///   Counts the number of times each value occurs in the input.
+  ///
+  /// - Parameters:
+  ///     - splits: Tensor containing the row splits of the ragged tensor to count.
+  ///     - values: Tensor containing values of the sparse tensor to count.
+  ///     - weights: A Tensor of the same shape as indices containing per-index weight values.
+  ///         May also be the empty tensor if no weights are used.
+  ///
+  /// - Attrs:
+  ///     - minlength: Minimum value to count. Can be set to -1 for no minimum.
+  ///     - maxlength: Maximum value to count. Can be set to -1 for no maximum.
+  ///     - binary_output: Whether to output the number of occurrences of each value or 1.
+  ///     - output_type: Dtype of the output values tensor.
+  ///
+  /// - Outputs:
+  ///     - output_indices: Indices tensor for the resulting sparse tensor object.
+  ///     - output_values: Values tensor for the resulting sparse tensor object.
+  ///     - output_dense_shape: Shape tensor for the resulting sparse tensor object.
+  ///           END
+  ///           }
+  ///           attr {
+  ///             name: "T"
+  ///             description: <<END
+  ///         Dtype of the input values tensor.
+  @inlinable @inline(__always)
+  public static func raggedCountSparseOutput<
+    T: TensorFlowIndex,
+    OutputType: TensorFlowNumeric
+  >(
+    splits: Tensor<Int64>,
+    _ values: Tensor<T>,
+    weights: Tensor<OutputType>,
+    minlength: Int64 = -1,
+    maxlength: Int64 = -1,
+    binaryOutput: Bool
+  ) -> (
+    outputIndices: Tensor<Int64>, outputValues: Tensor<OutputType>, outputDenseShape: Tensor<Int64>
+  ) {
+    _RawTFEager.raggedCountSparseOutput(
+      splits: splits, values, weights: weights, minlength: minlength, maxlength: maxlength,
+      binaryOutput: binaryOutput)
+  }
+
+  /// Generates a feature cross from a list of tensors, and returns it as a
+  /// RaggedTensor.  See `tf.ragged.cross` for more details.
+  ///
+  /// - Parameters:
+  ///     - ragged_values: The values tensor for each RaggedTensor input.
+  ///     - ragged_row_splits: The row_splits tensor for each RaggedTensor input.
+  ///     - sparse_indices: The indices tensor for each SparseTensor input.
+  ///     - sparse_values: The values tensor for each SparseTensor input.
+  ///     - sparse_shape: The dense_shape tensor for each SparseTensor input.
+  ///     - dense_inputs: The tf.Tensor inputs.
+  ///
+  /// - Attr input_order: String specifying the tensor type for each input.  The `i`th character in
+  ///     this string specifies the type of the `i`th input, and is one of: 'R' (ragged),
+  ///     'D' (dense), or 'S' (sparse).  This attr is used to ensure that the crossed
+  ///     values are combined in the order of the inputs from the call to tf.ragged.cross.
+  ///
+  /// - Outputs:
+  ///     - output_values: The `values` for the returned `RaggedTensor`.
+  ///     - output_row_splits: The `row_splits` for the returned `RaggedTensor`.
+  @inlinable @inline(__always)
+  public static func raggedCross<
+    RaggedValuesTypes: TensorArrayProtocol,
+    RaggedSplitsTypes: TensorArrayProtocol,
+    SparseValuesTypes: TensorArrayProtocol,
+    DenseTypes: TensorArrayProtocol,
+    OutValuesType: TensorFlowIndex,
+    OutRowSplitsType: TensorFlowIndex
+  >(
+    raggedValues: RaggedValuesTypes,
+    raggedRowSplits: RaggedSplitsTypes,
+    sparseIndices: [Tensor<Int64>],
+    sparseValues: SparseValuesTypes,
+    sparseShape: [Tensor<Int64>],
+    denseInputs: DenseTypes,
+    inputOrder: String,
+    hashedOutput: Bool,
+    numBuckets: Int64,
+    hashKey: Int64
+  ) -> (outputValues: Tensor<OutValuesType>, outputRowSplits: Tensor<OutRowSplitsType>) {
+    _RawTFEager.raggedCross(
+      raggedValues: raggedValues, raggedRowSplits: raggedRowSplits, sparseIndices: sparseIndices,
+      sparseValues: sparseValues, sparseShape: sparseShape, denseInputs: denseInputs,
+      inputOrder: inputOrder, hashedOutput: hashedOutput, numBuckets: numBuckets, hashKey: hashKey)
+  }
+
+  /// Generates a feature cross from a list of tensors, and returns it as a
+  /// RaggedTensor.  See `tf.ragged.cross` for more details.
+  ///
+  /// - Parameters:
+  ///     - ragged_values: The values tensor for each RaggedTensor input.
+  ///     - ragged_row_splits: The row_splits tensor for each RaggedTensor input.
+  ///     - sparse_indices: The indices tensor for each SparseTensor input.
+  ///     - sparse_values: The values tensor for each SparseTensor input.
+  ///     - sparse_shape: The dense_shape tensor for each SparseTensor input.
+  ///     - dense_inputs: The tf.Tensor inputs.
+  ///
+  /// - Attr input_order: String specifying the tensor type for each input.  The `i`th character in
+  ///     this string specifies the type of the `i`th input, and is one of: 'R' (ragged),
+  ///     'D' (dense), or 'S' (sparse).  This attr is used to ensure that the crossed
+  ///     values are combined in the order of the inputs from the call to tf.ragged.cross.
+  ///
+  /// - Outputs:
+  ///     - output_values: The `values` for the returned `RaggedTensor`.
+  ///     - output_row_splits: The `row_splits` for the returned `RaggedTensor`.
+  @inlinable @inline(__always)
+  public static func raggedCross<
+    RaggedValuesTypes: TensorArrayProtocol,
+    RaggedSplitsTypes: TensorArrayProtocol,
+    SparseValuesTypes: TensorArrayProtocol,
+    DenseTypes: TensorArrayProtocol,
+    OutRowSplitsType: TensorFlowIndex
+  >(
+    raggedValues: RaggedValuesTypes,
+    raggedRowSplits: RaggedSplitsTypes,
+    sparseIndices: [Tensor<Int64>],
+    sparseValues: SparseValuesTypes,
+    sparseShape: [Tensor<Int64>],
+    denseInputs: DenseTypes,
+    inputOrder: String,
+    hashedOutput: Bool,
+    numBuckets: Int64,
+    hashKey: Int64
+  ) -> (outputValues: StringTensor, outputRowSplits: Tensor<OutRowSplitsType>) {
+    _RawTFEager.raggedCross(
+      raggedValues: raggedValues, raggedRowSplits: raggedRowSplits, sparseIndices: sparseIndices,
+      sparseValues: sparseValues, sparseShape: sparseShape, denseInputs: denseInputs,
+      inputOrder: inputOrder, hashedOutput: hashedOutput, numBuckets: numBuckets, hashKey: hashKey)
+  }
+
   /// Gather ragged slices from `params` axis `0` according to `indices`.
   ///
   /// Outputs a `RaggedTensor` output composed from `output_dense_values` and
@@ -24044,7 +27448,7 @@ public enum _Raw {
   ///   is preceded by "FIRST_DIM_SIZE".
   ///
   /// - Parameters:
-  ///     - shape: The desired shape of the the output tensor. If left unspecified (empty),
+  ///     - shape: The desired shape of the output tensor. If left unspecified (empty),
   ///         the minimal shape required to contain all the elements in the ragged tensor
   ///         (the natural shape) will be used. If some dimensions are left unspecified, then
   ///         the size of the natural shape is used in that dimension.
@@ -24101,8 +27505,7 @@ public enum _Raw {
       let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
       let values = Tensor<T>(copying: values, to: .defaultTFEager)
       let defaultValue = Tensor<T>(copying: defaultValue, to: .defaultTFEager)
-      let rowPartitionTensors = [Tensor<Tindex>](
-        copying: rowPartitionTensors, to: .defaultTFEager)
+      let rowPartitionTensors = [Tensor<Tindex>](copying: rowPartitionTensors, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.raggedTensorToTensor(
           shape: shape, values, defaultValue: defaultValue,
@@ -24110,8 +27513,8 @@ public enum _Raw {
         to: output_device)
     case .TF_EAGER:
       return _RawTFEager.raggedTensorToTensor(
-        shape: shape, values, defaultValue: defaultValue,
-        rowPartitionTensors: rowPartitionTensors, rowPartitionTypes: rowPartitionTypes)
+        shape: shape, values, defaultValue: defaultValue, rowPartitionTensors: rowPartitionTensors,
+        rowPartitionTypes: rowPartitionTypes)
     }
 
   }
@@ -24150,6 +27553,46 @@ public enum _Raw {
   ) -> VariantHandle {
     _RawTFEager.raggedTensorToVariant(
       rtNestedSplits: rtNestedSplits, rtDenseValues: rtDenseValues, batchedInput: batchedInput)
+  }
+
+  /// Helper used to compute the gradient for `RaggedTensorToVariant`.
+  ///
+  /// Computes the gradient for the dense_values input to the RaggedTensorToVariant
+  /// op, given the variant-encoded ragged gradients of the outputs, along with
+  /// the outer row-splits and the shape of the dense-values that were provided as
+  /// inputs to the RaggedTensorToVariant op.
+  ///
+  /// - Parameters:
+  ///     - encoded_ragged_grad: A `variant` Tensor containing encoded `RaggedTensor` gradients.
+  ///     - row_splits: Outermost row-splits that were used as input to the RaggedTensorToVariant op.
+  ///     - dense_values_shape: Shape of the dense_values that was used as an input to the
+  ///         RaggedTensorToVariant op.
+  ///
+  /// - Output dense_values_grad: Gradient for the dense_values of the RaggedTensorToVariant op.
+  @inlinable @inline(__always)
+  public static func raggedTensorToVariantGradient<
+    Tvalues: TensorFlowScalar,
+    Tsplits: TensorFlowIndex
+  >(
+    encodedRaggedGrad: VariantHandle,
+    rowSplits: Tensor<Tsplits>,
+    denseValuesShape: Tensor<Int32>
+  ) -> Tensor<Tvalues> {
+    switch commonBackend(rowSplits.handle.backend, denseValuesShape.handle.backend) {
+    case .XLA:
+      let output_device = denseValuesShape.device
+      let rowSplits = Tensor<Tsplits>(copying: rowSplits, to: .defaultTFEager)
+      let denseValuesShape = Tensor<Int32>(copying: denseValuesShape, to: .defaultTFEager)
+      return Tensor<Tvalues>(
+        copying: _RawTFEager.raggedTensorToVariantGradient(
+          encodedRaggedGrad: encodedRaggedGrad, rowSplits: rowSplits,
+          denseValuesShape: denseValuesShape), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.raggedTensorToVariantGradient(
+        encodedRaggedGrad: encodedRaggedGrad, rowSplits: rowSplits,
+        denseValuesShape: denseValuesShape)
+    }
+
   }
 
   /// Randomly crop `image`.
@@ -24216,10 +27659,12 @@ public enum _Raw {
     seed: Tensor<Int64>,
     seed2: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.randomDataset(
-      seed: seed, seed2: seed2, outputTypes: outputTypes, outputShapes: outputShapes)
+      seed: seed, seed2: seed2, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Outputs random values from the Gamma distribution(s) described by alpha.
@@ -24282,6 +27727,51 @@ public enum _Raw {
         copying: _RawTFEager.randomGammaGrad(alpha: alpha, sample: sample), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.randomGammaGrad(alpha: alpha, sample: sample)
+    }
+
+  }
+
+  /// Outputs the position of `value` in a permutation of [0, ..., max_index].
+  ///
+  /// Output values are a bijection of the `index` for any combination and `seed` and `max_index`.
+  ///
+  /// If multiple inputs are vectors (matrix in case of seed) then the size of the
+  /// first dimension must match.
+  ///
+  /// The outputs are deterministic.
+  ///
+  /// - Parameters:
+  ///     - index: A scalar tensor or a vector of dtype `dtype`. The index (or indices) to be shuffled. Must be within [0, max_index].
+  ///     - seed: A tensor of dtype `Tseed` and shape [3] or [n, 3]. The random seed.
+  ///     - max_index: A scalar tensor or vector of dtype `dtype`. The upper bound(s) of the interval (inclusive).
+  ///
+  /// - Attrs:
+  ///     - dtype: The dtype of the input and output.
+  ///     - Tseed: The type of `seed`.
+  ///
+  /// - Output output: A scalar tensor of dtype `dtype`, within [0, max_index]. The randomly shuffled index.
+  @inlinable @inline(__always)
+  public static func randomIndexShuffle<
+    Dtype: TensorFlowIndex,
+    Tseed: TensorFlowIndex
+  >(
+    index: Tensor<Dtype>,
+    seed: Tensor<Tseed>,
+    maxIndex: Tensor<Dtype>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(index.handle.backend, seed.handle.backend), maxIndex.handle.backend)
+    {
+    case .XLA:
+      let output_device = maxIndex.device
+      let index = Tensor<Dtype>(copying: index, to: .defaultTFEager)
+      let seed = Tensor<Tseed>(copying: seed, to: .defaultTFEager)
+      let maxIndex = Tensor<Dtype>(copying: maxIndex, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.randomIndexShuffle(index: index, seed: seed, maxIndex: maxIndex),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.randomIndexShuffle(index: index, seed: seed, maxIndex: maxIndex)
     }
 
   }
@@ -24559,8 +28049,8 @@ public enum _Raw {
       let maxval = Tensor<Tout>(copying: maxval, to: .defaultTFEager)
       return Tensor<Tout>(
         copying: _RawTFEager.randomUniformInt(
-          shape: shape, minval: minval, maxval: maxval, seed: seed, seed2: seed2),
-        to: output_device)
+          shape: shape, minval: minval, maxval: maxval, seed: seed, seed2: seed2), to: output_device
+      )
     case .TF_EAGER:
       return _RawTFEager.randomUniformInt(
         shape: shape, minval: minval, maxval: maxval, seed: seed, seed2: seed2)
@@ -24617,10 +28107,12 @@ public enum _Raw {
     stop: Tensor<Int64>,
     step: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.rangeDataset(
-      start: start, stop: stop, step: step, outputTypes: outputTypes, outputShapes: outputShapes)
+      start: start, stop: stop, step: step, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Returns the rank of a tensor.
@@ -24676,6 +28168,63 @@ public enum _Raw {
     resource: ResourceHandle
   ) -> Tensor<Dtype> {
     _RawTFEager.readVariableOp(resource: resource)
+  }
+
+  /// Splits resource variable input tensor across all dimensions.
+  ///
+  /// An op which splits the resource variable input tensor based on the given
+  /// num_splits attribute, pads slices optionally, and returned the slices. Slices
+  /// are returned in row-major order.
+  ///
+  /// This op may be generated via the TPU bridge.
+  ///
+  /// For example, with `input` tensor:
+  /// ```
+  /// [[0, 1, 2],
+  ///  [3, 4, 5],
+  ///  [6, 7, 8]]
+  /// ```
+  /// `num_splits`:
+  /// ```
+  /// [2, 2]
+  /// ```
+  /// and `paddings`:
+  /// ```
+  /// [1, 1]
+  /// ```
+  /// the expected `outputs` is:
+  /// ```
+  /// [[0, 1],
+  ///  [3, 4]]
+  /// [[2, 0],
+  ///  [5, 0]]
+  /// [[6, 7],
+  ///  [0, 0]]
+  /// [[8, 0],
+  ///  [0, 0]]
+  /// ```
+  ///
+  /// - Parameter resource: Resource variable of input tensor to split across all dimensions.
+  ///       }
+  ///       out_arg {
+  ///         name: "outputs"
+  ///         description: <<END
+  ///     Output slices based on input and num_splits defined, in row-major order.
+  ///
+  /// - Attrs:
+  ///     - num_splits: Number of ways to split per dimension. Shape dimensions must be evenly
+  ///         divisible.
+  ///     - paddings: Optional list of right paddings per dimension of input tensor to apply before
+  ///         splitting. This can be used to make a dimension evenly divisible.
+  @inlinable @inline(__always)
+  public static func readVariableXlaSplitND<T: TensorFlowScalar>(
+    resource: ResourceHandle,
+    n: Int64,
+    numSplits: [Int32],
+    paddings: [Int32]
+  ) -> [Tensor<T>] {
+    _RawTFEager.readVariableXlaSplitND(
+      resource: resource, n: n, numSplits: numSplits, paddings: paddings)
   }
 
   /// Returns the number of records this Reader has produced.
@@ -24864,6 +28413,28 @@ public enum _Raw {
       outputShapes: outputShapes, useFallback: useFallback)
   }
 
+  /// Creates a dataset that changes the batch size.
+  ///
+  /// Creates a dataset that rebatches elements from `input_dataset` into new batch
+  /// sizes.
+  ///
+  /// - Parameters:
+  ///     - input_dataset: A variant tensor representing the input dataset.
+  ///     - batch_sizes: A vector of integers representing the size of batches to produce. These values
+  ///         are cycled through in order.
+  @inlinable @inline(__always)
+  public static func rebatchDatasetV2(
+    inputDataset: VariantHandle,
+    batchSizes: Tensor<Int64>,
+    dropRemainder: Tensor<Bool>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.rebatchDatasetV2(
+      inputDataset: inputDataset, batchSizes: batchSizes, dropRemainder: dropRemainder,
+      outputTypes: outputTypes, outputShapes: outputShapes)
+  }
+
   /// Computes the reciprocal of x element-wise.
   ///
   /// I.e., \\(y = 1 / x\\).
@@ -24955,9 +28526,8 @@ public enum _Raw {
     clientTerminated: Bool = false
   ) -> Tensor<TensorType> {
     _RawTFEager.recv(
-      tensorName: tensorName, sendDevice: sendDevice,
-      sendDeviceIncarnation: sendDeviceIncarnation, recvDevice: recvDevice,
-      clientTerminated: clientTerminated)
+      tensorName: tensorName, sendDevice: sendDevice, sendDeviceIncarnation: sendDeviceIncarnation,
+      recvDevice: recvDevice, clientTerminated: clientTerminated)
   }
 
   /// An op that receives embedding activations on the TPU.
@@ -25007,11 +28577,12 @@ public enum _Raw {
     otherArguments: Targuments,
     f: (FIn) -> FOut,
     outputShapes: [TensorShape?],
-    useInterOpParallelism: Bool = true
+    useInterOpParallelism: Bool = true,
+    metadata: String
   ) -> OutputTypes {
     _RawTFEager.reduceDataset(
-      inputDataset: inputDataset, initialState: initialState, otherArguments: otherArguments,
-      f: f, outputShapes: outputShapes, useInterOpParallelism: useInterOpParallelism)
+      inputDataset: inputDataset, initialState: initialState, otherArguments: otherArguments, f: f,
+      outputShapes: outputShapes, useInterOpParallelism: useInterOpParallelism, metadata: metadata)
   }
 
   /// Joins a string Tensor across the given dimensions.
@@ -25060,8 +28631,7 @@ public enum _Raw {
     separator: String
   ) -> StringTensor {
     _RawTFEager.reduceJoin(
-      inputs: inputs, reductionIndices: reductionIndices, keepDims: keepDims, separator: separator
-    )
+      inputs: inputs, reductionIndices: reductionIndices, keepDims: keepDims, separator: separator)
   }
 
   /// Check if the input matches the regex pattern.
@@ -25120,12 +28690,43 @@ public enum _Raw {
       input, pattern: pattern, rewrite: rewrite, replaceGlobal: replaceGlobal)
   }
 
+  /// Registers a dataset with the tf.data service.
+  @inlinable @inline(__always)
+  public static func registerDataset(
+    dataset: VariantHandle,
+    address: StringTensor,
+    protocol_: StringTensor,
+    externalStatePolicy: Int64,
+    elementSpec: String,
+    metadata: String
+  ) -> Tensor<Int64> {
+    _RawTFEager.registerDataset(
+      dataset: dataset, address: address, protocol_: protocol_,
+      externalStatePolicy: externalStatePolicy, elementSpec: elementSpec, metadata: metadata)
+  }
+
+  @inlinable @inline(__always)
+  public static func relayout<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    layout: String
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.relayout(input, layout: layout), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.relayout(input, layout: layout)
+    }
+
+  }
+
   /// Computes rectified linear: `max(features, 0)`.
   ///
   /// See: https://en.wikipedia.org/wiki/Rectifier_(neural_networks)
   /// Example usage:
-  /// >>> tf.nn.relu([-2., 0., -0., 3.]).numpy()
-  /// array([ 0.,  0., -0.,  3.], dtype=float32)
+  /// >>> tf.nn.relu([-2., 0., 3.]).numpy()
+  /// array([0., 0., 3.], dtype=float32)
   @inlinable @inline(__always)
   public static func relu<T: TensorFlowNumeric>(
     features: Tensor<T>
@@ -25224,35 +28825,6 @@ public enum _Raw {
     _RawTFEager.remoteCall(target: target, args: args, f: f)
   }
 
-  /// Execute a sub graph on a remote processor.
-  ///
-  /// The graph specifications(such as graph itself, input tensors and output names)
-  /// are stored as a serialized protocol buffer of RemoteFusedGraphExecuteInfo
-  /// as serialized_remote_fused_graph_execute_info.
-  /// The specifications will be passed to a dedicated registered
-  /// remote fused graph executor.  The executor will send the graph specifications
-  /// to a remote processor and execute that graph.  The execution results
-  /// will be passed to consumer nodes as outputs of this node.
-  ///
-  /// - Parameter inputs: Arbitrary number of tensors with arbitrary data types
-  ///
-  /// - Attr serialized_remote_fused_graph_execute_info: Serialized protocol buffer
-  ///     of RemoteFusedGraphExecuteInfo which contains graph specifications.
-  ///
-  /// - Output outputs: Arbitrary number of tensors with arbitrary data types
-  @inlinable @inline(__always)
-  public static func remoteFusedGraphExecute<
-    Tinputs: TensorArrayProtocol,
-    Toutputs: TensorGroup
-  >(
-    inputs: Tinputs,
-    serializedRemoteFusedGraphExecuteInfo: String
-  ) -> Toutputs {
-    _RawTFEager.remoteFusedGraphExecute(
-      inputs: inputs, serializedRemoteFusedGraphExecuteInfo: serializedRemoteFusedGraphExecuteInfo
-    )
-  }
-
   /// Creates a dataset that emits the outputs of `input_dataset` `count` times.
   ///
   /// - Parameter count: A scalar representing the number of times that `input_dataset` should
@@ -25262,11 +28834,12 @@ public enum _Raw {
     inputDataset: VariantHandle,
     count: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.repeatDataset(
       inputDataset: inputDataset, count: count, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Computes a range that covers the actual values present in a quantized tensor.
@@ -25563,12 +29136,11 @@ public enum _Raw {
       let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
       return Tensor<Float>(
         copying: _RawTFEager.resizeBicubic(
-          images: images, size: size, alignCorners: alignCorners,
-          halfPixelCenters: halfPixelCenters), to: output_device)
+          images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
+        ), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.resizeBicubic(
-        images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
-      )
+        images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters)
     }
 
   }
@@ -25638,12 +29210,11 @@ public enum _Raw {
       let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
       return Tensor<Float>(
         copying: _RawTFEager.resizeBilinear(
-          images: images, size: size, alignCorners: alignCorners,
-          halfPixelCenters: halfPixelCenters), to: output_device)
+          images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
+        ), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.resizeBilinear(
-        images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
-      )
+        images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters)
     }
 
   }
@@ -25711,12 +29282,11 @@ public enum _Raw {
       let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.resizeNearestNeighbor(
-          images: images, size: size, alignCorners: alignCorners,
-          halfPixelCenters: halfPixelCenters), to: output_device)
+          images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
+        ), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.resizeNearestNeighbor(
-        images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
-      )
+        images: images, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters)
     }
 
   }
@@ -25747,8 +29317,8 @@ public enum _Raw {
       let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.resizeNearestNeighborGrad(
-          grads: grads, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters
-        ), to: output_device)
+          grads: grads, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.resizeNearestNeighborGrad(
         grads: grads, size: size, alignCorners: alignCorners, halfPixelCenters: halfPixelCenters)
@@ -25935,8 +29505,8 @@ public enum _Raw {
     updateSlots: Bool = true
   ) {
     _RawTFEager.resourceApplyAdagrad(
-      var_: var_, accum: accum, lr: lr, grad: grad, useLocking: useLocking,
-      updateSlots: updateSlots)
+      var_: var_, accum: accum, lr: lr, grad: grad, useLocking: useLocking, updateSlots: updateSlots
+    )
   }
 
   /// Update '*var' according to the proximal adagrad scheme.
@@ -25974,7 +29544,7 @@ public enum _Raw {
   /// Update '*var' according to the adagrad scheme.
   ///
   /// accum += grad * grad
-  /// var -= lr * grad * (1 / sqrt(accum))
+  /// var -= lr * grad * (1 / (sqrt(accum) + epsilon))
   ///
   /// - Parameters:
   ///     - var: Should be from a Variable().
@@ -26003,10 +29573,10 @@ public enum _Raw {
 
   /// Update '*var' according to the Adam algorithm.
   ///
-  /// $$\text{lr}_t := \mathrm{learning_rate} * \sqrt{1 - \beta_2^t} / (1 - \beta_1^t)$$
-  /// $$m_t := \beta_1 * m_{t-1} + (1 - \beta_1) * g$$
-  /// $$v_t := \beta_2 * v_{t-1} + (1 - \beta_2) * g * g$$
-  /// $$\text{variable} := \text{variable} - \text{lr}_t * m_t / (\sqrt{v_t} + \epsilon)$$
+  /// $$\text{lr}_t := \mathrm{lr} \cdot \frac{\sqrt{1 - \beta_2^t}}{1 - \beta_1^t}$$
+  /// $$m_t := \beta_1 \cdot m_{t-1} + (1 - \beta_1) \cdot g$$
+  /// $$v_t := \beta_2 \cdot v_{t-1} + (1 - \beta_2) \cdot g^2$$
+  /// $$\text{var} := \begin{cases} \text{var} - (m_t \beta_1 + g \cdot (1 - \beta_1))\cdot\text{lr}_t/(\sqrt{v_t} + \epsilon), &\text{if use_nesterov}\\\\  \text{var} - m_t \cdot \text{lr}_t /(\sqrt{v_t} + \epsilon), &\text{otherwise} \end{cases}$$
   ///
   /// - Parameters:
   ///     - var: Should be from a Variable().
@@ -26041,9 +29611,8 @@ public enum _Raw {
     useNesterov: Bool = false
   ) {
     _RawTFEager.resourceApplyAdam(
-      var_: var_, m: m, v: v, beta1Power: beta1Power, beta2Power: beta2Power, lr: lr,
-      beta1: beta1, beta2: beta2, epsilon: epsilon, grad: grad, useLocking: useLocking,
-      useNesterov: useNesterov)
+      var_: var_, m: m, v: v, beta1Power: beta1Power, beta2Power: beta2Power, lr: lr, beta1: beta1,
+      beta2: beta2, epsilon: epsilon, grad: grad, useLocking: useLocking, useNesterov: useNesterov)
   }
 
   /// Update '*var' according to the Adam algorithm.
@@ -26152,6 +29721,7 @@ public enum _Raw {
   ///     - mom: Should be from a Variable().
   ///     - lr: Scaling factor. Must be a scalar.
   ///     - rho: Decay rate. Must be a scalar.
+  ///     - momentum: Momentum Scale. Must be a scalar.
   ///     - epsilon: Ridge term. Must be a scalar.
   ///     - grad: The gradient.
   ///
@@ -26172,8 +29742,8 @@ public enum _Raw {
     useLocking: Bool = false
   ) {
     _RawTFEager.resourceApplyCenteredRMSProp(
-      var_: var_, mg: mg, ms: ms, mom: mom, lr: lr, rho: rho, momentum: momentum,
-      epsilon: epsilon, grad: grad, useLocking: useLocking)
+      var_: var_, mg: mg, ms: ms, mom: mom, lr: lr, rho: rho, momentum: momentum, epsilon: epsilon,
+      grad: grad, useLocking: useLocking)
   }
 
   /// Update '*var' according to the Ftrl-proximal scheme.
@@ -26207,17 +29777,18 @@ public enum _Raw {
     l1: Tensor<T>,
     l2: Tensor<T>,
     lrPower: Tensor<T>,
-    useLocking: Bool = false
+    useLocking: Bool = false,
+    multiplyLinearByLr: Bool = false
   ) {
     _RawTFEager.resourceApplyFtrl(
       var_: var_, accum: accum, linear: linear, grad: grad, lr: lr, l1: l1, l2: l2,
-      lrPower: lrPower, useLocking: useLocking)
+      lrPower: lrPower, useLocking: useLocking, multiplyLinearByLr: multiplyLinearByLr)
   }
 
   /// Update '*var' according to the Ftrl-proximal scheme.
   ///
+  /// accum_new = accum + grad * grad
   /// grad_with_shrinkage = grad + 2 * l2_shrinkage * var
-  /// accum_new = accum + grad_with_shrinkage * grad_with_shrinkage
   /// linear += grad_with_shrinkage +
   ///     (accum_new^(-lr_power) - accum^(-lr_power)) / lr * var
   /// quadratic = 1.0 / (accum_new^(lr_power) * lr) + 2 * l2
@@ -26248,11 +29819,13 @@ public enum _Raw {
     l2: Tensor<T>,
     l2Shrinkage: Tensor<T>,
     lrPower: Tensor<T>,
-    useLocking: Bool = false
+    useLocking: Bool = false,
+    multiplyLinearByLr: Bool = false
   ) {
     _RawTFEager.resourceApplyFtrlV2(
       var_: var_, accum: accum, linear: linear, grad: grad, lr: lr, l1: l1, l2: l2,
-      l2Shrinkage: l2Shrinkage, lrPower: lrPower, useLocking: useLocking)
+      l2Shrinkage: l2Shrinkage, lrPower: lrPower, useLocking: useLocking,
+      multiplyLinearByLr: multiplyLinearByLr)
   }
 
   /// Update '*var' by subtracting 'alpha' * 'delta' from it.
@@ -26311,9 +29884,9 @@ public enum _Raw {
       useNesterov: useNesterov)
   }
 
-  /// Update '*var' according to the momentum scheme. Set use_nesterov = True if you
+  /// Update '*var' according to the momentum scheme.
   ///
-  /// want to use Nesterov momentum.
+  /// Set use_nesterov = True if you want to use Nesterov momentum.
   ///
   /// accum = accum * momentum + grad
   /// var -= lr * accum
@@ -26572,8 +30145,8 @@ public enum _Raw {
           validateIndices: validateIndices), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.resourceGather(
-        resource: resource, indices: indices, batchDims: batchDims,
-        validateIndices: validateIndices)
+        resource: resource, indices: indices, batchDims: batchDims, validateIndices: validateIndices
+      )
     }
 
   }
@@ -26853,6 +30426,56 @@ public enum _Raw {
     useLocking: Bool = true
   ) {
     _RawTFEager.resourceScatterNdAdd(
+      ref: ref, indices: indices, updates: updates, useLocking: useLocking)
+  }
+
+  ///
+  /// - Parameters:
+  ///     - ref: A resource handle. Must be from a VarHandleOp.
+  ///     - indices: A Tensor. Must be one of the following types: int32, int64.
+  ///         A tensor of indices into ref.
+  ///     - updates: A Tensor. Must have the same type as ref. A tensor of
+  ///         values whose element wise max is taken with ref
+  ///
+  /// - Attr use_locking: An optional bool. Defaults to True. If True, the assignment will
+  ///     be protected by a lock; otherwise the behavior is undefined,
+  ///     but may exhibit less contention.
+  @inlinable @inline(__always)
+  public static func resourceScatterNdMax<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    ref: ResourceHandle,
+    indices: Tensor<Tindices>,
+    updates: Tensor<T>,
+    useLocking: Bool = true
+  ) {
+    _RawTFEager.resourceScatterNdMax(
+      ref: ref, indices: indices, updates: updates, useLocking: useLocking)
+  }
+
+  ///
+  /// - Parameters:
+  ///     - ref: A resource handle. Must be from a VarHandleOp.
+  ///     - indices: A Tensor. Must be one of the following types: int32, int64.
+  ///         A tensor of indices into ref.
+  ///     - updates: A Tensor. Must have the same type as ref. A tensor of
+  ///         values whose element wise min is taken with ref.
+  ///
+  /// - Attr use_locking: An optional bool. Defaults to True. If True, the assignment will
+  ///     be protected by a lock; otherwise the behavior is undefined,
+  ///     but may exhibit less contention.
+  @inlinable @inline(__always)
+  public static func resourceScatterNdMin<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    ref: ResourceHandle,
+    indices: Tensor<Tindices>,
+    updates: Tensor<T>,
+    useLocking: Bool = true
+  ) {
+    _RawTFEager.resourceScatterNdMin(
       ref: ref, indices: indices, updates: updates, useLocking: useLocking)
   }
 
@@ -27145,8 +30768,8 @@ public enum _Raw {
   ) {
     _RawTFEager.resourceSparseApplyAdagradDA(
       var_: var_, gradientAccumulator: gradientAccumulator,
-      gradientSquaredAccumulator: gradientSquaredAccumulator, grad: grad, indices: indices,
-      lr: lr, l1: l1, l2: l2, globalStep: globalStep, useLocking: useLocking)
+      gradientSquaredAccumulator: gradientSquaredAccumulator, grad: grad, indices: indices, lr: lr,
+      l1: l1, l2: l2, globalStep: globalStep, useLocking: useLocking)
   }
 
   /// Update relevant entries in '*var' and '*accum' according to the adagrad scheme.
@@ -27236,8 +30859,8 @@ public enum _Raw {
     useLocking: Bool = false
   ) {
     _RawTFEager.resourceSparseApplyCenteredRMSProp(
-      var_: var_, mg: mg, ms: ms, mom: mom, lr: lr, rho: rho, momentum: momentum,
-      epsilon: epsilon, grad: grad, indices: indices, useLocking: useLocking)
+      var_: var_, mg: mg, ms: ms, mom: mom, lr: lr, rho: rho, momentum: momentum, epsilon: epsilon,
+      grad: grad, indices: indices, useLocking: useLocking)
   }
 
   /// Update relevant entries in '*var' according to the Ftrl-proximal scheme.
@@ -27277,11 +30900,12 @@ public enum _Raw {
     l1: Tensor<T>,
     l2: Tensor<T>,
     lrPower: Tensor<T>,
-    useLocking: Bool = false
+    useLocking: Bool = false,
+    multiplyLinearByLr: Bool = false
   ) {
     _RawTFEager.resourceSparseApplyFtrl(
       var_: var_, accum: accum, linear: linear, grad: grad, indices: indices, lr: lr, l1: l1,
-      l2: l2, lrPower: lrPower, useLocking: useLocking)
+      l2: l2, lrPower: lrPower, useLocking: useLocking, multiplyLinearByLr: multiplyLinearByLr)
   }
 
   /// Update relevant entries in '*var' according to the Ftrl-proximal scheme.
@@ -27324,11 +30948,13 @@ public enum _Raw {
     l2: Tensor<T>,
     l2Shrinkage: Tensor<T>,
     lrPower: Tensor<T>,
-    useLocking: Bool = false
+    useLocking: Bool = false,
+    multiplyLinearByLr: Bool = false
   ) {
     _RawTFEager.resourceSparseApplyFtrlV2(
       var_: var_, accum: accum, linear: linear, grad: grad, indices: indices, lr: lr, l1: l1,
-      l2: l2, l2Shrinkage: l2Shrinkage, lrPower: lrPower, useLocking: useLocking)
+      l2: l2, l2Shrinkage: l2Shrinkage, lrPower: lrPower, useLocking: useLocking,
+      multiplyLinearByLr: multiplyLinearByLr)
   }
 
   /// Update relevant entries in '*var' and '*accum' according to the momentum scheme.
@@ -27485,8 +31111,8 @@ public enum _Raw {
     useLocking: Bool = false
   ) {
     _RawTFEager.resourceSparseApplyProximalGradientDescent(
-      var_: var_, alpha: alpha, l1: l1, l2: l2, grad: grad, indices: indices,
-      useLocking: useLocking)
+      var_: var_, alpha: alpha, l1: l1, l2: l2, grad: grad, indices: indices, useLocking: useLocking
+    )
   }
 
   /// Update '*var' according to the RMSProp algorithm.
@@ -27682,8 +31308,7 @@ public enum _Raw {
     tensorNames: StringTensor,
     shapeAndSlices: StringTensor
   ) -> Dtypes {
-    _RawTFEager.restoreV2(
-      prefix: prefix, tensorNames: tensorNames, shapeAndSlices: shapeAndSlices)
+    _RawTFEager.restoreV2(prefix: prefix, tensorNames: tensorNames, shapeAndSlices: shapeAndSlices)
   }
 
   @inlinable @inline(__always)
@@ -27708,6 +31333,70 @@ public enum _Raw {
     _RawTFEager.restrict(a)
   }
 
+  /// An op that retrieves optimization parameters from embedding to host memory.
+  ///
+  /// An op that retrieves optimization parameters from embedding to host memory.
+  /// Must be preceded by a ConfigureTPUEmbeddingHost op that sets up the correct
+  /// embedding table configuration. For example, this op is used to retrieve updated
+  /// parameters before saving a checkpoint.  For Adagrad, auxiliary1 will contain the
+  /// accumulators after running this op. For SGD, all of the auxiliary* values will
+  /// be empty (0x0 tensors for that table). For FTRL, auxiliary1 will contain the
+  /// accumulators and auxiliary2 will contain the linear terms. For ADAM, auxiliary1
+  /// will contain the momenta and auxiliary2 will contain the velocities.
+  ///
+  /// - Attrs:
+  ///     - NumTables: The number of embedding tables.
+  ///     - config: An TPUEmbeddingConfiguration proto describing the
+  ///         table parameters being loaded, serialized to a string.
+  ///     - num_shards: Number of shards into which the embedding tables are divided.
+  ///     - shard_id: Identifier of shard for this operation.
+  ///
+  /// - Outputs:
+  ///     - parameters:  A list of tensors, one for each embedding table, containing the
+  ///         stored embedding table parameters.
+  ///     - auxiliary1: A list of tensors, one for each embedding table, containing the
+  ///         first auxiliary optimization parameter stored. Elements are
+  ///         present in the list, but have zero size, for unused optimization parameters
+  ///         (based on the algorithm in use for each table).
+  ///     - auxiliary2: A list of tensors, one for each embedding table, containing the
+  ///         second auxiliary optimization parameter stored. Elements are
+  ///         present in the list, but have zero size, for unused optimization parameters
+  ///         (based on the algorithm in use for each table).
+  ///     - auxiliary3: A list of tensors, one for each embedding table, containing the
+  ///         third auxiliary optimization parameter stored. Elements are
+  ///         present in the list, but have zero size, for unused optimization parameters
+  ///         (based on the algorithm in use for each table).
+  ///     - auxiliary4: A list of tensors, one for each embedding table, containing the
+  ///         fourth auxiliary optimization parameter stored. Elements are
+  ///         present in the list, but have zero size, for unused optimization parameters
+  ///         (based on the algorithm in use for each table).
+  ///     - auxiliary5: A list of tensors, one for each embedding table, containing the
+  ///         fifth auxiliary optimization parameter stored. Elements are
+  ///         present in the list, but have zero size, for unused optimization parameters
+  ///         (based on the algorithm in use for each table).
+  ///     - auxiliary6: A list of tensors, one for each embedding table, containing the
+  ///         six auxiliary optimization parameter stored. Elements are
+  ///         present in the list, but have zero size, for unused optimization parameters
+  ///         (based on the algorithm in use for each table).
+  ///     - auxiliary7: A list of tensors, one for each embedding table, containing the
+  ///         seventh auxiliary optimization parameter stored. Elements are
+  ///         present in the list, but have zero size, for unused optimization parameters
+  ///         (based on the algorithm in use for each table).
+  @inlinable @inline(__always)
+  public static func retrieveAllTPUEmbeddingParameters(
+    numTables: Int64,
+    config: String,
+    numShards: Int64,
+    shardId: Int64
+  ) -> (
+    parameters: [Tensor<Float>], auxiliary1: [Tensor<Float>], auxiliary2: [Tensor<Float>],
+    auxiliary3: [Tensor<Float>], auxiliary4: [Tensor<Float>], auxiliary5: [Tensor<Float>],
+    auxiliary6: [Tensor<Float>], auxiliary7: [Tensor<Float>]
+  ) {
+    _RawTFEager.retrieveAllTPUEmbeddingParameters(
+      numTables: numTables, config: config, numShards: numShards, shardId: shardId)
+  }
+
   /// Retrieve ADAM embedding parameters.
   ///
   /// An op that retrieves optimization parameters from embedding to host
@@ -27728,36 +31417,8 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, momenta: Tensor<Float>, velocities: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingADAMParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
-  }
-
-  /// Retrieve ADAM embedding parameters with debug support.
-  ///
-  /// An op that retrieves optimization parameters from embedding to host
-  /// memory. Must be preceded by a ConfigureTPUEmbeddingHost op that sets up
-  /// the correct embedding table configuration. For example, this op is
-  /// used to retrieve updated parameters before saving a checkpoint.
-  ///
-  /// - Outputs:
-  ///     - parameters: Parameter parameters updated by the ADAM optimization algorithm.
-  ///     - momenta: Parameter momenta updated by the ADAM optimization algorithm.
-  ///     - velocities: Parameter velocities updated by the ADAM optimization algorithm.
-  ///     - gradient_accumulators: Parameter gradient_accumulators updated by the ADAM optimization algorithm.
-  @inlinable @inline(__always)
-  public static func retrieveTPUEmbeddingADAMParametersGradAccumDebug(
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) -> (
-    parameters: Tensor<Float>, momenta: Tensor<Float>, velocities: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>
-  ) {
-    _RawTFEager.retrieveTPUEmbeddingADAMParametersGradAccumDebug(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve Adadelta embedding parameters.
@@ -27780,11 +31441,11 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, updates: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingAdadeltaParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
-  /// Retrieve Adadelta embedding parameters with debug support.
+  /// Retrieve Adagrad Momentum embedding parameters.
   ///
   /// An op that retrieves optimization parameters from embedding to host
   /// memory. Must be preceded by a ConfigureTPUEmbeddingHost op that sets up
@@ -27792,24 +31453,20 @@ public enum _Raw {
   /// used to retrieve updated parameters before saving a checkpoint.
   ///
   /// - Outputs:
-  ///     - parameters: Parameter parameters updated by the Adadelta optimization algorithm.
-  ///     - accumulators: Parameter accumulators updated by the Adadelta optimization algorithm.
-  ///     - updates: Parameter updates updated by the Adadelta optimization algorithm.
-  ///     - gradient_accumulators: Parameter gradient_accumulators updated by the Adadelta optimization algorithm.
+  ///     - parameters: Parameter parameters updated by the Adagrad Momentum optimization algorithm.
+  ///     - accumulators: Parameter accumulators updated by the Adagrad Momentum optimization algorithm.
+  ///     - momenta: Parameter momenta updated by the Adagrad Momentum optimization algorithm.
   @inlinable @inline(__always)
-  public static func retrieveTPUEmbeddingAdadeltaParametersGradAccumDebug(
+  public static func retrieveTPUEmbeddingAdagradMomentumParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
     shardId: Int64,
     config: String
-  ) -> (
-    parameters: Tensor<Float>, accumulators: Tensor<Float>, updates: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>
-  ) {
-    _RawTFEager.retrieveTPUEmbeddingAdadeltaParametersGradAccumDebug(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+  ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, momenta: Tensor<Float>) {
+    _RawTFEager.retrieveTPUEmbeddingAdagradMomentumParameters(
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve Adagrad embedding parameters.
@@ -27831,34 +31488,8 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingAdagradParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
-  }
-
-  /// Retrieve Adagrad embedding parameters with debug support.
-  ///
-  /// An op that retrieves optimization parameters from embedding to host
-  /// memory. Must be preceded by a ConfigureTPUEmbeddingHost op that sets up
-  /// the correct embedding table configuration. For example, this op is
-  /// used to retrieve updated parameters before saving a checkpoint.
-  ///
-  /// - Outputs:
-  ///     - parameters: Parameter parameters updated by the Adagrad optimization algorithm.
-  ///     - accumulators: Parameter accumulators updated by the Adagrad optimization algorithm.
-  ///     - gradient_accumulators: Parameter gradient_accumulators updated by the Adagrad optimization algorithm.
-  @inlinable @inline(__always)
-  public static func retrieveTPUEmbeddingAdagradParametersGradAccumDebug(
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) -> (
-    parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>
-  ) {
-    _RawTFEager.retrieveTPUEmbeddingAdagradParametersGradAccumDebug(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve centered RMSProp embedding parameters.
@@ -27882,8 +31513,8 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, ms: Tensor<Float>, mom: Tensor<Float>, mg: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingCenteredRMSPropParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve FTRL embedding parameters.
@@ -27906,11 +31537,11 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>, linears: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingFTRLParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
-  /// Retrieve FTRL embedding parameters with debug support.
+  /// Retrieve frequency estimator embedding parameters.
   ///
   /// An op that retrieves optimization parameters from embedding to host
   /// memory. Must be preceded by a ConfigureTPUEmbeddingHost op that sets up
@@ -27918,24 +31549,20 @@ public enum _Raw {
   /// used to retrieve updated parameters before saving a checkpoint.
   ///
   /// - Outputs:
-  ///     - parameters: Parameter parameters updated by the FTRL optimization algorithm.
-  ///     - accumulators: Parameter accumulators updated by the FTRL optimization algorithm.
-  ///     - linears: Parameter linears updated by the FTRL optimization algorithm.
-  ///     - gradient_accumulators: Parameter gradient_accumulators updated by the FTRL optimization algorithm.
+  ///     - parameters: Parameter parameters updated by the frequency estimator optimization algorithm.
+  ///     - last_hit_step: Parameter last_hit_step updated by the frequency estimator optimization
+  ///         algorithm.
   @inlinable @inline(__always)
-  public static func retrieveTPUEmbeddingFTRLParametersGradAccumDebug(
+  public static func retrieveTPUEmbeddingFrequencyEstimatorParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
     shardId: Int64,
     config: String
-  ) -> (
-    parameters: Tensor<Float>, accumulators: Tensor<Float>, linears: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>
-  ) {
-    _RawTFEager.retrieveTPUEmbeddingFTRLParametersGradAccumDebug(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+  ) -> (parameters: Tensor<Float>, lastHitStep: Tensor<Float>) {
+    _RawTFEager.retrieveTPUEmbeddingFrequencyEstimatorParameters(
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve MDL Adagrad Light embedding parameters.
@@ -27962,8 +31589,8 @@ public enum _Raw {
     benefits: Tensor<Float>
   ) {
     _RawTFEager.retrieveTPUEmbeddingMDLAdagradLightParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve Momentum embedding parameters.
@@ -27985,32 +31612,8 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, momenta: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingMomentumParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
-  }
-
-  /// Retrieve Momentum embedding parameters with debug support.
-  ///
-  /// An op that retrieves optimization parameters from embedding to host
-  /// memory. Must be preceded by a ConfigureTPUEmbeddingHost op that sets up
-  /// the correct embedding table configuration. For example, this op is
-  /// used to retrieve updated parameters before saving a checkpoint.
-  ///
-  /// - Outputs:
-  ///     - parameters: Parameter parameters updated by the Momentum optimization algorithm.
-  ///     - momenta: Parameter momenta updated by the Momentum optimization algorithm.
-  ///     - gradient_accumulators: Parameter gradient_accumulators updated by the Momentum optimization algorithm.
-  @inlinable @inline(__always)
-  public static func retrieveTPUEmbeddingMomentumParametersGradAccumDebug(
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) -> (parameters: Tensor<Float>, momenta: Tensor<Float>, gradientAccumulators: Tensor<Float>) {
-    _RawTFEager.retrieveTPUEmbeddingMomentumParametersGradAccumDebug(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve proximal Adagrad embedding parameters.
@@ -28032,34 +31635,21 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, accumulators: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingProximalAdagradParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
-  /// Retrieve proximal Adagrad embedding parameters with debug support.
-  ///
-  /// An op that retrieves optimization parameters from embedding to host
-  /// memory. Must be preceded by a ConfigureTPUEmbeddingHost op that sets up
-  /// the correct embedding table configuration. For example, this op is
-  /// used to retrieve updated parameters before saving a checkpoint.
-  ///
-  /// - Outputs:
-  ///     - parameters: Parameter parameters updated by the proximal Adagrad optimization algorithm.
-  ///     - accumulators: Parameter accumulators updated by the proximal Adagrad optimization algorithm.
-  ///     - gradient_accumulators: Parameter gradient_accumulators updated by the proximal Adagrad optimization algorithm.
   @inlinable @inline(__always)
-  public static func retrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug(
+  public static func retrieveTPUEmbeddingProximalYogiParameters(
     tableId: Int64 = -1,
     tableName: String,
     numShards: Int64,
     shardId: Int64,
     config: String
-  ) -> (
-    parameters: Tensor<Float>, accumulators: Tensor<Float>, gradientAccumulators: Tensor<Float>
-  ) {
-    _RawTFEager.retrieveTPUEmbeddingProximalAdagradParametersGradAccumDebug(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+  ) -> (parameters: Tensor<Float>, v: Tensor<Float>, m: Tensor<Float>) {
+    _RawTFEager.retrieveTPUEmbeddingProximalYogiParameters(
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve RMSProp embedding parameters.
@@ -28082,36 +31672,8 @@ public enum _Raw {
     config: String
   ) -> (parameters: Tensor<Float>, ms: Tensor<Float>, mom: Tensor<Float>) {
     _RawTFEager.retrieveTPUEmbeddingRMSPropParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
-  }
-
-  /// Retrieve RMSProp embedding parameters with debug support.
-  ///
-  /// An op that retrieves optimization parameters from embedding to host
-  /// memory. Must be preceded by a ConfigureTPUEmbeddingHost op that sets up
-  /// the correct embedding table configuration. For example, this op is
-  /// used to retrieve updated parameters before saving a checkpoint.
-  ///
-  /// - Outputs:
-  ///     - parameters: Parameter parameters updated by the RMSProp optimization algorithm.
-  ///     - ms: Parameter ms updated by the RMSProp optimization algorithm.
-  ///     - mom: Parameter mom updated by the RMSProp optimization algorithm.
-  ///     - gradient_accumulators: Parameter gradient_accumulators updated by the RMSProp optimization algorithm.
-  @inlinable @inline(__always)
-  public static func retrieveTPUEmbeddingRMSPropParametersGradAccumDebug(
-    tableId: Int64 = -1,
-    tableName: String,
-    numShards: Int64,
-    shardId: Int64,
-    config: String
-  ) -> (
-    parameters: Tensor<Float>, ms: Tensor<Float>, mom: Tensor<Float>,
-    gradientAccumulators: Tensor<Float>
-  ) {
-    _RawTFEager.retrieveTPUEmbeddingRMSPropParametersGradAccumDebug(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Retrieve SGD embedding parameters.
@@ -28131,8 +31693,8 @@ public enum _Raw {
     config: String
   ) -> Tensor<Float> {
     _RawTFEager.retrieveTPUEmbeddingStochasticGradientDescentParameters(
-      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId,
-      config: config)
+      tableId: tableId, tableName: tableName, numShards: numShards, shardId: shardId, config: config
+    )
   }
 
   /// Reverses specific dimensions of a tensor.
@@ -28358,9 +31920,6 @@ public enum _Raw {
 
   /// Reverses specific dimensions of a tensor.
   ///
-  /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
-  /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
-  ///
   /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
   /// dimensions of `tensor` to reverse. This operation reverses each dimension
   /// `i` for which there exists `j` s.t. `axis[j] == i`.
@@ -28429,9 +31988,6 @@ public enum _Raw {
   }
 
   /// Reverses specific dimensions of a tensor.
-  ///
-  /// NOTE `tf.reverse` has now changed behavior in preparation for 1.0.
-  /// `tf.reverse_v2` is currently an alias that will be deprecated before TF 1.0.
   ///
   /// Given a `tensor`, and a `int32` tensor `axis` representing the set of
   /// dimensions of `tensor` to reverse. This operation reverses each dimension
@@ -28570,6 +32126,977 @@ public enum _Raw {
 
   }
 
+  @inlinable @inline(__always)
+  public static func riscAbs<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscAbs(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscAbs(x)
+    }
+
+  }
+
+  /// Returns x + y element-wise.
+  ///
+  /// *NOTE*: `RiscAdd` does not supports broadcasting.
+  ///
+  /// Given two input tensors, the `tf.risc_add` operation computes the sum for every element in the tensor.
+  ///
+  /// Both input and output have a range `(-inf, inf)`.
+  ///
+  @inlinable @inline(__always)
+  public static func riscAdd<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscAdd(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscAdd(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscBinaryArithmetic<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>,
+    opType: OpType
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscBinaryArithmetic(x, y, opType: opType), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscBinaryArithmetic(x, y, opType: opType)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscBinaryComparison<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>,
+    opType: OpType1
+  ) -> Tensor<Bool> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<Bool>(
+        copying: _RawTFEager.riscBinaryComparison(x, y, opType: opType), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscBinaryComparison(x, y, opType: opType)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscBitcast<
+    Srct: TensorFlowScalar,
+    Dstt: TensorFlowScalar
+  >(
+    _ x: Tensor<Srct>
+  ) -> Tensor<Dstt> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<Srct>(copying: x, to: .defaultTFEager)
+      return Tensor<Dstt>(copying: _RawTFEager.riscBitcast(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscBitcast(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscBroadcast<
+    T: TensorFlowScalar,
+    Tidx: TensorFlowIndex
+  >(
+    _ input: Tensor<T>,
+    shape: Tensor<Tidx>
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, shape.handle.backend) {
+    case .XLA:
+      let output_device = shape.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let shape = Tensor<Tidx>(copying: shape, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscBroadcast(input, shape: shape), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscBroadcast(input, shape: shape)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscCast<
+    Srct: TensorFlowScalar,
+    Dstt: TensorFlowScalar
+  >(
+    _ x: Tensor<Srct>
+  ) -> Tensor<Dstt> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<Srct>(copying: x, to: .defaultTFEager)
+      return Tensor<Dstt>(copying: _RawTFEager.riscCast(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscCast(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscCeil<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscCeil(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscCeil(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscCholesky<T: FloatingPoint & TensorFlowScalar>(
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscCholesky(input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscCholesky(input)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscConcat<
+    T: TensorFlowScalar,
+    Tidx: TensorFlowIndex
+  >(
+    _ values: [Tensor<T>],
+    axis: Tensor<Tidx>
+  ) -> Tensor<T> {
+    switch commonBackend(commonBackend(values), axis.handle.backend) {
+    case .XLA:
+      let output_device = axis.device
+      let values = [Tensor<T>](copying: values, to: .defaultTFEager)
+      let axis = Tensor<Tidx>(copying: axis, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscConcat(values, axis: axis), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscConcat(values, axis: axis)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscCondition<
+    FunctrueIn: TensorGroup,
+    FunctrueOut: TensorGroup,
+    FuncfalseIn: TensorGroup,
+    FuncfalseOut: TensorGroup,
+    Srct: FloatingPoint & TensorFlowScalar,
+    Dstt: FloatingPoint & TensorFlowScalar
+  >(
+    pred: Tensor<Bool>,
+    inputTrue: Tensor<Srct>,
+    inputFalse: Tensor<Srct>,
+    funcTrue: (FunctrueIn) -> FunctrueOut,
+    funcFalse: (FuncfalseIn) -> FuncfalseOut
+  ) -> Tensor<Dstt> {
+    switch commonBackend(
+      commonBackend(pred.handle.backend, inputTrue.handle.backend), inputFalse.handle.backend)
+    {
+    case .XLA:
+      let output_device = inputFalse.device
+      let pred = Tensor<Bool>(copying: pred, to: .defaultTFEager)
+      let inputTrue = Tensor<Srct>(copying: inputTrue, to: .defaultTFEager)
+      let inputFalse = Tensor<Srct>(copying: inputFalse, to: .defaultTFEager)
+      return Tensor<Dstt>(
+        copying: _RawTFEager.riscCondition(
+          pred: pred, inputTrue: inputTrue, inputFalse: inputFalse, funcTrue: funcTrue,
+          funcFalse: funcFalse), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscCondition(
+        pred: pred, inputTrue: inputTrue, inputFalse: inputFalse, funcTrue: funcTrue,
+        funcFalse: funcFalse)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscConv<T: FloatingPoint & TensorFlowScalar>(
+    _ input: Tensor<T>,
+    filter: Tensor<T>,
+    strides: [Int32],
+    dataFormat: DataFormat = .nhwc,
+    dilations: [Int32] = [1, 1, 1, 1]
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, filter.handle.backend) {
+    case .XLA:
+      let output_device = filter.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let filter = Tensor<T>(copying: filter, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscConv(
+          input, filter: filter, strides: strides, dataFormat: dataFormat, dilations: dilations),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscConv(
+        input, filter: filter, strides: strides, dataFormat: dataFormat, dilations: dilations)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscCos<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscCos(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscCos(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscDiv<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscDiv(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscDiv(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscDot<T: FloatingPoint & TensorFlowScalar>(
+    _ a: Tensor<T>,
+    _ b: Tensor<T>,
+    transposeA: Bool = false,
+    transposeB: Bool = false
+  ) -> Tensor<T> {
+    switch commonBackend(a.handle.backend, b.handle.backend) {
+    case .XLA:
+      let output_device = b.device
+      let a = Tensor<T>(copying: a, to: .defaultTFEager)
+      let b = Tensor<T>(copying: b, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscDot(a, b, transposeA: transposeA, transposeB: transposeB),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscDot(a, b, transposeA: transposeA, transposeB: transposeB)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscExp<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscExp(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscExp(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscFft<Tcomplex: TensorFlowScalar>(
+    _ input: Tensor<Tcomplex>
+  ) -> Tensor<Tcomplex> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<Tcomplex>(copying: input, to: .defaultTFEager)
+      return Tensor<Tcomplex>(copying: _RawTFEager.riscFft(input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscFft(input)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscFloor<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscFloor(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscFloor(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscGather<
+    Tparams: TensorFlowScalar,
+    Tindices: TensorFlowIndex,
+    Taxis: TensorFlowIndex
+  >(
+    params: Tensor<Tparams>,
+    indices: Tensor<Tindices>,
+    axis: Tensor<Taxis>,
+    batchDims: Int64 = 0
+  ) -> Tensor<Tparams> {
+    switch commonBackend(
+      commonBackend(params.handle.backend, indices.handle.backend), axis.handle.backend)
+    {
+    case .XLA:
+      let output_device = axis.device
+      let params = Tensor<Tparams>(copying: params, to: .defaultTFEager)
+      let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
+      let axis = Tensor<Taxis>(copying: axis, to: .defaultTFEager)
+      return Tensor<Tparams>(
+        copying: _RawTFEager.riscGather(
+          params: params, indices: indices, axis: axis, batchDims: batchDims), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscGather(
+        params: params, indices: indices, axis: axis, batchDims: batchDims)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscImag<
+    T: TensorFlowScalar,
+    Tout: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<Tout> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<Tout>(copying: _RawTFEager.riscImag(input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscImag(input)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscIsFinite<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<Bool> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<Bool>(copying: _RawTFEager.riscIsFinite(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscIsFinite(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscLog<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscLog(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscLog(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscLogicalAnd(
+    _ x: Tensor<Bool>,
+    _ y: Tensor<Bool>
+  ) -> Tensor<Bool> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<Bool>(copying: x, to: .defaultTFEager)
+      let y = Tensor<Bool>(copying: y, to: .defaultTFEager)
+      return Tensor<Bool>(copying: _RawTFEager.riscLogicalAnd(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscLogicalAnd(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscLogicalNot(
+    _ x: Tensor<Bool>
+  ) -> Tensor<Bool> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<Bool>(copying: x, to: .defaultTFEager)
+      return Tensor<Bool>(copying: _RawTFEager.riscLogicalNot(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscLogicalNot(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscLogicalOr(
+    _ x: Tensor<Bool>,
+    _ y: Tensor<Bool>
+  ) -> Tensor<Bool> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<Bool>(copying: x, to: .defaultTFEager)
+      let y = Tensor<Bool>(copying: y, to: .defaultTFEager)
+      return Tensor<Bool>(copying: _RawTFEager.riscLogicalOr(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscLogicalOr(x, y)
+    }
+
+  }
+
+  /// Returns max(x, y) element-wise.
+  ///
+  /// *NOTE*: `RiscMax` does not supports broadcasting.
+  ///
+  /// Given two input tensors, the `tf.risc_max` operation computes the maximum for every element in the tensor.
+  ///
+  @inlinable @inline(__always)
+  public static func riscMax<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscMax(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscMax(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscMin<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscMin(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscMin(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscMul<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscMul(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscMul(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscNeg<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscNeg(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscNeg(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscPad<
+    T: FloatingPoint & TensorFlowScalar,
+    Tpaddings: TensorFlowIndex
+  >(
+    _ input: Tensor<T>,
+    paddings: Tensor<Tpaddings>,
+    constantValues: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, paddings.handle.backend), constantValues.handle.backend)
+    {
+    case .XLA:
+      let output_device = constantValues.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let paddings = Tensor<Tpaddings>(copying: paddings, to: .defaultTFEager)
+      let constantValues = Tensor<T>(copying: constantValues, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscPad(input, paddings: paddings, constantValues: constantValues),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscPad(input, paddings: paddings, constantValues: constantValues)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscPool<T: FloatingPoint & TensorFlowScalar>(
+    value: Tensor<T>,
+    ksize: [Int32],
+    strides: [Int32],
+    poolingType: PoolingType,
+    dataFormat: DataFormat = .nhwc
+  ) -> Tensor<T> {
+    switch value.handle.backend {
+    case .XLA:
+      let output_device = value.device
+      let value = Tensor<T>(copying: value, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscPool(
+          value: value, ksize: ksize, strides: strides, poolingType: poolingType,
+          dataFormat: dataFormat), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscPool(
+        value: value, ksize: ksize, strides: strides, poolingType: poolingType,
+        dataFormat: dataFormat)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscPow<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscPow(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscPow(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscRandomUniform<T: TensorFlowIndex>(
+    shape: Tensor<T>,
+    seed: Int64 = 0
+  ) -> Tensor<Float> {
+    switch shape.handle.backend {
+    case .XLA:
+      let output_device = shape.device
+      let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
+      return Tensor<Float>(
+        copying: _RawTFEager.riscRandomUniform(shape: shape, seed: seed), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscRandomUniform(shape: shape, seed: seed)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscReal<
+    T: TensorFlowScalar,
+    Tout: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<Tout> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<Tout>(copying: _RawTFEager.riscReal(input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscReal(input)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscReduce<
+    Index: TensorFlowIndex,
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ tensor: Tensor<T>,
+    axis: Tensor<Index>,
+    reduceType: ReductionType
+  ) -> Tensor<T> {
+    switch commonBackend(tensor.handle.backend, axis.handle.backend) {
+    case .XLA:
+      let output_device = axis.device
+      let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
+      let axis = Tensor<Index>(copying: axis, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscReduce(tensor, axis: axis, reduceType: reduceType),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscReduce(tensor, axis: axis, reduceType: reduceType)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscRem<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscRem(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscRem(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscReshape<
+    T: FloatingPoint & TensorFlowScalar,
+    Tshape: TensorFlowIndex
+  >(
+    _ tensor: Tensor<T>,
+    shape: Tensor<Tshape>
+  ) -> Tensor<T> {
+    switch commonBackend(tensor.handle.backend, shape.handle.backend) {
+    case .XLA:
+      let output_device = shape.device
+      let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
+      let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscReshape(tensor, shape: shape), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscReshape(tensor, shape: shape)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscReverse<
+    Tidx: TensorFlowIndex,
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ tensor: Tensor<T>,
+    axis: Tensor<Tidx>
+  ) -> Tensor<T> {
+    switch commonBackend(tensor.handle.backend, axis.handle.backend) {
+    case .XLA:
+      let output_device = axis.device
+      let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
+      let axis = Tensor<Tidx>(copying: axis, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscReverse(tensor, axis: axis), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscReverse(tensor, axis: axis)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscScatter<
+    T: FloatingPoint & TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    indices: Tensor<Tindices>,
+    updates: Tensor<T>,
+    shape: Tensor<Tindices>
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(indices.handle.backend, updates.handle.backend), shape.handle.backend)
+    {
+    case .XLA:
+      let output_device = shape.device
+      let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
+      let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
+      let shape = Tensor<Tindices>(copying: shape, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscScatter(indices: indices, updates: updates, shape: shape),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscScatter(indices: indices, updates: updates, shape: shape)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscShape<
+    T: FloatingPoint & TensorFlowScalar,
+    OutType: TensorFlowIndex
+  >(
+    _ input: Tensor<T>
+  ) -> Tensor<OutType> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<OutType>(copying: _RawTFEager.riscShape(input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscShape(input)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscSign<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscSign(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscSign(x)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscSlice<
+    T: FloatingPoint & TensorFlowScalar,
+    Index: TensorFlowIndex
+  >(
+    _ input: Tensor<T>,
+    begin: Tensor<Index>,
+    size: Tensor<Index>
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, begin.handle.backend), size.handle.backend)
+    {
+    case .XLA:
+      let output_device = size.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let begin = Tensor<Index>(copying: begin, to: .defaultTFEager)
+      let size = Tensor<Index>(copying: size, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscSlice(input, begin: begin, size: size), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscSlice(input, begin: begin, size: size)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscSort<
+    Index: TensorFlowIndex,
+    T: FloatingPoint & TensorFlowScalar
+  >(
+    _ input: Tensor<T>,
+    axis: Tensor<Index>,
+    direction: Direction1
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, axis.handle.backend) {
+    case .XLA:
+      let output_device = axis.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let axis = Tensor<Index>(copying: axis, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscSort(input, axis: axis, direction: direction), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscSort(input, axis: axis, direction: direction)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscSqueeze<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    squeezeDims: [Int32]
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscSqueeze(input, squeezeDims: squeezeDims), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscSqueeze(input, squeezeDims: squeezeDims)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscSub<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscSub(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscSub(x, y)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscTranspose<
+    T: TensorFlowScalar,
+    Tperm: TensorFlowIndex
+  >(
+    _ x: Tensor<T>,
+    perm: Tensor<Tperm>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, perm.handle.backend) {
+    case .XLA:
+      let output_device = perm.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let perm = Tensor<Tperm>(copying: perm, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscTranspose(x, perm: perm), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscTranspose(x, perm: perm)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscTriangularSolve<T: FloatingPoint & TensorFlowScalar>(
+    matrix: Tensor<T>,
+    rhs: Tensor<T>,
+    lower: Bool = true,
+    adjoint: Bool = false
+  ) -> Tensor<T> {
+    switch commonBackend(matrix.handle.backend, rhs.handle.backend) {
+    case .XLA:
+      let output_device = rhs.device
+      let matrix = Tensor<T>(copying: matrix, to: .defaultTFEager)
+      let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.riscTriangularSolve(
+          matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscTriangularSolve(
+        matrix: matrix, rhs: rhs, lower: lower, adjoint: adjoint)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscUnary<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    opType: OpType2
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.riscUnary(x, opType: opType), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.riscUnary(x, opType: opType)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func riscWhile<
+    T: TensorArrayProtocol,
+    CondIn: TensorGroup,
+    CondOut: TensorGroup,
+    BodyIn: TensorGroup,
+    BodyOut: TensorGroup
+  >(
+    _ input: T,
+    cond: (CondIn) -> CondOut,
+    body: (BodyIn) -> BodyOut,
+    outputShapes: [TensorShape?],
+    parallelIterations: Int64 = 10
+  ) -> T {
+    _RawTFEager.riscWhile(
+      input, cond: cond, body: body, outputShapes: outputShapes,
+      parallelIterations: parallelIterations)
+  }
+
+  /// Advance the counter of a counter-based RNG.
+  ///
+  /// The state of the RNG after
+  /// `rng_read_and_skip(n)` will be the same as that after `uniform([n])`
+  /// (or any other distribution). The actual increment added to the
+  /// counter is an unspecified implementation choice.
+  ///
+  /// - Parameters:
+  ///     - resource: The handle of the resource variable that stores the state of the RNG.
+  ///     - alg: The RNG algorithm.
+  ///     - delta: The amount of advancement.
+  ///
+  /// - Output value: The old value of the resource variable, before incrementing. Since state size is algorithm-dependent, this output will be right-padded with zeros to reach shape int64[3] (the current maximal state size among algorithms).
+  @inlinable @inline(__always)
+  public static func rngReadAndSkip(
+    resource: ResourceHandle,
+    alg: Tensor<Int32>,
+    delta: Tensor<UInt64>
+  ) -> Tensor<Int64> {
+    switch commonBackend(alg.handle.backend, delta.handle.backend) {
+    case .XLA:
+      let output_device = delta.device
+      let alg = Tensor<Int32>(copying: alg, to: .defaultTFEager)
+      let delta = Tensor<UInt64>(copying: delta, to: .defaultTFEager)
+      return Tensor<Int64>(
+        copying: _RawTFEager.rngReadAndSkip(resource: resource, alg: alg, delta: delta),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.rngReadAndSkip(resource: resource, alg: alg, delta: delta)
+    }
+
+  }
+
   /// Advance the counter of a counter-based RNG.
   ///
   /// The state of the RNG after
@@ -28669,90 +33196,73 @@ public enum _Raw {
 
   }
 
-  /// Perform batches of RPC requests.
-  ///
-  /// This op asynchronously performs either a single RPC request, or a batch
-  /// of requests.  RPC requests are defined by three main parameters:
-  ///
-  ///   - `address` (the host+port or BNS address of the request)
-  ///   - `method` (the RPC method name for the request)
-  ///   - `request` (the serialized proto string, or vector of strings,
-  ///      of the RPC request argument).
-  ///
-  /// For example, if you have an RPC service running on port localhost:2345,
-  /// and its interface is configured with the following proto declaration:
-  ///
-  /// ```
-  /// service MyService {
-  ///   rpc MyMethod(MyRequestProto) returns (MyResponseProto) {
-  ///   }
-  /// };
-  /// ```
-  ///
-  /// then call this op with arguments:
-  ///
-  /// ```
-  /// address = "localhost:2345"
-  /// method = "MyService/MyMethod"
-  /// ```
-  ///
-  /// The `request` tensor is a string tensor representing serialized `MyRequestProto`
-  /// strings; and the output string tensor `response` will have the same shape
-  /// and contain (upon successful completion) corresponding serialized
-  /// `MyResponseProto` strings.
-  ///
-  /// For example, to send a single, empty, `MyRequestProto`, call
-  /// this op with `request = ""`.  To send 5 **parallel** empty requests,
-  /// call this op with `request = ["", "", "", "", ""]`.
-  ///
-  /// More generally, one can create a batch of `MyRequestProto` serialized protos
-  /// from regular batched tensors using the `encode_proto` op, and convert
-  /// the response `MyResponseProto` serialized protos to batched tensors
-  /// using the `decode_proto` op.
-  ///
-  /// **NOTE** Working with serialized proto strings is faster than instantiating
-  /// actual proto objects in memory, so no performance degradation is expected
-  /// compared to writing custom kernels for this workflow.
-  ///
-  /// If the connection fails or the remote worker returns an error
-  /// status, the op reraises this exception locally.
-  ///
-  /// See the `TryRpc` op if you prefer to handle RPC failures manually in the graph.
-  ///
-  /// - Parameters:
-  ///     - address: `0-D` or `1-D`.  The address (i.e. host_name:port) of the RPC server.
-  ///         If this tensor has more than 1 element, then multiple parallel rpc requests
-  ///         are sent.  This argument broadcasts with `method` and `request`.
-  ///     - method: `0-D` or `1-D`.  The method address on the RPC server.
-  ///         If this tensor has more than 1 element, then multiple parallel rpc requests
-  ///         are sent.  This argument broadcasts with `address` and `request`.
-  ///     - request: `0-D` or `1-D`.  Serialized proto strings: the rpc request argument.
-  ///         If this tensor has more than 1 element, then multiple parallel rpc requests
-  ///         are sent.  This argument broadcasts with `address` and `method`.
-  ///
-  /// - Attrs:
-  ///     - protocol: RPC protocol to use.  Empty string means use the default protocol.
-  ///         Options include 'grpc'.
-  ///     - fail_fast: `boolean`. If `true` (default), then failures to connect
-  ///         (i.e., the server does not immediately respond) cause an RPC failure.
-  ///     - timeout_in_ms: `int`. If `0` (default), then the kernel will run the RPC
-  ///         request and only time out if the RPC deadline passes or the session times out.
-  ///         If this value is greater than `0`, then the op will raise an exception if
-  ///         the RPC takes longer than `timeout_in_ms`.
-  ///
-  /// - Output response: Same shape as `request`. Serialized proto strings: the rpc responses.
   @inlinable @inline(__always)
-  public static func rpc(
-    address: StringTensor,
-    method: StringTensor,
-    request: StringTensor,
-    protocol_: String,
-    failFast: Bool = true,
-    timeoutInMs: Int64 = 0
-  ) -> StringTensor {
-    _RawTFEager.rpc(
-      address: address, method: method, request: request, protocol_: protocol_,
-      failFast: failFast, timeoutInMs: timeoutInMs)
+  public static func rpcCall<Tin: TensorArrayProtocol>(
+    client: ResourceHandle,
+    methodName: StringTensor,
+    args: Tin,
+    timeoutInMs: Tensor<Int64>
+  ) -> (future: ResourceHandle, deleter: VariantHandle) {
+    _RawTFEager.rpcCall(
+      client: client, methodName: methodName, args: args, timeoutInMs: timeoutInMs)
+  }
+
+  @inlinable @inline(__always)
+  public static func rpcCheckStatus(
+    statusOr: ResourceHandle
+  ) -> (errorCode: Tensor<Int64>, error: StringTensor) {
+    _RawTFEager.rpcCheckStatus(statusOr: statusOr)
+  }
+
+  @inlinable @inline(__always)
+  public static func rpcClient(
+    serverAddress: StringTensor,
+    timeoutInMs: Tensor<Int64>,
+    sharedName: String,
+    listRegisteredMethods: Bool = false
+  ) -> (client: ResourceHandle, methodSpecs: StringTensor) {
+    _RawTFEager.rpcClient(
+      serverAddress: serverAddress, timeoutInMs: timeoutInMs, sharedName: sharedName,
+      listRegisteredMethods: listRegisteredMethods)
+  }
+
+  @inlinable @inline(__always)
+  public static func rpcGetValue<Tout: TensorGroup>(
+    statusOr: ResourceHandle
+  ) -> Tout {
+    _RawTFEager.rpcGetValue(statusOr: statusOr)
+  }
+
+  @inlinable @inline(__always)
+  public static func rpcServer(
+    serverAddress: StringTensor
+  ) -> ResourceHandle {
+    _RawTFEager.rpcServer(serverAddress: serverAddress)
+  }
+
+  @inlinable @inline(__always)
+  public static func rpcServerRegister<
+    Tin: TensorArrayProtocol,
+    FIn: TensorGroup,
+    FOut: TensorGroup
+  >(
+    server: ResourceHandle,
+    methodName: StringTensor,
+    capturedInputs: Tin,
+    f: (FIn) -> FOut,
+    inputSpecs: String,
+    outputSpecs: String
+  ) {
+    _RawTFEager.rpcServerRegister(
+      server: server, methodName: methodName, capturedInputs: capturedInputs, f: f,
+      inputSpecs: inputSpecs, outputSpecs: outputSpecs)
+  }
+
+  @inlinable @inline(__always)
+  public static func rpcServerStart(
+    server: ResourceHandle
+  ) {
+    _RawTFEager.rpcServerStart(server: server)
   }
 
   /// Computes reciprocal of square root of x element-wise.
@@ -28876,9 +33386,8 @@ public enum _Raw {
   ) -> (begin: Tensor<T>, size: Tensor<T>, bboxes: Tensor<Float>) {
     _RawTFEager.sampleDistortedBoundingBox(
       imageSize: imageSize, boundingBoxes: boundingBoxes, seed: seed, seed2: seed2,
-      minObjectCovered: minObjectCovered, aspectRatioRange: aspectRatioRange,
-      areaRange: areaRange, maxAttempts: maxAttempts,
-      useImageIfNoBoundingBoxes: useImageIfNoBoundingBoxes)
+      minObjectCovered: minObjectCovered, aspectRatioRange: aspectRatioRange, areaRange: areaRange,
+      maxAttempts: maxAttempts, useImageIfNoBoundingBoxes: useImageIfNoBoundingBoxes)
   }
 
   /// Generate a single randomly distorted bounding box for an image.
@@ -29020,6 +33529,45 @@ public enum _Raw {
     _RawTFEager.save(filename: filename, tensorNames: tensorNames, data: data)
   }
 
+  @inlinable @inline(__always)
+  public static func saveDataset<
+    ShardfuncIn: TensorGroup,
+    ShardfuncOut: TensorGroup,
+    TshardFuncArgs: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    path: StringTensor,
+    shardFuncOtherArgs: TshardFuncArgs,
+    compression: String,
+    shardFunc: (ShardfuncIn) -> ShardfuncOut,
+    useShardFunc: Bool = true
+  ) {
+    _RawTFEager.saveDataset(
+      inputDataset: inputDataset, path: path, shardFuncOtherArgs: shardFuncOtherArgs,
+      compression: compression, shardFunc: shardFunc, useShardFunc: useShardFunc)
+  }
+
+  @inlinable @inline(__always)
+  public static func saveDatasetV2<
+    ShardfuncIn: TensorGroup,
+    ShardfuncOut: TensorGroup,
+    TshardFuncArgs: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    path: StringTensor,
+    shardFuncOtherArgs: TshardFuncArgs,
+    compression: String,
+    shardFunc: (ShardfuncIn) -> ShardfuncOut,
+    useShardFunc: Bool = true,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.saveDatasetV2(
+      inputDataset: inputDataset, path: path, shardFuncOtherArgs: shardFuncOtherArgs,
+      compression: compression, shardFunc: shardFunc, useShardFunc: useShardFunc,
+      outputTypes: outputTypes, outputShapes: outputShapes)
+  }
+
   /// Saves input tensors slices to disk.
   ///
   /// This is like `Save` except that tensors can be listed in the saved file as being
@@ -29130,8 +33678,8 @@ public enum _Raw {
           kernelType: kernelType, antialias: antialias), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.scaleAndTranslate(
-        images: images, size: size, scale: scale, translation: translation,
-        kernelType: kernelType, antialias: antialias)
+        images: images, size: size, scale: scale, translation: translation, kernelType: kernelType,
+        antialias: antialias)
     }
 
   }
@@ -29183,47 +33731,53 @@ public enum _Raw {
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?],
     preserveCardinality: Bool = false,
-    useDefaultDevice: Bool = true
+    useDefaultDevice: Bool = true,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.scanDataset(
-      inputDataset: inputDataset, initialState: initialState, otherArguments: otherArguments,
-      f: f, outputTypes: outputTypes, outputShapes: outputShapes,
-      preserveCardinality: preserveCardinality, useDefaultDevice: useDefaultDevice)
+      inputDataset: inputDataset, initialState: initialState, otherArguments: otherArguments, f: f,
+      outputTypes: outputTypes, outputShapes: outputShapes,
+      preserveCardinality: preserveCardinality, useDefaultDevice: useDefaultDevice,
+      metadata: metadata)
   }
 
-  /// Scatter `updates` into a new tensor according to `indices`.
+  /// Scatters `updates` into a tensor of shape `shape` according to `indices`.
   ///
-  /// Creates a new tensor by applying sparse `updates` to individual values or
-  /// slices within a tensor (initially zero for numeric, empty for string) of
-  /// the given `shape` according to indices.  This operator is the inverse of the
-  /// `tf.gather_nd` operator which extracts values or slices from a given tensor.
+  /// Update the input tensor by scattering sparse `updates` according to individual values at the specified `indices`.
+  /// This op returns an `output` tensor with the `shape` you specify. This op is the
+  /// inverse of the `tf.gather_nd` operator which extracts values or slices from a
+  /// given tensor.
   ///
-  /// This operation is similar to tensor_scatter_add, except that the tensor is
-  /// zero-initialized. Calling `tf.scatter_nd(indices, values, shape)` is identical
-  /// to `tensor_scatter_add(tf.zeros(shape, values.dtype), indices, values)`
+  /// This operation is similar to `tf.tensor_scatter_nd_add`, except that the tensor
+  /// is zero-initialized. Calling `tf.scatter_nd(indices, values, shape)`
+  /// is identical to calling
+  /// `tf.tensor_scatter_nd_add(tf.zeros(shape, values.dtype), indices, values)`
   ///
-  /// If `indices` contains duplicates, then their updates are accumulated (summed).
+  /// If `indices` contains duplicates, the duplicate `values` are accumulated
+  /// (summed).
   ///
   /// **WARNING**: The order in which updates are applied is nondeterministic, so the
-  /// output will be nondeterministic if `indices` contains duplicates -- because
-  /// of some numerical approximation issues, numbers summed in different order
-  /// may yield different results.
+  /// output will be nondeterministic if `indices` contains duplicates;
+  /// numbers summed in different order may yield different results because of some
+  /// numerical approximation issues.
   ///
-  /// `indices` is an integer tensor containing indices into a new tensor of shape
-  /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
+  /// `indices` is an integer tensor of shape `shape`. The last dimension
+  /// of `indices` can be at most the rank of `shape`:
   ///
   ///     indices.shape[-1] <= shape.rank
   ///
-  /// The last dimension of `indices` corresponds to indices into elements
+  /// The last dimension of `indices` corresponds to indices of elements
   /// (if `indices.shape[-1] = shape.rank`) or slices
   /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
-  /// `shape`.  `updates` is a tensor with shape
+  /// `shape`.
+  ///
+  /// `updates` is a tensor with shape:
   ///
   ///     indices.shape[:-1] + shape[indices.shape[-1]:]
   ///
-  /// The simplest form of scatter is to insert individual elements in a tensor by
-  /// index. For example, say we want to insert 4 scattered elements in a rank-1
-  /// tensor with 8 elements.
+  /// The simplest form of the scatter op is to insert individual elements in
+  /// a tensor by index. Consider an example where you want to insert 4 scattered
+  /// elements in a rank-1 tensor with 8 elements.
   ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd1.png" alt>
@@ -29243,9 +33797,9 @@ public enum _Raw {
   ///
   ///     [0, 11, 0, 10, 9, 0, 0, 12]
   ///
-  /// We can also, insert entire slices of a higher rank tensor all at once. For
-  /// example, if we wanted to insert two slices in the first dimension of a
-  /// rank-3 tensor with two matrices of new values.
+  /// You can also insert entire slices of a higher rank tensor all at once. For
+  /// example, you can insert two slices in the first dimension of a rank-3 tensor
+  /// with two matrices of new values.
   ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd2.png" alt>
@@ -29275,9 +33829,9 @@ public enum _Raw {
   /// On GPU, if an out of bound index is found, the index is ignored.
   ///
   /// - Parameters:
-  ///     - indices: Index tensor.
-  ///     - updates: Updates to scatter into output.
-  ///     - shape: 1-D. The shape of the resulting tensor.
+  ///     - indices: Tensor of indices.
+  ///     - updates: Values to scatter into the output tensor.
+  ///     - shape: 1-D. The shape of the output tensor.
   ///
   /// - Output output: A new tensor with the given shape and updates applied according
   ///     to the indices.
@@ -29476,9 +34030,9 @@ public enum _Raw {
       sparseExampleIndices: sparseExampleIndices, sparseFeatureIndices: sparseFeatureIndices,
       sparseFeatureValues: sparseFeatureValues, denseFeatures: denseFeatures,
       exampleWeights: exampleWeights, exampleLabels: exampleLabels, sparseIndices: sparseIndices,
-      sparseWeights: sparseWeights, denseWeights: denseWeights,
-      exampleStateData: exampleStateData, lossType: lossType, adaptative: adaptative, l1: l1,
-      l2: l2, numLossPartitions: numLossPartitions, numInnerIterations: numInnerIterations)
+      sparseWeights: sparseWeights, denseWeights: denseWeights, exampleStateData: exampleStateData,
+      lossType: lossType, adaptative: adaptative, l1: l1, l2: l2,
+      numLossPartitions: numLossPartitions, numInnerIterations: numInnerIterations)
   }
 
   /// Distributed version of Stochastic Dual Coordinate Ascent (SDCA) optimizer for
@@ -29566,9 +34120,9 @@ public enum _Raw {
       sparseExampleIndices: sparseExampleIndices, sparseFeatureIndices: sparseFeatureIndices,
       sparseFeatureValues: sparseFeatureValues, denseFeatures: denseFeatures,
       exampleWeights: exampleWeights, exampleLabels: exampleLabels, sparseIndices: sparseIndices,
-      sparseWeights: sparseWeights, denseWeights: denseWeights,
-      exampleStateData: exampleStateData, lossType: lossType, adaptive: adaptive, l1: l1, l2: l2,
-      numLossPartitions: numLossPartitions, numInnerIterations: numInnerIterations)
+      sparseWeights: sparseWeights, denseWeights: denseWeights, exampleStateData: exampleStateData,
+      lossType: lossType, adaptive: adaptive, l1: l1, l2: l2, numLossPartitions: numLossPartitions,
+      numInnerIterations: numInnerIterations)
   }
 
   /// Computes the maximum along segments of a tensor.
@@ -29583,22 +34137,29 @@ public enum _Raw {
   ///
   /// If the max is empty for a given segment ID `i`, `output[i] = 0`.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be sorted,
+  /// and an error is thrown for indices that are not increasing. On GPU, this
+  /// does not throw an error for unsorted indices. On GPU, out-of-order indices
+  /// result in safe but unspecified behavior, which may include treating
+  /// out-of-order indices as the same as a smaller following index.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMax.png" alt>
   /// </div>
   ///
   /// For example:
   ///
-  /// ```
-  /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
-  /// tf.segment_max(c, tf.constant([0, 0, 1]))
-  /// # ==> [[4, 3, 3, 4],
-  /// #      [5, 6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
+  /// >>> tf.math.segment_max(c, tf.constant([0, 0, 1])).numpy()
+  /// array([[4, 3, 3, 4],
+  ///        [5, 6, 7, 8]], dtype=int32)
   ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
+  ///
+  ///     Caution: The values are always validated to be sorted on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for dimension 0 which
   ///     has size `k`, the number of segments.
@@ -29636,22 +34197,30 @@ public enum _Raw {
   ///
   /// If the mean is empty for a given segment ID `i`, `output[i] = 0`.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be sorted,
+  /// and an error is thrown for indices that are not increasing. On GPU, this
+  /// does not throw an error for unsorted indices. On GPU, out-of-order indices
+  /// result in safe but unspecified behavior, which may include treating
+  /// out-of-order indices as a smaller following index when computing the numerator
+  /// of the mean.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMean.png" alt>
   /// </div>
   ///
   /// For example:
   ///
-  /// ```
-  /// c = tf.constant([[1.0,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
-  /// tf.segment_mean(c, tf.constant([0, 0, 1]))
-  /// # ==> [[2.5, 2.5, 2.5, 2.5],
-  /// #      [5, 6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1.0,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
+  /// >>> tf.math.segment_mean(c, tf.constant([0, 0, 1])).numpy()
+  /// array([[2.5, 2.5, 2.5, 2.5],
+  ///        [5., 6., 7., 8.]], dtype=float32)
   ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
+  ///
+  ///     Caution: The values are always validated to be sorted on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for dimension 0 which
   ///     has size `k`, the number of segments.
@@ -29688,21 +34257,29 @@ public enum _Raw {
   ///
   /// If the min is empty for a given segment ID `i`, `output[i] = 0`.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be sorted,
+  /// and an error is thrown for indices that are not increasing. On GPU, this
+  /// does not throw an error for unsorted indices. On GPU, out-of-order indices
+  /// result in safe but unspecified behavior, which may include treating
+  /// out-of-order indices as the same as a smaller following index.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentMin.png" alt>
   /// </div>
   ///
   /// For example:
   ///
-  /// ```
-  /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
-  /// tf.segment_min(c, tf.constant([0, 0, 1]))
-  /// # ==> [[1, 2, 2, 1],
-  /// #      [5, 6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
+  /// >>> tf.math.segment_min(c, tf.constant([0, 0, 1])).numpy()
+  /// array([[1, 2, 2, 1],
+  ///        [5, 6, 7, 8]], dtype=int32)
+  ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
+  ///
+  ///     Caution: The values are always validated to be sorted on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for dimension 0 which
   ///     has size `k`, the number of segments.
@@ -29739,22 +34316,29 @@ public enum _Raw {
   ///
   /// If the product is empty for a given segment ID `i`, `output[i] = 1`.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be sorted,
+  /// and an error is thrown for indices that are not increasing. On GPU, this
+  /// does not throw an error for unsorted indices. On GPU, out-of-order indices
+  /// result in safe but unspecified behavior, which may include treating
+  /// out-of-order indices as the same as a smaller following index.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentProd.png" alt>
   /// </div>
   ///
   /// For example:
   ///
-  /// ```
-  /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
-  /// tf.segment_prod(c, tf.constant([0, 0, 1]))
-  /// # ==> [[4, 6, 6, 4],
-  /// #      [5, 6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
+  /// >>> tf.math.segment_prod(c, tf.constant([0, 0, 1])).numpy()
+  /// array([[4, 6, 6, 4],
+  ///        [5, 6, 7, 8]], dtype=int32)
   ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
+  ///
+  ///     Caution: The values are always validated to be sorted on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for dimension 0 which
   ///     has size `k`, the number of segments.
@@ -29791,22 +34375,29 @@ public enum _Raw {
   ///
   /// If the sum is empty for a given segment ID `i`, `output[i] = 0`.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be sorted,
+  /// and an error is thrown for indices that are not increasing. On GPU, this
+  /// does not throw an error for unsorted indices. On GPU, out-of-order indices
+  /// result in safe but unspecified behavior, which may include treating
+  /// out-of-order indices as the same as a smaller following index.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/SegmentSum.png" alt>
   /// </div>
   ///
   /// For example:
   ///
-  /// ```
-  /// c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
-  /// tf.segment_sum(c, tf.constant([0, 0, 1]))
-  /// # ==> [[5, 5, 5, 5],
-  /// #      [5, 6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1,2,3,4], [4, 3, 2, 1], [5,6,7,8]])
+  /// >>> tf.math.segment_sum(c, tf.constant([0, 0, 1])).numpy()
+  /// array([[5, 5, 5, 5],
+  ///        [5, 6, 7, 8]], dtype=int32)
   ///
   ///
   /// - Parameter segment_ids: A 1-D tensor whose size is equal to the size of `data`'s
   ///     first dimension.  Values should be sorted and can be repeated.
+  ///
+  ///     Caution: The values are always validated to be sorted on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for dimension 0 which
   ///     has size `k`, the number of segments.
@@ -30083,9 +34674,11 @@ public enum _Raw {
   ///     resource.
   @inlinable @inline(__always)
   public static func serializeIterator(
-    resourceHandle: ResourceHandle
+    resourceHandle: ResourceHandle,
+    externalStatePolicy: Int64 = 0
   ) -> VariantHandle {
-    _RawTFEager.serializeIterator(resourceHandle: resourceHandle)
+    _RawTFEager.serializeIterator(
+      resourceHandle: resourceHandle, externalStatePolicy: externalStatePolicy)
   }
 
   /// Serialize an `N`-minibatch `SparseTensor` into an `[N, 3]` `Tensor` object.
@@ -30222,10 +34815,12 @@ public enum _Raw {
   public static func serializeTRTResource(
     resourceName: StringTensor,
     filename: StringTensor,
-    deleteResource: Bool = false
+    deleteResource: Bool = false,
+    saveGpuSpecificEngines: Bool = true
   ) {
     _RawTFEager.serializeTRTResource(
-      resourceName: resourceName, filename: filename, deleteResource: deleteResource)
+      resourceName: resourceName, filename: filename, deleteResource: deleteResource,
+      saveGpuSpecificEngines: saveGpuSpecificEngines)
   }
 
   /// Transforms a Tensor into a serialized TensorProto proto.
@@ -30392,11 +34987,13 @@ public enum _Raw {
     index: Tensor<Int64>,
     requireNonEmpty: Bool = false,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.shardDataset(
       inputDataset: inputDataset, numShards: numShards, index: index,
-      requireNonEmpty: requireNonEmpty, outputTypes: outputTypes, outputShapes: outputShapes)
+      requireNonEmpty: requireNonEmpty, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Generate a sharded filename. The filename is printf formatted as
@@ -30442,11 +35039,33 @@ public enum _Raw {
     seed2: Tensor<Int64>,
     count: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    reshuffleEachIteration: Bool = true,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.shuffleAndRepeatDataset(
       inputDataset: inputDataset, bufferSize: bufferSize, seed: seed, seed2: seed2, count: count,
-      outputTypes: outputTypes, outputShapes: outputShapes)
+      outputTypes: outputTypes, outputShapes: outputShapes,
+      reshuffleEachIteration: reshuffleEachIteration, metadata: metadata)
+  }
+
+  @inlinable @inline(__always)
+  public static func shuffleAndRepeatDatasetV2(
+    inputDataset: VariantHandle,
+    bufferSize: Tensor<Int64>,
+    seed: Tensor<Int64>,
+    seed2: Tensor<Int64>,
+    count: Tensor<Int64>,
+    seedGenerator: ResourceHandle,
+    reshuffleEachIteration: Bool = true,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.shuffleAndRepeatDatasetV2(
+      inputDataset: inputDataset, bufferSize: bufferSize, seed: seed, seed2: seed2, count: count,
+      seedGenerator: seedGenerator, reshuffleEachIteration: reshuffleEachIteration,
+      outputTypes: outputTypes, outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Creates a dataset that shuffles elements from `input_dataset` pseudorandomly.
@@ -30473,12 +35092,13 @@ public enum _Raw {
     seed2: Tensor<Int64>,
     reshuffleEachIteration: Bool = true,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.shuffleDataset(
       inputDataset: inputDataset, bufferSize: bufferSize, seed: seed, seed2: seed2,
       reshuffleEachIteration: reshuffleEachIteration, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   @inlinable @inline(__always)
@@ -30487,11 +35107,30 @@ public enum _Raw {
     bufferSize: Tensor<Int64>,
     seedGenerator: ResourceHandle,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.shuffleDatasetV2(
       inputDataset: inputDataset, bufferSize: bufferSize, seedGenerator: seedGenerator,
-      outputTypes: outputTypes, outputShapes: outputShapes)
+      outputTypes: outputTypes, outputShapes: outputShapes, metadata: metadata)
+  }
+
+  @inlinable @inline(__always)
+  public static func shuffleDatasetV3(
+    inputDataset: VariantHandle,
+    bufferSize: Tensor<Int64>,
+    seed: Tensor<Int64>,
+    seed2: Tensor<Int64>,
+    seedGenerator: ResourceHandle,
+    reshuffleEachIteration: Bool = true,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.shuffleDatasetV3(
+      inputDataset: inputDataset, bufferSize: bufferSize, seed: seed, seed2: seed2,
+      seedGenerator: seedGenerator, reshuffleEachIteration: reshuffleEachIteration,
+      outputTypes: outputTypes, outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Shuts down a running distributed TPU system.
@@ -30500,6 +35139,14 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func shutdownDistributedTPU() {
     _RawTFEager.shutdownDistributedTPU()
+  }
+
+  /// An op that shuts down the TPU system.
+  ///
+  /// - Output success: A boolean that indicates if the shut down process succeeds.
+  @inlinable @inline(__always)
+  public static func shutdownTPUSystem() -> Tensor<Bool> {
+    _RawTFEager.shutdownTPUSystem()
   }
 
   /// Computes sigmoid of `x` element-wise.
@@ -30662,11 +35309,12 @@ public enum _Raw {
     inputDataset: VariantHandle,
     count: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.skipDataset(
       inputDataset: inputDataset, count: count, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Parses a text file and creates a batch of examples.
@@ -30715,6 +35363,31 @@ public enum _Raw {
     _RawTFEager.sleepDataset(
       inputDataset: inputDataset, sleepMicroseconds: sleepMicroseconds, outputTypes: outputTypes,
       outputShapes: outputShapes)
+  }
+
+  @inlinable @inline(__always)
+  public static func sleepIdentityOp<T: TensorFlowScalar>(
+    sleepSeconds: Tensor<Int32>,
+    _ input: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(sleepSeconds.handle.backend, input.handle.backend) {
+    case .XLA:
+      let output_device = input.device
+      let sleepSeconds = Tensor<Int32>(copying: sleepSeconds, to: .defaultTFEager)
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.sleepIdentityOp(sleepSeconds: sleepSeconds, input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.sleepIdentityOp(sleepSeconds: sleepSeconds, input)
+    }
+
+  }
+
+  @inlinable @inline(__always)
+  public static func sleepOp(
+    sleepSeconds: Tensor<Int32>
+  ) {
+    _RawTFEager.sleepOp(sleepSeconds: sleepSeconds)
   }
 
   /// Return a slice from 'input'.
@@ -30768,12 +35441,14 @@ public enum _Raw {
     windowSize: Tensor<Int64>,
     windowShift: Tensor<Int64>,
     windowStride: Tensor<Int64>,
+    dropRemainder: Bool = true,
     outputTypes: [TensorDataType],
     outputShapes: [TensorShape?]
   ) -> VariantHandle {
     _RawTFEager.slidingWindowDataset(
       inputDataset: inputDataset, windowSize: windowSize, windowShift: windowShift,
-      windowStride: windowStride, outputTypes: outputTypes, outputShapes: outputShapes)
+      windowStride: windowStride, dropRemainder: dropRemainder, outputTypes: outputTypes,
+      outputShapes: outputShapes)
   }
 
   /// Returns a copy of the input tensor.
@@ -30819,16 +35494,128 @@ public enum _Raw {
     writerBufferSize: Int64 = 1,
     shuffleOnRead: Bool = false,
     seed: Int64 = 0,
-    seed2: Int64 = 0
+    seed2: Int64 = 0,
+    mode: String = "auto",
+    snapshotName: String
   ) -> VariantHandle {
     _RawTFEager.snapshotDataset(
-      inputDataset: inputDataset, path: path, outputTypes: outputTypes,
-      outputShapes: outputShapes, compression: compression, readerPathPrefix: readerPathPrefix,
+      inputDataset: inputDataset, path: path, outputTypes: outputTypes, outputShapes: outputShapes,
+      compression: compression, readerPathPrefix: readerPathPrefix,
       writerPathPrefix: writerPathPrefix, shardSizeBytes: shardSizeBytes,
       pendingSnapshotExpirySeconds: pendingSnapshotExpirySeconds,
       numReaderThreads: numReaderThreads, readerBufferSize: readerBufferSize,
       numWriterThreads: numWriterThreads, writerBufferSize: writerBufferSize,
-      shuffleOnRead: shuffleOnRead, seed: seed, seed2: seed2)
+      shuffleOnRead: shuffleOnRead, seed: seed, seed2: seed2, mode: mode, snapshotName: snapshotName
+    )
+  }
+
+  @inlinable @inline(__always)
+  public static func snapshotDatasetReader(
+    shardDir: StringTensor,
+    startIndex: Tensor<Int64>,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    compression: String,
+    version: Int64
+  ) -> VariantHandle {
+    _RawTFEager.snapshotDatasetReader(
+      shardDir: shardDir, startIndex: startIndex, outputTypes: outputTypes,
+      outputShapes: outputShapes, compression: compression, version: version)
+  }
+
+  /// Creates a dataset that will write to / read from a snapshot.
+  ///
+  /// This dataset attempts to determine whether a valid snapshot exists at the
+  /// `snapshot_path`, and reads from the snapshot in lieu of using `input_dataset`.
+  /// If not, it will run the preprocessing pipeline as usual, and write out a
+  /// snapshot of the data processed for future use.
+  ///
+  /// - Parameters:
+  ///     - input_dataset: A variant tensor representing the input dataset.
+  ///     - path: The path we should write snapshots to / read snapshots from.
+  ///
+  /// - Attrs:
+  ///     - compression: The type of compression to be applied to the saved snapshot files.
+  ///     - reader_func: Optional. A function to control how to read data from snapshot shards.
+  ///     - shard_func: Optional. A function to control how to shard data when writing a snapshot.
+  @inlinable @inline(__always)
+  public static func snapshotDatasetV2<
+    ReaderfuncIn: TensorGroup,
+    ReaderfuncOut: TensorGroup,
+    ShardfuncIn: TensorGroup,
+    ShardfuncOut: TensorGroup,
+    TreaderFuncArgs: TensorArrayProtocol,
+    TshardFuncArgs: TensorArrayProtocol
+  >(
+    inputDataset: VariantHandle,
+    path: StringTensor,
+    readerFuncOtherArgs: TreaderFuncArgs,
+    shardFuncOtherArgs: TshardFuncArgs,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?],
+    compression: String,
+    readerPrefix: String,
+    writerPrefix: String,
+    hashValid: Bool = false,
+    hash: Int64 = 0,
+    readerFunc: (ReaderfuncIn) -> ReaderfuncOut,
+    shardFunc: (ShardfuncIn) -> ShardfuncOut,
+    metadata: String
+  ) -> VariantHandle {
+    _RawTFEager.snapshotDatasetV2(
+      inputDataset: inputDataset, path: path, readerFuncOtherArgs: readerFuncOtherArgs,
+      shardFuncOtherArgs: shardFuncOtherArgs, outputTypes: outputTypes, outputShapes: outputShapes,
+      compression: compression, readerPrefix: readerPrefix, writerPrefix: writerPrefix,
+      hashValid: hashValid, hash: hash, readerFunc: readerFunc, shardFunc: shardFunc,
+      metadata: metadata)
+  }
+
+  @inlinable @inline(__always)
+  public static func snapshotNestedDatasetReader(
+    inputs: [VariantHandle],
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.snapshotNestedDatasetReader(
+      inputs: inputs, outputTypes: outputTypes, outputShapes: outputShapes)
+  }
+
+  /// Generates points from the Sobol sequence.
+  ///
+  /// Creates a Sobol sequence with `num_results` samples. Each sample has dimension
+  /// `dim`. Skips the first `skip` samples.
+  ///
+  /// - Parameters:
+  ///     - dim: Positive scalar `Tensor` representing each sample's dimension.
+  ///     - num_results: Positive scalar `Tensor` of dtype int32. The number of Sobol points to return
+  ///         in the output.
+  ///     - skip: Positive scalar `Tensor` of dtype int32. The number of initial points of the
+  ///         Sobol sequence to skip.
+  ///
+  /// - Attr dtype: The type of the sample. One of: `float32` or `float64`.
+  ///
+  /// - Output samples: `Tensor` of samples from Sobol sequence with `shape` [num_results, dim].
+  @inlinable @inline(__always)
+  public static func sobolSample<Dtype: FloatingPoint & TensorFlowScalar>(
+    dim: Tensor<Int32>,
+    numResults: Tensor<Int32>,
+    skip: Tensor<Int32>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(dim.handle.backend, numResults.handle.backend), skip.handle.backend)
+    {
+    case .XLA:
+      let output_device = skip.device
+      let dim = Tensor<Int32>(copying: dim, to: .defaultTFEager)
+      let numResults = Tensor<Int32>(copying: numResults, to: .defaultTFEager)
+      let skip = Tensor<Int32>(copying: skip, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.sobolSample(dim: dim, numResults: numResults, skip: skip),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.sobolSample(dim: dim, numResults: numResults, skip: skip)
+    }
+
   }
 
   /// Computes softmax activations.
@@ -30960,6 +35747,82 @@ public enum _Raw {
   /// the zero-padding, both `height` and `width` of the input must be divisible by the
   /// block size.
   ///
+  /// The attr `block_size` must be greater than one. It indicates the block size.
+  ///
+  ///   * Non-overlapping blocks of size `block_size x block size` in the height and
+  ///     width dimensions are rearranged into the batch dimension at each location.
+  ///   * The batch of the output tensor is `batch * block_size * block_size`.
+  ///   * Both height_pad and width_pad must be divisible by block_size.
+  ///
+  /// The shape of the output will be:
+  ///
+  ///     [batch*block_size*block_size, height_pad/block_size, width_pad/block_size,
+  ///      depth]
+  ///
+  /// Some examples:
+  ///
+  /// (1) For the following input of shape `[1, 2, 2, 1]` and block_size of 2:
+  ///
+  /// ```
+  /// x = [[[[1], [2]], [[3], [4]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[4, 1, 1, 1]` and value:
+  ///
+  /// ```
+  /// [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
+  /// ```
+  ///
+  /// (2) For the following input of shape `[1, 2, 2, 3]` and block_size of 2:
+  ///
+  /// ```
+  /// x = [[[[1, 2, 3], [4, 5, 6]],
+  ///       [[7, 8, 9], [10, 11, 12]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[4, 1, 1, 3]` and value:
+  ///
+  /// ```
+  /// [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
+  /// ```
+  ///
+  /// (3) For the following input of shape `[1, 4, 4, 1]` and block_size of 2:
+  ///
+  /// ```
+  /// x = [[[[1],   [2],  [3],  [4]],
+  ///       [[5],   [6],  [7],  [8]],
+  ///       [[9],  [10], [11],  [12]],
+  ///       [[13], [14], [15],  [16]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[4, 2, 2, 1]` and value:
+  ///
+  /// ```
+  /// x = [[[[1], [3]], [[9], [11]]],
+  ///      [[[2], [4]], [[10], [12]]],
+  ///      [[[5], [7]], [[13], [15]]],
+  ///      [[[6], [8]], [[14], [16]]]]
+  /// ```
+  ///
+  /// (4) For the following input of shape `[2, 2, 4, 1]` and block_size of 2:
+  ///
+  /// ```
+  /// x = [[[[1],   [2],  [3],  [4]],
+  ///       [[5],   [6],  [7],  [8]]],
+  ///      [[[9],  [10], [11],  [12]],
+  ///       [[13], [14], [15],  [16]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[8, 1, 2, 1]` and value:
+  ///
+  /// ```
+  /// x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
+  ///      [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
+  /// ```
+  ///
+  /// Among others, this operation is useful for reducing atrous convolution into
+  /// regular convolution.
+  ///
   /// - Parameters:
   ///     - input: 4-D with shape `[batch, height, width, depth]`.
   ///     - paddings: 2-D tensor of non-negative integers with shape `[2, 2]`. It specifies
@@ -30971,82 +35834,6 @@ public enum _Raw {
   ///
   ///               height_pad = pad_top + height + pad_bottom
   ///               width_pad = pad_left + width + pad_right
-  ///
-  ///         The attr `block_size` must be greater than one. It indicates the block size.
-  ///
-  ///           * Non-overlapping blocks of size `block_size x block size` in the height and
-  ///             width dimensions are rearranged into the batch dimension at each location.
-  ///           * The batch of the output tensor is `batch * block_size * block_size`.
-  ///           * Both height_pad and width_pad must be divisible by block_size.
-  ///
-  ///         The shape of the output will be:
-  ///
-  ///             [batch*block_size*block_size, height_pad/block_size, width_pad/block_size,
-  ///              depth]
-  ///
-  ///         Some examples:
-  ///
-  ///         (1) For the following input of shape `[1, 2, 2, 1]` and block_size of 2:
-  ///
-  ///         ```
-  ///         x = [[[[1], [2]], [[3], [4]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[4, 1, 1, 1]` and value:
-  ///
-  ///         ```
-  ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
-  ///         ```
-  ///
-  ///         (2) For the following input of shape `[1, 2, 2, 3]` and block_size of 2:
-  ///
-  ///         ```
-  ///         x = [[[[1, 2, 3], [4, 5, 6]],
-  ///               [[7, 8, 9], [10, 11, 12]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[4, 1, 1, 3]` and value:
-  ///
-  ///         ```
-  ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
-  ///         ```
-  ///
-  ///         (3) For the following input of shape `[1, 4, 4, 1]` and block_size of 2:
-  ///
-  ///         ```
-  ///         x = [[[[1],   [2],  [3],  [4]],
-  ///               [[5],   [6],  [7],  [8]],
-  ///               [[9],  [10], [11],  [12]],
-  ///               [[13], [14], [15],  [16]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[4, 2, 2, 1]` and value:
-  ///
-  ///         ```
-  ///         x = [[[[1], [3]], [[9], [11]]],
-  ///              [[[2], [4]], [[10], [12]]],
-  ///              [[[5], [7]], [[13], [15]]],
-  ///              [[[6], [8]], [[14], [16]]]]
-  ///         ```
-  ///
-  ///         (4) For the following input of shape `[2, 2, 4, 1]` and block_size of 2:
-  ///
-  ///         ```
-  ///         x = [[[[1],   [2],  [3],  [4]],
-  ///               [[5],   [6],  [7],  [8]]],
-  ///              [[[9],  [10], [11],  [12]],
-  ///               [[13], [14], [15],  [16]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[8, 1, 2, 1]` and value:
-  ///
-  ///         ```
-  ///         x = [[[[1], [3]]], [[[9], [11]]], [[[2], [4]]], [[[10], [12]]],
-  ///              [[[5], [7]]], [[[13], [15]]], [[[6], [8]]], [[[14], [16]]]]
-  ///         ```
-  ///
-  ///         Among others, this operation is useful for reducing atrous convolution into
-  ///         regular convolution.
   @inlinable @inline(__always)
   public static func spaceToBatch<
     T: TensorFlowScalar,
@@ -31078,8 +35865,112 @@ public enum _Raw {
   /// `[1, ..., M]` correspond to the position within the grid, and the batch
   /// dimension combines both the position within a spatial block and the original
   /// batch position.  Prior to division into blocks, the spatial dimensions of the
-  /// input are optionally zero padded according to `paddings`.  See below for a
+  /// input are optionally zero padded according to `paddings`. See below for a
   /// precise description.
+  ///
+  /// This operation is equivalent to the following steps:
+  ///
+  /// 1. Zero-pad the start and end of dimensions `[1, ..., M]` of the
+  ///    input according to `paddings` to produce `padded` of shape `padded_shape`.
+  ///
+  /// 2. Reshape `padded` to `reshaped_padded` of shape:
+  ///
+  ///      [batch] +
+  ///      [padded_shape[1] / block_shape[0],
+  ///        block_shape[0],
+  ///       ...,
+  ///       padded_shape[M] / block_shape[M-1],
+  ///       block_shape[M-1]] +
+  ///      remaining_shape
+  ///
+  /// 3. Permute dimensions of `reshaped_padded` to produce
+  ///    `permuted_reshaped_padded` of shape:
+  ///
+  ///      block_shape +
+  ///      [batch] +
+  ///      [padded_shape[1] / block_shape[0],
+  ///       ...,
+  ///       padded_shape[M] / block_shape[M-1]] +
+  ///      remaining_shape
+  ///
+  /// 4. Reshape `permuted_reshaped_padded` to flatten `block_shape` into the batch
+  ///    dimension, producing an output tensor of shape:
+  ///
+  ///      [batch * prod(block_shape)] +
+  ///      [padded_shape[1] / block_shape[0],
+  ///       ...,
+  ///       padded_shape[M] / block_shape[M-1]] +
+  ///      remaining_shape
+  ///
+  /// Some examples:
+  ///
+  /// (1) For the following input of shape `[1, 2, 2, 1]`, `block_shape = [2, 2]`, and
+  ///     `paddings = [[0, 0], [0, 0]]`:
+  ///
+  /// ```
+  /// x = [[[[1], [2]], [[3], [4]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[4, 1, 1, 1]` and value:
+  ///
+  /// ```
+  /// [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
+  /// ```
+  ///
+  /// (2) For the following input of shape `[1, 2, 2, 3]`, `block_shape = [2, 2]`, and
+  ///     `paddings = [[0, 0], [0, 0]]`:
+  ///
+  /// ```
+  /// x = [[[[1, 2, 3], [4, 5, 6]],
+  ///       [[7, 8, 9], [10, 11, 12]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[4, 1, 1, 3]` and value:
+  ///
+  /// ```
+  /// [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
+  /// ```
+  ///
+  /// (3) For the following input of shape `[1, 4, 4, 1]`, `block_shape = [2, 2]`, and
+  ///     `paddings = [[0, 0], [0, 0]]`:
+  ///
+  /// ```
+  /// x = [[[[1],   [2],  [3],  [4]],
+  ///       [[5],   [6],  [7],  [8]],
+  ///       [[9],  [10], [11],  [12]],
+  ///       [[13], [14], [15],  [16]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[4, 2, 2, 1]` and value:
+  ///
+  /// ```
+  /// x = [[[[1], [3]], [[9], [11]]],
+  ///      [[[2], [4]], [[10], [12]]],
+  ///      [[[5], [7]], [[13], [15]]],
+  ///      [[[6], [8]], [[14], [16]]]]
+  /// ```
+  ///
+  /// (4) For the following input of shape `[2, 2, 4, 1]`, block_shape = `[2, 2]`, and
+  ///     paddings = `[[0, 0], [2, 0]]`:
+  ///
+  /// ```
+  /// x = [[[[1],   [2],  [3],  [4]],
+  ///       [[5],   [6],  [7],  [8]]],
+  ///      [[[9],  [10], [11],  [12]],
+  ///       [[13], [14], [15],  [16]]]]
+  /// ```
+  ///
+  /// The output tensor has shape `[8, 1, 3, 1]` and value:
+  ///
+  /// ```
+  /// x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
+  ///      [[[0], [2], [4]]], [[[0], [10], [12]]],
+  ///      [[[0], [5], [7]]], [[[0], [13], [15]]],
+  ///      [[[0], [6], [8]]], [[[0], [14], [16]]]]
+  /// ```
+  ///
+  /// Among others, this operation is useful for reducing atrous convolution into
+  /// regular convolution.
   ///
   /// - Parameters:
   ///     - input: N-D with shape `input_shape = [batch] + spatial_shape + remaining_shape`,
@@ -31089,110 +35980,6 @@ public enum _Raw {
   ///           `paddings[i] = [pad_start, pad_end]` specifies the padding for input dimension
   ///           `i + 1`, which corresponds to spatial dimension `i`.  It is required that
   ///           `block_shape[i]` divides `input_shape[i + 1] + pad_start + pad_end`.
-  ///
-  ///         This operation is equivalent to the following steps:
-  ///
-  ///         1. Zero-pad the start and end of dimensions `[1, ..., M]` of the
-  ///            input according to `paddings` to produce `padded` of shape `padded_shape`.
-  ///
-  ///         2. Reshape `padded` to `reshaped_padded` of shape:
-  ///
-  ///              [batch] +
-  ///              [padded_shape[1] / block_shape[0],
-  ///                block_shape[0],
-  ///               ...,
-  ///               padded_shape[M] / block_shape[M-1],
-  ///               block_shape[M-1]] +
-  ///              remaining_shape
-  ///
-  ///         3. Permute dimensions of `reshaped_padded` to produce
-  ///            `permuted_reshaped_padded` of shape:
-  ///
-  ///              block_shape +
-  ///              [batch] +
-  ///              [padded_shape[1] / block_shape[0],
-  ///               ...,
-  ///               padded_shape[M] / block_shape[M-1]] +
-  ///              remaining_shape
-  ///
-  ///         4. Reshape `permuted_reshaped_padded` to flatten `block_shape` into the batch
-  ///            dimension, producing an output tensor of shape:
-  ///
-  ///              [batch * prod(block_shape)] +
-  ///              [padded_shape[1] / block_shape[0],
-  ///               ...,
-  ///               padded_shape[M] / block_shape[M-1]] +
-  ///              remaining_shape
-  ///
-  ///         Some examples:
-  ///
-  ///         (1) For the following input of shape `[1, 2, 2, 1]`, `block_shape = [2, 2]`, and
-  ///             `paddings = [[0, 0], [0, 0]]`:
-  ///
-  ///         ```
-  ///         x = [[[[1], [2]], [[3], [4]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[4, 1, 1, 1]` and value:
-  ///
-  ///         ```
-  ///         [[[[1]]], [[[2]]], [[[3]]], [[[4]]]]
-  ///         ```
-  ///
-  ///         (2) For the following input of shape `[1, 2, 2, 3]`, `block_shape = [2, 2]`, and
-  ///             `paddings = [[0, 0], [0, 0]]`:
-  ///
-  ///         ```
-  ///         x = [[[[1, 2, 3], [4, 5, 6]],
-  ///               [[7, 8, 9], [10, 11, 12]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[4, 1, 1, 3]` and value:
-  ///
-  ///         ```
-  ///         [[[[1, 2, 3]]], [[[4, 5, 6]]], [[[7, 8, 9]]], [[[10, 11, 12]]]]
-  ///         ```
-  ///
-  ///         (3) For the following input of shape `[1, 4, 4, 1]`, `block_shape = [2, 2]`, and
-  ///             `paddings = [[0, 0], [0, 0]]`:
-  ///
-  ///         ```
-  ///         x = [[[[1],   [2],  [3],  [4]],
-  ///               [[5],   [6],  [7],  [8]],
-  ///               [[9],  [10], [11],  [12]],
-  ///               [[13], [14], [15],  [16]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[4, 2, 2, 1]` and value:
-  ///
-  ///         ```
-  ///         x = [[[[1], [3]], [[9], [11]]],
-  ///              [[[2], [4]], [[10], [12]]],
-  ///              [[[5], [7]], [[13], [15]]],
-  ///              [[[6], [8]], [[14], [16]]]]
-  ///         ```
-  ///
-  ///         (4) For the following input of shape `[2, 2, 4, 1]`, block_shape = `[2, 2]`, and
-  ///             paddings = `[[0, 0], [2, 0]]`:
-  ///
-  ///         ```
-  ///         x = [[[[1],   [2],  [3],  [4]],
-  ///               [[5],   [6],  [7],  [8]]],
-  ///              [[[9],  [10], [11],  [12]],
-  ///               [[13], [14], [15],  [16]]]]
-  ///         ```
-  ///
-  ///         The output tensor has shape `[8, 1, 3, 1]` and value:
-  ///
-  ///         ```
-  ///         x = [[[[0], [1], [3]]], [[[0], [9], [11]]],
-  ///              [[[0], [2], [4]]], [[[0], [10], [12]]],
-  ///              [[[0], [5], [7]]], [[[0], [13], [15]]],
-  ///              [[[0], [6], [8]]], [[[0], [14], [16]]]]
-  ///         ```
-  ///
-  ///         Among others, this operation is useful for reducing atrous convolution into
-  ///         regular convolution.
   @inlinable @inline(__always)
   public static func spaceToBatchND<
     T: TensorFlowScalar,
@@ -31401,6 +36188,66 @@ public enum _Raw {
       sumIndices: sumIndices)
   }
 
+  /// Counts the number of occurrences of each value in an integer array.
+  ///
+  /// Outputs a vector with length `size` and the same dtype as `weights`. If
+  /// `weights` are empty, then index `i` stores the number of times the value `i` is
+  /// counted in `arr`. If `weights` are non-empty, then index `i` stores the sum of
+  /// the value in `weights` at each index where the corresponding value in `arr` is
+  /// `i`.
+  ///
+  /// Values in `arr` outside of the range [0, size) are ignored.
+  ///
+  /// - Parameters:
+  ///     - indices: 2D int64 `Tensor`.
+  ///     - values: 1D int `Tensor`.
+  ///     - dense_shape: 1D int64 `Tensor`.
+  ///     - size: non-negative int scalar `Tensor`.
+  ///     - weights: is an int32, int64, float32, or float64 `Tensor` with the same
+  ///         shape as `input`, or a length-0 `Tensor`, in which case it acts as all weights
+  ///         equal to 1.
+  ///
+  /// - Attr binary_output: bool; Whether the kernel should count the appearance or number of occurrences.
+  ///
+  /// - Output output: 1D `Tensor` with length equal to `size` or 2D `Tensor` with [batch_size, `size`].
+  ///     The counts or summed weights for each value in the range [0, size).
+  @inlinable @inline(__always)
+  public static func sparseBincount<
+    Tidx: TensorFlowIndex,
+    T: TensorFlowNumeric
+  >(
+    indices: Tensor<Int64>,
+    _ values: Tensor<Tidx>,
+    denseShape: Tensor<Int64>,
+    size: Tensor<Tidx>,
+    weights: Tensor<T>,
+    binaryOutput: Bool = false
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(
+          commonBackend(indices.handle.backend, values.handle.backend), denseShape.handle.backend),
+        size.handle.backend), weights.handle.backend)
+    {
+    case .XLA:
+      let output_device = weights.device
+      let indices = Tensor<Int64>(copying: indices, to: .defaultTFEager)
+      let values = Tensor<Tidx>(copying: values, to: .defaultTFEager)
+      let denseShape = Tensor<Int64>(copying: denseShape, to: .defaultTFEager)
+      let size = Tensor<Tidx>(copying: size, to: .defaultTFEager)
+      let weights = Tensor<T>(copying: weights, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.sparseBincount(
+          indices: indices, values, denseShape: denseShape, size: size, weights: weights,
+          binaryOutput: binaryOutput), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.sparseBincount(
+        indices: indices, values, denseShape: denseShape, size: size, weights: weights,
+        binaryOutput: binaryOutput)
+    }
+
+  }
+
   /// Concatenates a list of `SparseTensor` along the specified dimension.
   ///
   /// Concatenation is with respect to the dense versions of these sparse tensors.
@@ -31465,6 +36312,48 @@ public enum _Raw {
     concatDim: Int64
   ) -> (outputIndices: Tensor<Int64>, outputValues: Tensor<T>, outputShape: Tensor<Int64>) {
     _RawTFEager.sparseConcat(indices: indices, values, shapes: shapes, concatDim: concatDim)
+  }
+
+  /// Performs sparse-output bin counting for a sparse tensor input.
+  ///
+  ///   Counts the number of times each value occurs in the input.
+  ///
+  /// - Parameters:
+  ///     - indices: Tensor containing the indices of the sparse tensor to count.
+  ///     - values: Tensor containing values of the sparse tensor to count.
+  ///     - dense_shape: Tensor containing the dense shape of the sparse tensor to count.
+  ///     - weights: A Tensor of the same shape as indices containing per-index weight values.
+  ///         May also be the empty tensor if no weights are used.
+  ///
+  /// - Attrs:
+  ///     - T: Dtype of the input values tensor.
+  ///     - minlength: Minimum value to count. Can be set to -1 for no minimum.
+  ///     - maxlength: Maximum value to count. Can be set to -1 for no maximum.
+  ///     - binary_output: Whether to output the number of occurrences of each value or 1.
+  ///     - output_type: Dtype of the output values tensor.
+  ///
+  /// - Outputs:
+  ///     - output_indices: Indices tensor for the resulting sparse tensor object.
+  ///     - output_values: Values tensor for the resulting sparse tensor object.
+  ///     - output_dense_shape: Shape tensor for the resulting sparse tensor object.
+  @inlinable @inline(__always)
+  public static func sparseCountSparseOutput<
+    T: TensorFlowIndex,
+    OutputType: TensorFlowNumeric
+  >(
+    indices: Tensor<Int64>,
+    _ values: Tensor<T>,
+    denseShape: Tensor<Int64>,
+    weights: Tensor<OutputType>,
+    minlength: Int64 = -1,
+    maxlength: Int64 = -1,
+    binaryOutput: Bool
+  ) -> (
+    outputIndices: Tensor<Int64>, outputValues: Tensor<OutputType>, outputDenseShape: Tensor<Int64>
+  ) {
+    _RawTFEager.sparseCountSparseOutput(
+      indices: indices, values, denseShape: denseShape, weights: weights, minlength: minlength,
+      maxlength: maxlength, binaryOutput: binaryOutput)
   }
 
   /// Generates sparse cross from a list of sparse and dense tensors.
@@ -31622,6 +36511,144 @@ public enum _Raw {
       indices: indices, values, shapes: shapes, denseInputs: denseInputs,
       hashedOutput: hashedOutput, numBuckets: numBuckets, hashKey: hashKey,
       internalType: internalType)
+  }
+
+  /// Generates sparse cross from a list of sparse and dense tensors.
+  ///
+  /// The op takes two lists, one of 2D `SparseTensor` and one of 2D `Tensor`, each
+  /// representing features of one feature column. It outputs a 2D `SparseTensor` with
+  /// the batchwise crosses of these features.
+  ///
+  /// For example, if the inputs are
+  ///
+  ///     inputs[0]: SparseTensor with shape = [2, 2]
+  ///     [0, 0]: "a"
+  ///     [1, 0]: "b"
+  ///     [1, 1]: "c"
+  ///
+  ///     inputs[1]: SparseTensor with shape = [2, 1]
+  ///     [0, 0]: "d"
+  ///     [1, 0]: "e"
+  ///
+  ///     inputs[2]: Tensor [["f"], ["g"]]
+  ///
+  /// then the output will be
+  ///
+  ///     shape = [2, 2]
+  ///     [0, 0]: "a_X_d_X_f"
+  ///     [1, 0]: "b_X_e_X_g"
+  ///     [1, 1]: "c_X_e_X_g"
+  ///
+  /// if hashed_output=true then the output will be
+  ///
+  ///     shape = [2, 2]
+  ///     [0, 0]: FingerprintCat64(
+  ///                 Fingerprint64("f"), FingerprintCat64(
+  ///                     Fingerprint64("d"), Fingerprint64("a")))
+  ///     [1, 0]: FingerprintCat64(
+  ///                 Fingerprint64("g"), FingerprintCat64(
+  ///                     Fingerprint64("e"), Fingerprint64("b")))
+  ///     [1, 1]: FingerprintCat64(
+  ///                 Fingerprint64("g"), FingerprintCat64(
+  ///                     Fingerprint64("e"), Fingerprint64("c")))
+  ///
+  /// - Parameters:
+  ///     - indices: 2-D.  Indices of each input `SparseTensor`.
+  ///     - values: 1-D.   values of each `SparseTensor`.
+  ///     - shapes: 1-D.   Shapes of each `SparseTensor`.
+  ///     - dense_inputs: 2-D.    Columns represented by dense `Tensor`.
+  ///     - num_buckets: It is used if hashed_output is true.
+  ///         output = hashed_value%num_buckets if num_buckets > 0 else hashed_value.
+  ///     - strong_hash: boolean, if true, siphash with salt will be used instead of farmhash.
+  ///     - salt: Specify the salt that will be used by the siphash function.
+  ///
+  /// - Outputs:
+  ///     - output_indices: 2-D.  Indices of the concatenated `SparseTensor`.
+  ///     - output_values: 1-D.  Non-empty values of the concatenated or hashed
+  ///         `SparseTensor`.
+  ///     - output_shape: 1-D.  Shape of the concatenated `SparseTensor`.
+  @inlinable @inline(__always)
+  public static func sparseCrossHashed<
+    SparseTypes: TensorArrayProtocol,
+    DenseTypes: TensorArrayProtocol
+  >(
+    indices: [Tensor<Int64>],
+    _ values: SparseTypes,
+    shapes: [Tensor<Int64>],
+    denseInputs: DenseTypes,
+    numBuckets: Tensor<Int64>,
+    strongHash: Tensor<Bool>,
+    salt: Tensor<Int64>
+  ) -> (outputIndices: Tensor<Int64>, outputValues: Tensor<Int64>, outputShape: Tensor<Int64>) {
+    _RawTFEager.sparseCrossHashed(
+      indices: indices, values, shapes: shapes, denseInputs: denseInputs, numBuckets: numBuckets,
+      strongHash: strongHash, salt: salt)
+  }
+
+  /// Generates sparse cross from a list of sparse and dense tensors.
+  ///
+  /// The op takes two lists, one of 2D `SparseTensor` and one of 2D `Tensor`, each
+  /// representing features of one feature column. It outputs a 2D `SparseTensor` with
+  /// the batchwise crosses of these features.
+  ///
+  /// For example, if the inputs are
+  ///
+  ///     inputs[0]: SparseTensor with shape = [2, 2]
+  ///     [0, 0]: "a"
+  ///     [1, 0]: "b"
+  ///     [1, 1]: "c"
+  ///
+  ///     inputs[1]: SparseTensor with shape = [2, 1]
+  ///     [0, 0]: "d"
+  ///     [1, 0]: "e"
+  ///
+  ///     inputs[2]: Tensor [["f"], ["g"]]
+  ///
+  /// then the output will be
+  ///
+  ///     shape = [2, 2]
+  ///     [0, 0]: "a_X_d_X_f"
+  ///     [1, 0]: "b_X_e_X_g"
+  ///     [1, 1]: "c_X_e_X_g"
+  ///
+  /// if hashed_output=true then the output will be
+  ///
+  ///     shape = [2, 2]
+  ///     [0, 0]: FingerprintCat64(
+  ///                 Fingerprint64("f"), FingerprintCat64(
+  ///                     Fingerprint64("d"), Fingerprint64("a")))
+  ///     [1, 0]: FingerprintCat64(
+  ///                 Fingerprint64("g"), FingerprintCat64(
+  ///                     Fingerprint64("e"), Fingerprint64("b")))
+  ///     [1, 1]: FingerprintCat64(
+  ///                 Fingerprint64("g"), FingerprintCat64(
+  ///                     Fingerprint64("e"), Fingerprint64("c")))
+  ///
+  /// - Parameters:
+  ///     - indices: 2-D.  Indices of each input `SparseTensor`.
+  ///     - values: 1-D.   values of each `SparseTensor`.
+  ///     - shapes: 1-D.   Shapes of each `SparseTensor`.
+  ///     - dense_inputs: 2-D.    Columns represented by dense `Tensor`.
+  ///     - sep: string used when joining a list of string inputs, can be used as separator later.
+  ///
+  /// - Outputs:
+  ///     - output_indices: 2-D.  Indices of the concatenated `SparseTensor`.
+  ///     - output_values: 1-D.  Non-empty values of the concatenated or hashed
+  ///         `SparseTensor`.
+  ///     - output_shape: 1-D.  Shape of the concatenated `SparseTensor`.
+  @inlinable @inline(__always)
+  public static func sparseCrossV2<
+    SparseTypes: TensorArrayProtocol,
+    DenseTypes: TensorArrayProtocol
+  >(
+    indices: [Tensor<Int64>],
+    _ values: SparseTypes,
+    shapes: [Tensor<Int64>],
+    denseInputs: DenseTypes,
+    sep: StringTensor
+  ) -> (outputIndices: Tensor<Int64>, outputValues: StringTensor, outputShape: Tensor<Int64>) {
+    _RawTFEager.sparseCrossV2(
+      indices: indices, values, shapes: shapes, denseInputs: denseInputs, sep: sep)
   }
 
   /// Adds up a SparseTensor and a dense Tensor, using these special rules:
@@ -32055,7 +37082,7 @@ public enum _Raw {
   ///
   ///     with tf.Session() as sess:
   ///       # Define (COO format) SparseTensor over Numpy array.
-  ///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
+  ///       a_st = tf.sparse.SparseTensor(a_indices, a_values, a_dense_shape)
   ///
   ///       # Convert SparseTensors to CSR SparseMatrix.
   ///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
@@ -32161,7 +37188,7 @@ public enum _Raw {
   ///
   ///     with tf.Session() as sess:
   ///       # Define (COO format) SparseTensor over Numpy array.
-  ///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
+  ///       a_st = tf.sparse.SparseTensor(a_indices, a_values, a_dense_shape)
   ///
   ///       # Convert SparseTensors to CSR SparseMatrix.
   ///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
@@ -32252,8 +37279,8 @@ public enum _Raw {
   ///
   ///     with tf.Session() as sess:
   ///       # Define (COO format) Sparse Tensors over Numpy arrays
-  ///       a_st = tf.SparseTensor(a_indices, a_values, a_dense_shape)
-  ///       b_st = tf.SparseTensor(b_indices, b_values, b_dense_shape)
+  ///       a_st = tf.sparse.SparseTensor(a_indices, a_values, a_dense_shape)
+  ///       b_st = tf.sparse.SparseTensor(b_indices, b_values, b_dense_shape)
   ///
   ///       # Convert SparseTensors to CSR SparseMatrix
   ///       a_sm = sparse_csr_matrix_ops.sparse_tensor_to_csr_sparse_matrix(
@@ -32618,11 +37645,12 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func sparseSegmentMean<
     T: FloatingPoint & TensorFlowScalar,
-    Tidx: TensorFlowIndex
+    Tidx: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     data: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>
+    segmentIds: Tensor<Tsegmentids>
   ) -> Tensor<T> {
     switch commonBackend(
       commonBackend(data.handle.backend, indices.handle.backend), segmentIds.handle.backend)
@@ -32631,7 +37659,7 @@ public enum _Raw {
       let output_device = segmentIds.device
       let data = Tensor<T>(copying: data, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.sparseSegmentMean(
           data: data, indices: indices, segmentIds: segmentIds), to: output_device)
@@ -32654,11 +37682,12 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func sparseSegmentMeanGrad<
     T: FloatingPoint & TensorFlowScalar,
-    Tidx: TensorFlowIndex
+    Tidx: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     grad: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>,
+    segmentIds: Tensor<Tsegmentids>,
     outputDim0: Tensor<Int32>
   ) -> Tensor<T> {
     switch commonBackend(
@@ -32670,7 +37699,7 @@ public enum _Raw {
       let output_device = outputDim0.device
       let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       let outputDim0 = Tensor<Int32>(copying: outputDim0, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.sparseSegmentMeanGrad(
@@ -32686,7 +37715,7 @@ public enum _Raw {
   /// Computes the mean along sparse segments of a tensor.
   ///
   /// Like `SparseSegmentMean`, but allows missing ids in `segment_ids`. If an id is
-  /// misisng, the `output` tensor at that position will be zeroed.
+  /// missing, the `output` tensor at that position will be zeroed.
   ///
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
@@ -32703,11 +37732,12 @@ public enum _Raw {
   public static func sparseSegmentMeanWithNumSegments<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: TensorFlowIndex,
-    Tnumsegments: TensorFlowIndex
+    Tnumsegments: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     data: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>,
+    segmentIds: Tensor<Tsegmentids>,
     numSegments: Tensor<Tnumsegments>
   ) -> Tensor<T> {
     switch commonBackend(
@@ -32719,7 +37749,7 @@ public enum _Raw {
       let output_device = numSegments.device
       let data = Tensor<T>(copying: data, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       let numSegments = Tensor<Tnumsegments>(copying: numSegments, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.sparseSegmentMeanWithNumSegments(
@@ -32748,11 +37778,12 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func sparseSegmentSqrtN<
     T: FloatingPoint & TensorFlowScalar,
-    Tidx: TensorFlowIndex
+    Tidx: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     data: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>
+    segmentIds: Tensor<Tsegmentids>
   ) -> Tensor<T> {
     switch commonBackend(
       commonBackend(data.handle.backend, indices.handle.backend), segmentIds.handle.backend)
@@ -32761,7 +37792,7 @@ public enum _Raw {
       let output_device = segmentIds.device
       let data = Tensor<T>(copying: data, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.sparseSegmentSqrtN(
           data: data, indices: indices, segmentIds: segmentIds), to: output_device)
@@ -32784,11 +37815,12 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func sparseSegmentSqrtNGrad<
     T: FloatingPoint & TensorFlowScalar,
-    Tidx: TensorFlowIndex
+    Tidx: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     grad: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>,
+    segmentIds: Tensor<Tsegmentids>,
     outputDim0: Tensor<Int32>
   ) -> Tensor<T> {
     switch commonBackend(
@@ -32800,7 +37832,7 @@ public enum _Raw {
       let output_device = outputDim0.device
       let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       let outputDim0 = Tensor<Int32>(copying: outputDim0, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.sparseSegmentSqrtNGrad(
@@ -32818,7 +37850,7 @@ public enum _Raw {
   /// N is the size of the segment being reduced.
   ///
   /// Like `SparseSegmentSqrtN`, but allows missing ids in `segment_ids`. If an id is
-  /// misisng, the `output` tensor at that position will be zeroed.
+  /// missing, the `output` tensor at that position will be zeroed.
   ///
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
@@ -32835,11 +37867,12 @@ public enum _Raw {
   public static func sparseSegmentSqrtNWithNumSegments<
     T: FloatingPoint & TensorFlowScalar,
     Tidx: TensorFlowIndex,
-    Tnumsegments: TensorFlowIndex
+    Tnumsegments: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     data: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>,
+    segmentIds: Tensor<Tsegmentids>,
     numSegments: Tensor<Tnumsegments>
   ) -> Tensor<T> {
     switch commonBackend(
@@ -32851,7 +37884,7 @@ public enum _Raw {
       let output_device = numSegments.device
       let data = Tensor<T>(copying: data, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       let numSegments = Tensor<Tnumsegments>(copying: numSegments, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.sparseSegmentSqrtNWithNumSegments(
@@ -32905,11 +37938,12 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func sparseSegmentSum<
     T: TensorFlowNumeric,
-    Tidx: TensorFlowIndex
+    Tidx: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     data: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>
+    segmentIds: Tensor<Tsegmentids>
   ) -> Tensor<T> {
     switch commonBackend(
       commonBackend(data.handle.backend, indices.handle.backend), segmentIds.handle.backend)
@@ -32918,12 +37952,55 @@ public enum _Raw {
       let output_device = segmentIds.device
       let data = Tensor<T>(copying: data, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       return Tensor<T>(
-        copying: _RawTFEager.sparseSegmentSum(
-          data: data, indices: indices, segmentIds: segmentIds), to: output_device)
+        copying: _RawTFEager.sparseSegmentSum(data: data, indices: indices, segmentIds: segmentIds),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.sparseSegmentSum(data: data, indices: indices, segmentIds: segmentIds)
+    }
+
+  }
+
+  /// Computes gradients for SparseSegmentSum.
+  ///
+  /// Returns tensor "output" with same shape as grad, except for dimension 0 whose
+  /// value is output_dim0.
+  ///
+  /// - Parameters:
+  ///     - grad: gradient propagated to the SparseSegmentSum op.
+  ///     - indices: indices passed to the corresponding SparseSegmentSum op.
+  ///     - segment_ids: segment_ids passed to the corresponding SparseSegmentSum op.
+  ///     - output_dim0: dimension 0 of "data" passed to SparseSegmentSum op.
+  @inlinable @inline(__always)
+  public static func sparseSegmentSumGrad<
+    T: FloatingPoint & TensorFlowScalar,
+    Tidx: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
+  >(
+    grad: Tensor<T>,
+    indices: Tensor<Tidx>,
+    segmentIds: Tensor<Tsegmentids>,
+    outputDim0: Tensor<Int32>
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(grad.handle.backend, indices.handle.backend), segmentIds.handle.backend),
+      outputDim0.handle.backend)
+    {
+    case .XLA:
+      let output_device = outputDim0.device
+      let grad = Tensor<T>(copying: grad, to: .defaultTFEager)
+      let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
+      let outputDim0 = Tensor<Int32>(copying: outputDim0, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.sparseSegmentSumGrad(
+          grad: grad, indices: indices, segmentIds: segmentIds, outputDim0: outputDim0),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.sparseSegmentSumGrad(
+        grad: grad, indices: indices, segmentIds: segmentIds, outputDim0: outputDim0)
     }
 
   }
@@ -32931,7 +38008,7 @@ public enum _Raw {
   /// Computes the sum along sparse segments of a tensor.
   ///
   /// Like `SparseSegmentSum`, but allows missing ids in `segment_ids`. If an id is
-  /// misisng, the `output` tensor at that position will be zeroed.
+  /// missing, the `output` tensor at that position will be zeroed.
   ///
   /// Read
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/sparse#Segmentation)
@@ -32969,11 +38046,12 @@ public enum _Raw {
   public static func sparseSegmentSumWithNumSegments<
     T: TensorFlowNumeric,
     Tidx: TensorFlowIndex,
-    Tnumsegments: TensorFlowIndex
+    Tnumsegments: TensorFlowIndex,
+    Tsegmentids: TensorFlowIndex
   >(
     data: Tensor<T>,
     indices: Tensor<Tidx>,
-    segmentIds: Tensor<Int32>,
+    segmentIds: Tensor<Tsegmentids>,
     numSegments: Tensor<Tnumsegments>
   ) -> Tensor<T> {
     switch commonBackend(
@@ -32985,7 +38063,7 @@ public enum _Raw {
       let output_device = numSegments.device
       let data = Tensor<T>(copying: data, to: .defaultTFEager)
       let indices = Tensor<Tidx>(copying: indices, to: .defaultTFEager)
-      let segmentIds = Tensor<Int32>(copying: segmentIds, to: .defaultTFEager)
+      let segmentIds = Tensor<Tsegmentids>(copying: segmentIds, to: .defaultTFEager)
       let numSegments = Tensor<Tnumsegments>(copying: numSegments, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.sparseSegmentSumWithNumSegments(
@@ -33599,6 +38677,21 @@ public enum _Raw {
       setOperation: setOperation, validateIndices: validateIndices)
   }
 
+  @inlinable @inline(__always)
+  public static func spence<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>
+  ) -> Tensor<T> {
+    switch x.handle.backend {
+    case .XLA:
+      let output_device = x.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.spence(x), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.spence(x)
+    }
+
+  }
+
   /// Splits a tensor into `num_split` tensors along one dimension.
   ///
   /// - Parameters:
@@ -33735,7 +38828,7 @@ public enum _Raw {
 
   }
 
-  /// Returns (x - y)(x - y) element-wise.
+  /// Returns conj(x - y)(x - y) element-wise.
   ///
   /// *NOTE*: `SquaredDifference` supports broadcasting. More about broadcasting
   /// [here](http://docs.scipy.org/doc/numpy/user/basics.broadcasting.html)
@@ -34279,8 +39372,7 @@ public enum _Raw {
     outputShapes: [TensorShape?]
   ) -> Tout {
     _RawTFEager.statelessIf(
-      cond: cond, input, thenBranch: thenBranch, elseBranch: elseBranch,
-      outputShapes: outputShapes)
+      cond: cond, input, thenBranch: thenBranch, elseBranch: elseBranch, outputShapes: outputShapes)
   }
 
   /// Draws samples from a multinomial distribution.
@@ -34314,6 +39406,195 @@ public enum _Raw {
 
   }
 
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - seed: 2 seeds (shape [2]).
+  ///     - means: The mean parameter of each batch.
+  ///     - stddevs: The standard deviation parameter of each batch. Must be greater than 0.
+  ///     - minvals: The minimum cutoff. May be -infinity.
+  ///     - maxvals: The maximum cutoff. May be +infinity, and must be more than the minval
+  ///         for each batch.
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: The outputs are truncated normal samples and are a deterministic function of
+  ///     `shape`, `seed`, `minvals`, `maxvals`, `means` and `stddevs`.
+  @inlinable @inline(__always)
+  public static func statelessParameterizedTruncatedNormal<
+    S: TensorFlowIndex,
+    Tseed: TensorFlowIndex,
+    Dtype: FloatingPoint & TensorFlowScalar
+  >(
+    shape: Tensor<S>,
+    seed: Tensor<Tseed>,
+    means: Tensor<Dtype>,
+    stddevs: Tensor<Dtype>,
+    minvals: Tensor<Dtype>,
+    maxvals: Tensor<Dtype>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(
+          commonBackend(
+            commonBackend(shape.handle.backend, seed.handle.backend), means.handle.backend),
+          stddevs.handle.backend), minvals.handle.backend), maxvals.handle.backend)
+    {
+    case .XLA:
+      let output_device = maxvals.device
+      let shape = Tensor<S>(copying: shape, to: .defaultTFEager)
+      let seed = Tensor<Tseed>(copying: seed, to: .defaultTFEager)
+      let means = Tensor<Dtype>(copying: means, to: .defaultTFEager)
+      let stddevs = Tensor<Dtype>(copying: stddevs, to: .defaultTFEager)
+      let minvals = Tensor<Dtype>(copying: minvals, to: .defaultTFEager)
+      let maxvals = Tensor<Dtype>(copying: maxvals, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessParameterizedTruncatedNormal(
+          shape: shape, seed: seed, means: means, stddevs: stddevs, minvals: minvals,
+          maxvals: maxvals), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessParameterizedTruncatedNormal(
+        shape: shape, seed: seed, means: means, stddevs: stddevs, minvals: minvals, maxvals: maxvals
+      )
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom random numbers from a binomial distribution.
+  ///
+  /// Outputs random values from a binomial distribution.
+  ///
+  /// The outputs are a deterministic function of `shape`, `seed`, `counts`, and `probs`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - seed: 2 seeds (shape [2]).
+  ///     - counts: The counts of the binomial distribution. Must be broadcastable with `probs`,
+  ///         and broadcastable with the rightmost dimensions of `shape`.
+  ///     - probs: The probability of success for the binomial distribution. Must be broadcastable
+  ///         with `counts` and broadcastable with the rightmost dimensions of `shape`.
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomBinomial<
+    S: TensorFlowIndex,
+    Tseed: TensorFlowIndex,
+    T: TensorFlowNumeric,
+    Dtype: TensorFlowNumeric
+  >(
+    shape: Tensor<S>,
+    seed: Tensor<Tseed>,
+    counts: Tensor<T>,
+    probs: Tensor<T>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(shape.handle.backend, seed.handle.backend), counts.handle.backend),
+      probs.handle.backend)
+    {
+    case .XLA:
+      let output_device = probs.device
+      let shape = Tensor<S>(copying: shape, to: .defaultTFEager)
+      let seed = Tensor<Tseed>(copying: seed, to: .defaultTFEager)
+      let counts = Tensor<T>(copying: counts, to: .defaultTFEager)
+      let probs = Tensor<T>(copying: probs, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomBinomial(
+          shape: shape, seed: seed, counts: counts, probs: probs), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomBinomial(
+        shape: shape, seed: seed, counts: counts, probs: probs)
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom random numbers from a gamma distribution.
+  ///
+  /// Outputs random values from a gamma distribution.
+  ///
+  /// The outputs are a deterministic function of `shape`, `seed`, and `alpha`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - seed: 2 seeds (shape [2]).
+  ///     - alpha: The concentration of the gamma distribution. Shape must match the rightmost
+  ///         dimensions of `shape`.
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomGammaV2<
+    Dtype: FloatingPoint & TensorFlowScalar,
+    T: TensorFlowIndex,
+    Tseed: TensorFlowIndex
+  >(
+    shape: Tensor<T>,
+    seed: Tensor<Tseed>,
+    alpha: Tensor<Dtype>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(shape.handle.backend, seed.handle.backend), alpha.handle.backend)
+    {
+    case .XLA:
+      let output_device = alpha.device
+      let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
+      let seed = Tensor<Tseed>(copying: seed, to: .defaultTFEager)
+      let alpha = Tensor<Dtype>(copying: alpha, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomGammaV2(shape: shape, seed: seed, alpha: alpha),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomGammaV2(shape: shape, seed: seed, alpha: alpha)
+    }
+
+  }
+
+  /// Picks the best counter-based RNG algorithm based on device.
+  ///
+  /// This op picks the best counter-based RNG algorithm based on device.
+  ///
+  /// - Output alg: The RNG algorithm (shape int32[]).
+  @inlinable @inline(__always)
+  public static func statelessRandomGetAlg() -> Tensor<Int32> {
+    _RawTFEager.statelessRandomGetAlg()
+  }
+
+  /// Scrambles seed into key and counter, using the best algorithm based on device.
+  ///
+  /// This op scrambles a shape-[2] seed into a key and a counter, both needed by counter-based RNG algorithms. The scrambing uses the best algorithm based on device. The scrambling is opaque but approximately satisfies the property that different seed results in different key/counter pair (which will in turn result in different random numbers).
+  ///
+  /// - Parameter seed: 2 seeds (shape [2]).
+  ///
+  /// - Outputs:
+  ///     - key: Key for the counter-based RNG algorithm (shape uint64[1]).
+  ///     - counter: Counter for the counter-based RNG algorithm. Since counter size is algorithm-dependent, this output will be right-padded with zeros to reach shape uint64[2] (the current maximal counter size among algorithms).
+  @inlinable @inline(__always)
+  public static func statelessRandomGetKeyCounter<Tseed: TensorFlowIndex>(
+    seed: Tensor<Tseed>
+  ) -> (key: Tensor<UInt64>, counter: Tensor<UInt64>) {
+    _RawTFEager.statelessRandomGetKeyCounter(seed: seed)
+  }
+
+  /// Picks the best algorithm based on device, and scrambles seed into key and counter.
+  ///
+  /// This op picks the best counter-based RNG algorithm based on device, and scrambles a shape-[2] seed into a key and a counter, both needed by the counter-based algorithm. The scrambling is opaque but approximately satisfies the property that different seed results in different key/counter pair (which will in turn result in different random numbers).
+  ///
+  /// - Parameter seed: 2 seeds (shape [2]).
+  ///
+  /// - Outputs:
+  ///     - key: Key for the counter-based RNG algorithm (shape uint64[1]).
+  ///     - counter: Counter for the counter-based RNG algorithm. Since counter size is algorithm-dependent, this output will be right-padded with zeros to reach shape uint64[2] (the current maximal counter size among algorithms).
+  ///     - alg: The RNG algorithm (shape int32[]).
+  @inlinable @inline(__always)
+  public static func statelessRandomGetKeyCounterAlg<Tseed: TensorFlowIndex>(
+    seed: Tensor<Tseed>
+  ) -> (key: Tensor<UInt64>, counter: Tensor<UInt64>, alg: Tensor<Int32>) {
+    _RawTFEager.statelessRandomGetKeyCounterAlg(seed: seed)
+  }
+
   /// Outputs deterministic pseudorandom values from a normal distribution.
   ///
   /// The generated values will have mean 0 and standard deviation 1.
@@ -34341,6 +39622,94 @@ public enum _Raw {
       return _RawXLA.statelessRandomNormal(shape: shape, seed: seed)
     case .TF_EAGER:
       return _RawTFEager.statelessRandomNormal(shape: shape, seed: seed)
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom values from a normal distribution.
+  ///
+  /// The generated values will have mean 0 and standard deviation 1.
+  ///
+  /// The outputs are a deterministic function of `shape`, `key`, `counter` and `alg`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - key: Key for the counter-based RNG algorithm (shape uint64[1]).
+  ///     - counter: Initial counter for the counter-based RNG algorithm (shape uint64[2] or uint64[1] depending on the algorithm). If a larger vector is given, only the needed portion on the left (i.e. [:N]) will be used.
+  ///     - alg: The RNG algorithm (shape int32[]).
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomNormalV2<
+    Dtype: FloatingPoint & TensorFlowScalar,
+    Tshape: TensorFlowIndex
+  >(
+    shape: Tensor<Tshape>,
+    key: Tensor<UInt64>,
+    counter: Tensor<UInt64>,
+    alg: Tensor<Int32>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(shape.handle.backend, key.handle.backend), counter.handle.backend),
+      alg.handle.backend)
+    {
+    case .XLA:
+      let output_device = alg.device
+      let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
+      let key = Tensor<UInt64>(copying: key, to: .defaultTFEager)
+      let counter = Tensor<UInt64>(copying: counter, to: .defaultTFEager)
+      let alg = Tensor<Int32>(copying: alg, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomNormalV2(
+          shape: shape, key: key, counter: counter, alg: alg), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomNormalV2(shape: shape, key: key, counter: counter, alg: alg)
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom random numbers from a Poisson distribution.
+  ///
+  /// Outputs random values from a Poisson distribution.
+  ///
+  /// The outputs are a deterministic function of `shape`, `seed`, and `lam`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - seed: 2 seeds (shape [2]).
+  ///     - lam: The rate of the Poisson distribution. Shape must match the rightmost dimensions
+  ///         of `shape`.
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomPoisson<
+    Rtype: TensorFlowNumeric,
+    Dtype: TensorFlowNumeric,
+    T: TensorFlowIndex,
+    Tseed: TensorFlowIndex
+  >(
+    shape: Tensor<T>,
+    seed: Tensor<Tseed>,
+    lam: Tensor<Rtype>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(shape.handle.backend, seed.handle.backend), lam.handle.backend)
+    {
+    case .XLA:
+      let output_device = lam.device
+      let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
+      let seed = Tensor<Tseed>(copying: seed, to: .defaultTFEager)
+      let lam = Tensor<Rtype>(copying: lam, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomPoisson(shape: shape, seed: seed, lam: lam),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomPoisson(shape: shape, seed: seed, lam: lam)
     }
 
   }
@@ -34373,6 +39742,88 @@ public enum _Raw {
       return _RawXLA.statelessRandomUniform(shape: shape, seed: seed)
     case .TF_EAGER:
       return _RawTFEager.statelessRandomUniform(shape: shape, seed: seed)
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom random integers from a uniform distribution.
+  ///
+  /// The generated values are uniform integers covering the whole range of `dtype`.
+  ///
+  /// The outputs are a deterministic function of `shape` and `seed`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - seed: 2 seeds (shape [2]).
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomUniformFullInt<
+    Dtype: TensorFlowIndex,
+    T: TensorFlowIndex,
+    Tseed: TensorFlowIndex
+  >(
+    shape: Tensor<T>,
+    seed: Tensor<Tseed>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(shape.handle.backend, seed.handle.backend) {
+    case .XLA:
+      let output_device = seed.device
+      let shape = Tensor<T>(copying: shape, to: .defaultTFEager)
+      let seed = Tensor<Tseed>(copying: seed, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomUniformFullInt(shape: shape, seed: seed),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomUniformFullInt(shape: shape, seed: seed)
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom random integers from a uniform distribution.
+  ///
+  /// The generated values are uniform integers covering the whole range of `dtype`.
+  ///
+  /// The outputs are a deterministic function of `shape`, `key`, `counter` and `alg`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - key: Key for the counter-based RNG algorithm (shape uint64[1]).
+  ///     - counter: Initial counter for the counter-based RNG algorithm (shape uint64[2] or uint64[1] depending on the algorithm). If a larger vector is given, only the needed portion on the left (i.e. [:N]) will be used.
+  ///     - alg: The RNG algorithm (shape int32[]).
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomUniformFullIntV2<
+    Dtype: TensorFlowIndex,
+    Tshape: TensorFlowIndex
+  >(
+    shape: Tensor<Tshape>,
+    key: Tensor<UInt64>,
+    counter: Tensor<UInt64>,
+    alg: Tensor<Int32>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(shape.handle.backend, key.handle.backend), counter.handle.backend),
+      alg.handle.backend)
+    {
+    case .XLA:
+      let output_device = alg.device
+      let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
+      let key = Tensor<UInt64>(copying: key, to: .defaultTFEager)
+      let counter = Tensor<UInt64>(copying: counter, to: .defaultTFEager)
+      let alg = Tensor<Int32>(copying: alg, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomUniformFullIntV2(
+          shape: shape, key: key, counter: counter, alg: alg), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomUniformFullIntV2(
+        shape: shape, key: key, counter: counter, alg: alg)
     }
 
   }
@@ -34418,6 +39869,219 @@ public enum _Raw {
 
   }
 
+  /// Outputs deterministic pseudorandom random integers from a uniform distribution.
+  ///
+  /// The generated values follow a uniform distribution in the range `[minval, maxval)`.
+  ///
+  /// The outputs are a deterministic function of `shape`, `key`, `counter`, `alg`, `minval` and `maxval`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - key: Key for the counter-based RNG algorithm (shape uint64[1]).
+  ///     - counter: Initial counter for the counter-based RNG algorithm (shape uint64[2] or uint64[1] depending on the algorithm). If a larger vector is given, only the needed portion on the left (i.e. [:N]) will be used.
+  ///     - alg: The RNG algorithm (shape int32[]).
+  ///     - minval: Minimum value (inclusive, scalar).
+  ///     - maxval: Maximum value (exclusive, scalar).
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomUniformIntV2<
+    Dtype: TensorFlowIndex,
+    Tshape: TensorFlowIndex
+  >(
+    shape: Tensor<Tshape>,
+    key: Tensor<UInt64>,
+    counter: Tensor<UInt64>,
+    alg: Tensor<Int32>,
+    minval: Tensor<Dtype>,
+    maxval: Tensor<Dtype>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(
+          commonBackend(
+            commonBackend(shape.handle.backend, key.handle.backend), counter.handle.backend),
+          alg.handle.backend), minval.handle.backend), maxval.handle.backend)
+    {
+    case .XLA:
+      let output_device = maxval.device
+      let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
+      let key = Tensor<UInt64>(copying: key, to: .defaultTFEager)
+      let counter = Tensor<UInt64>(copying: counter, to: .defaultTFEager)
+      let alg = Tensor<Int32>(copying: alg, to: .defaultTFEager)
+      let minval = Tensor<Dtype>(copying: minval, to: .defaultTFEager)
+      let maxval = Tensor<Dtype>(copying: maxval, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomUniformIntV2(
+          shape: shape, key: key, counter: counter, alg: alg, minval: minval, maxval: maxval),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomUniformIntV2(
+        shape: shape, key: key, counter: counter, alg: alg, minval: minval, maxval: maxval)
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom random values from a uniform distribution.
+  ///
+  /// The generated values follow a uniform distribution in the range `[0, 1)`. The
+  /// lower bound 0 is included in the range, while the upper bound 1 is excluded.
+  ///
+  /// The outputs are a deterministic function of `shape`, `key`, `counter` and `alg`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - key: Key for the counter-based RNG algorithm (shape uint64[1]).
+  ///     - counter: Initial counter for the counter-based RNG algorithm (shape uint64[2] or uint64[1] depending on the algorithm). If a larger vector is given, only the needed portion on the left (i.e. [:N]) will be used.
+  ///     - alg: The RNG algorithm (shape int32[]).
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessRandomUniformV2<
+    Dtype: FloatingPoint & TensorFlowScalar,
+    Tshape: TensorFlowIndex
+  >(
+    shape: Tensor<Tshape>,
+    key: Tensor<UInt64>,
+    counter: Tensor<UInt64>,
+    alg: Tensor<Int32>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(shape.handle.backend, key.handle.backend), counter.handle.backend),
+      alg.handle.backend)
+    {
+    case .XLA:
+      let output_device = alg.device
+      let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
+      let key = Tensor<UInt64>(copying: key, to: .defaultTFEager)
+      let counter = Tensor<UInt64>(copying: counter, to: .defaultTFEager)
+      let alg = Tensor<Int32>(copying: alg, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessRandomUniformV2(
+          shape: shape, key: key, counter: counter, alg: alg), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessRandomUniformV2(
+        shape: shape, key: key, counter: counter, alg: alg)
+    }
+
+  }
+
+  /// Generate a randomly distorted bounding box for an image deterministically.
+  ///
+  /// Bounding box annotations are often supplied in addition to ground-truth labels
+  /// in image recognition or object localization tasks. A common technique for
+  /// training such a system is to randomly distort an image while preserving its
+  /// content, i.e. *data augmentation*. This Op, given the same `seed`,
+  /// deterministically outputs a randomly distorted localization of an object, i.e.
+  /// bounding box, given an `image_size`, `bounding_boxes` and a series of
+  /// constraints.
+  ///
+  /// The output of this Op is a single bounding box that may be used to crop the
+  /// original image. The output is returned as 3 tensors: `begin`, `size` and
+  /// `bboxes`. The first 2 tensors can be fed directly into `tf.slice` to crop the
+  /// image. The latter may be supplied to `tf.image.draw_bounding_boxes` to visualize
+  /// what the bounding box looks like.
+  ///
+  /// Bounding boxes are supplied and returned as `[y_min, x_min, y_max, x_max]`. The
+  /// bounding box coordinates are floats in `[0.0, 1.0]` relative to the width and
+  /// the height of the underlying image.
+  ///
+  /// The output of this Op is guaranteed to be the same given the same `seed` and is
+  /// independent of how many times the function is called, and independent of global
+  /// seed settings (e.g. `tf.random.set_seed`).
+  ///
+  /// Example usage:
+  ///
+  /// >>> image = np.array([[[1], [2], [3]], [[4], [5], [6]], [[7], [8], [9]]])
+  /// >>> bbox = tf.constant(
+  /// ...   [0.0, 0.0, 1.0, 1.0], dtype=tf.float32, shape=[1, 1, 4])
+  /// >>> seed = (1, 2)
+  /// >>> # Generate a single distorted bounding box.
+  /// >>> bbox_begin, bbox_size, bbox_draw = (
+  /// ...   tf.image.stateless_sample_distorted_bounding_box(
+  /// ...     tf.shape(image), bounding_boxes=bbox, seed=seed))
+  /// >>> # Employ the bounding box to distort the image.
+  /// >>> tf.slice(image, bbox_begin, bbox_size)
+  /// <tf.Tensor: shape=(2, 2, 1), dtype=int64, numpy=
+  /// array([[[1],
+  ///         [2]],
+  ///        [[4],
+  ///         [5]]])>
+  /// >>> # Draw the bounding box in an image summary.
+  /// >>> colors = np.array([[1.0, 0.0, 0.0], [0.0, 0.0, 1.0]])
+  /// >>> tf.image.draw_bounding_boxes(
+  /// ...   tf.expand_dims(tf.cast(image, tf.float32),0), bbox_draw, colors)
+  /// <tf.Tensor: shape=(1, 3, 3, 1), dtype=float32, numpy=
+  /// array([[[[1.],
+  ///          [1.],
+  ///          [3.]],
+  ///         [[1.],
+  ///          [1.],
+  ///          [6.]],
+  ///         [[7.],
+  ///          [8.],
+  ///          [9.]]]], dtype=float32)>
+  ///
+  /// Note that if no bounding box information is available, setting
+  /// `use_image_if_no_bounding_boxes = true` will assume there is a single implicit
+  /// bounding box covering the whole image. If `use_image_if_no_bounding_boxes` is
+  /// false and no bounding boxes are supplied, an error is raised.
+  ///
+  /// - Parameters:
+  ///     - image_size: 1-D, containing `[height, width, channels]`.
+  ///     - bounding_boxes: 3-D with shape `[batch, N, 4]` describing the N bounding boxes
+  ///         associated with the image.
+  ///     - min_object_covered: The cropped area of the image must contain at least this
+  ///         fraction of any bounding box supplied. The value of this parameter should be
+  ///         non-negative. In the case of 0, the cropped area does not need to overlap
+  ///         any of the bounding boxes supplied.
+  ///     - seed: 1-D with shape `[2]`. The seed to the random number generator. Must have dtype
+  ///         `int32` or `int64`. (When using XLA, only `int32` is allowed.)
+  ///
+  /// - Attrs:
+  ///     - aspect_ratio_range: The cropped area of the image must have an aspect ratio =
+  ///         width / height within this range.
+  ///     - area_range: The cropped area of the image must contain a fraction of the
+  ///         supplied image within this range.
+  ///     - max_attempts: Number of attempts at generating a cropped region of the image
+  ///         of the specified constraints. After `max_attempts` failures, return the entire
+  ///         image.
+  ///     - use_image_if_no_bounding_boxes: Controls behavior if no bounding boxes supplied.
+  ///         If true, assume an implicit bounding box covering the whole input. If false,
+  ///         raise an error.
+  ///
+  /// - Outputs:
+  ///     - begin: 1-D, containing `[offset_height, offset_width, 0]`. Provide as input to
+  ///         `tf.slice`.
+  ///     - size: 1-D, containing `[target_height, target_width, -1]`. Provide as input to
+  ///         `tf.slice`.
+  ///     - bboxes: 3-D with shape `[1, 1, 4]` containing the distorted bounding box.
+  ///         Provide as input to `tf.image.draw_bounding_boxes`.
+  @inlinable @inline(__always)
+  public static func statelessSampleDistortedBoundingBox<
+    T: TensorFlowInteger,
+    Tseed: TensorFlowIndex
+  >(
+    imageSize: Tensor<T>,
+    boundingBoxes: Tensor<Float>,
+    minObjectCovered: Tensor<Float>,
+    seed: Tensor<Tseed>,
+    aspectRatioRange: [Double] = [0.75, 1.33],
+    areaRange: [Double] = [0.05, 1],
+    maxAttempts: Int64 = 100,
+    useImageIfNoBoundingBoxes: Bool = false
+  ) -> (begin: Tensor<T>, size: Tensor<T>, bboxes: Tensor<Float>) {
+    _RawTFEager.statelessSampleDistortedBoundingBox(
+      imageSize: imageSize, boundingBoxes: boundingBoxes, minObjectCovered: minObjectCovered,
+      seed: seed, aspectRatioRange: aspectRatioRange, areaRange: areaRange,
+      maxAttempts: maxAttempts, useImageIfNoBoundingBoxes: useImageIfNoBoundingBoxes)
+  }
+
   /// Outputs deterministic pseudorandom values from a truncated normal distribution.
   ///
   /// The generated values follow a normal distribution with mean 0 and standard
@@ -34447,6 +40111,54 @@ public enum _Raw {
       return _RawXLA.statelessTruncatedNormal(shape: shape, seed: seed)
     case .TF_EAGER:
       return _RawTFEager.statelessTruncatedNormal(shape: shape, seed: seed)
+    }
+
+  }
+
+  /// Outputs deterministic pseudorandom values from a truncated normal distribution.
+  ///
+  /// The generated values follow a normal distribution with mean 0 and standard
+  /// deviation 1, except that values whose magnitude is more than 2 standard
+  /// deviations from the mean are dropped and re-picked.
+  ///
+  /// The outputs are a deterministic function of `shape`, `key`, `counter` and `alg`.
+  ///
+  /// - Parameters:
+  ///     - shape: The shape of the output tensor.
+  ///     - key: Key for the counter-based RNG algorithm (shape uint64[1]).
+  ///     - counter: Initial counter for the counter-based RNG algorithm (shape uint64[2] or uint64[1] depending on the algorithm). If a larger vector is given, only the needed portion on the left (i.e. [:N]) will be used.
+  ///     - alg: The RNG algorithm (shape int32[]).
+  ///
+  /// - Attr dtype: The type of the output.
+  ///
+  /// - Output output: Random values with specified shape.
+  @inlinable @inline(__always)
+  public static func statelessTruncatedNormalV2<
+    Dtype: FloatingPoint & TensorFlowScalar,
+    Tshape: TensorFlowIndex
+  >(
+    shape: Tensor<Tshape>,
+    key: Tensor<UInt64>,
+    counter: Tensor<UInt64>,
+    alg: Tensor<Int32>
+  ) -> Tensor<Dtype> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(shape.handle.backend, key.handle.backend), counter.handle.backend),
+      alg.handle.backend)
+    {
+    case .XLA:
+      let output_device = alg.device
+      let shape = Tensor<Tshape>(copying: shape, to: .defaultTFEager)
+      let key = Tensor<UInt64>(copying: key, to: .defaultTFEager)
+      let counter = Tensor<UInt64>(copying: counter, to: .defaultTFEager)
+      let alg = Tensor<Int32>(copying: alg, to: .defaultTFEager)
+      return Tensor<Dtype>(
+        copying: _RawTFEager.statelessTruncatedNormalV2(
+          shape: shape, key: key, counter: counter, alg: alg), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.statelessTruncatedNormalV2(
+        shape: shape, key: key, counter: counter, alg: alg)
     }
 
   }
@@ -34560,8 +40272,7 @@ public enum _Raw {
     statsAggregator: ResourceHandle,
     summary: ResourceHandle
   ) {
-    _RawTFEager.statsAggregatorSetSummaryWriter(
-      statsAggregator: statsAggregator, summary: summary)
+    _RawTFEager.statsAggregatorSetSummaryWriter(statsAggregator: statsAggregator, summary: summary)
   }
 
   /// Produces a summary of any statistics recorded by the given statistics manager.
@@ -34584,7 +40295,45 @@ public enum _Raw {
   /// taken into account for computing gradients.
   ///
   /// This is useful any time you want to compute a value with TensorFlow but need
-  /// to pretend that the value was a constant. Some examples include:
+  /// to pretend that the value was a constant. For example, the softmax function
+  /// for a vector x can be written as
+  ///
+  /// ```python
+  ///
+  ///   def softmax(x):
+  ///     numerator = tf.exp(x)
+  ///     denominator = tf.reduce_sum(numerator)
+  ///     return numerator / denominator
+  /// ```
+  ///
+  /// This however is susceptible to overflow if the values in x are large. An
+  /// alternative more stable way is to subtract the maximum of x from each of the
+  /// values.
+  ///
+  /// ```python
+  ///
+  ///   def stable_softmax(x):
+  ///     z = x - tf.reduce_max(x)
+  ///     numerator = tf.exp(z)
+  ///     denominator = tf.reduce_sum(numerator)
+  ///     return numerator / denominator
+  /// ```
+  ///
+  /// However, when we backprop through the softmax to x, we dont want to backprop
+  /// through the `tf.reduce_max(x)` (if the max values are not unique then the
+  /// gradient could flow to the wrong input) calculation and treat that as a
+  /// constant. Therefore, we should write this out as
+  ///
+  /// ```python
+  ///
+  ///   def stable_softmax(x):
+  ///     z = x - tf.stop_gradient(tf.reduce_max(x))
+  ///     numerator = tf.exp(z)
+  ///     denominator = tf.reduce_sum(numerator)
+  ///     return numerator / denominator
+  /// ```
+  ///
+  /// Some other examples include:
   ///
   /// *  The *EM* algorithm where the *M-step* should not involve backpropagation
   ///    through the output of the *E-step*.
@@ -34659,11 +40408,11 @@ public enum _Raw {
   /// begin = [1, 2, x, x, 0, x] # x denotes don't care (usually 0)
   /// end = [2, 4, x, x, -3, x]
   /// strides = [1, 1, x, x, -1, 1]
-  /// begin_mask = 1<<4 | 1 << 5 = 48
+  /// begin_mask = 1<<4 | 1<<5 = 48
   /// end_mask = 1<<5 = 32
   /// ellipsis_mask = 1<<3 = 8
-  /// new_axis_mask = 1<<2 4
-  /// shrink_axis_mask = 1<<0
+  /// new_axis_mask = 1<<2 = 4
+  /// shrink_axis_mask = 1<<0 = 1
   /// ```
   ///
   /// In this case if `foo.shape` is (5, 5, 5, 5, 5, 5) the final shape of
@@ -34751,8 +40500,7 @@ public enum _Raw {
     shrinkAxisMask: Int64 = 0
   ) -> Tensor<T> {
     switch commonBackend(
-      commonBackend(
-        commonBackend(input.handle.backend, begin.handle.backend), end.handle.backend),
+      commonBackend(commonBackend(input.handle.backend, begin.handle.backend), end.handle.backend),
       strides.handle.backend)
     {
     case .XLA:
@@ -34903,6 +40651,11 @@ public enum _Raw {
   /// >>> tf.strings.lower("CamelCase string and ALL CAPS")
   /// <tf.Tensor: shape=(), dtype=string, numpy=b'camelcase string and all caps'>
   ///
+  ///
+  /// - Parameter input: The input to be lower-cased.
+  ///
+  /// - Attr encoding: Character encoding of `input`. Allowed values are '' and 'utf-8'.
+  ///     Value '' is interpreted as ASCII.
   @inlinable @inline(__always)
   public static func stringLower(
     _ input: StringTensor,
@@ -35041,14 +40794,14 @@ public enum _Raw {
 
   /// Strip leading and trailing whitespaces from the Tensor.
   ///
+  /// Examples:
+  ///
+  /// >>> tf.strings.strip(["\nTensorFlow", "     The python library    "]).numpy()
+  /// array([b'TensorFlow', b'The python library'], dtype=object)
+  ///
   /// - Parameter input: A string `Tensor` of any shape.
   ///
   /// - Output output: A string `Tensor` of the same shape as the input.
-  ///
-  ///     Examples:
-  ///
-  ///     >>> tf.strings.strip(["\nTensorFlow", "     The python library    "]).numpy()
-  ///     array([b'TensorFlow', b'The python library'], dtype=object)
   @inlinable @inline(__always)
   public static func stringStrip(
     _ input: StringTensor
@@ -35170,6 +40923,11 @@ public enum _Raw {
   /// >>> tf.strings.upper("CamelCase string and ALL CAPS")
   /// <tf.Tensor: shape=(), dtype=string, numpy=b'CAMELCASE STRING AND ALL CAPS'>
   ///
+  ///
+  /// - Parameter input: The input to be upper-cased.
+  ///
+  /// - Attr encoding: Character encoding of `input`. Allowed values are '' and 'utf-8'.
+  ///     Value '' is interpreted as ASCII.
   @inlinable @inline(__always)
   public static func stringUpper(
     _ input: StringTensor,
@@ -35286,7 +41044,7 @@ public enum _Raw {
   ///
   ///   * `ValueError`: If the first argument cannot be converted to a
   ///      Tensor of `dtype string`.
-  ///   * `InvalidArgumentError`: If indicies are out of range.
+  ///   * `InvalidArgumentError`: If indices are out of range.
   ///   * `ValueError`: If `pos` and `len` are not the same shape.
   ///
   ///
@@ -35398,6 +41156,7 @@ public enum _Raw {
     case .TF_EAGER:
       return _RawTFEager.svd(input, computeUv: computeUv, fullMatrices: fullMatrices)
     }
+
   }
 
   /// Forwards `data` to the output port determined by `pred`.
@@ -35475,10 +41234,12 @@ public enum _Raw {
   public static func tFRecordDataset(
     filenames: StringTensor,
     compressionType: StringTensor,
-    bufferSize: Tensor<Int64>
+    bufferSize: Tensor<Int64>,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.tFRecordDataset(
-      filenames: filenames, compressionType: compressionType, bufferSize: bufferSize)
+      filenames: filenames, compressionType: compressionType, bufferSize: bufferSize,
+      metadata: metadata)
   }
 
   /// A Reader that outputs the records from a TensorFlow Records file.
@@ -35508,6 +41269,55 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func tPUCompilationResult() -> StringTensor {
     _RawTFEager.tPUCompilationResult()
+  }
+
+  /// Compiles a computations for execution on one or more TPU devices.
+  ///
+  /// For the internal use of the distributed TPU compiler.
+  ///
+  /// 'num_computations' is the number of computations to be compiled.
+  /// 'function' is a function containing the computation to compile.
+  /// 'dynamic_shapes' contains dynamic shapes of arguments whose shapes were not
+  /// known statically at TPUReplication rewrite time.
+  /// 'guaranteed_constants' is a list of tensors which have been guaranteed to not
+  /// change their values during the session lifetime. These contain tensors marked as
+  /// constant using the GuaranteeConstOp.
+  /// 'metadata' is a serialized TPUCompileMetadataProto describing
+  /// the shapes and types of the inputs to the computation, as well as a mapping onto
+  /// the TPU pod topology.
+  /// Each 'program' output is a string key that is passed to the _TPUExecute op and
+  /// used to look up the program in the compilation cache.
+  /// 'may_modify_variables' indicates whether variables may be modified.
+  @inlinable @inline(__always)
+  public static func tPUCompile<
+    FunctionIn: TensorGroup,
+    FunctionOut: TensorGroup,
+    TguaranteedConstants: TensorArrayProtocol
+  >(
+    dynamicShapes: [Tensor<Int64>],
+    guaranteedConstants: TguaranteedConstants,
+    numComputations: Int64,
+    function: (FunctionIn) -> FunctionOut,
+    metadata: String
+  ) -> (
+    compilationStatus: StringTensor, program: [StringTensor], mayModifyVariables: [Tensor<Bool>]
+  ) {
+    _RawTFEager.tPUCompile(
+      dynamicShapes: dynamicShapes, guaranteedConstants: guaranteedConstants,
+      numComputations: numComputations, function: function, metadata: metadata)
+  }
+
+  /// Asserts that compilation succeeded.
+  ///
+  /// This op produces no output and closes the device during failure to ensure all
+  /// pending device interactions fail.
+  ///
+  /// 'compilation_status' is a serialized CompilationResultProto.
+  @inlinable @inline(__always)
+  public static func tPUCompileSucceededAssert(
+    compilationStatus: StringTensor
+  ) {
+    _RawTFEager.tPUCompileSucceededAssert(compilationStatus: compilationStatus)
   }
 
   /// An op enabling differentiation of TPU Embeddings.
@@ -35551,6 +41361,44 @@ public enum _Raw {
 
   }
 
+  /// Op that loads and executes a TPU program on a TPU device.
+  ///
+  /// For the internal use of the distributed TPU compiler.
+  @inlinable @inline(__always)
+  public static func tPUExecute<
+    Targs: TensorArrayProtocol,
+    Tresults: TensorGroup
+  >(
+    args: Targs,
+    key: StringTensor
+  ) -> Tresults {
+    _RawTFEager.tPUExecute(args: args, key: key)
+  }
+
+  /// Op that executes a program with optional in-place variable updates.
+  ///
+  /// It (optionally) reads device variables, loads and executes a TPU program on a
+  /// TPU device, and then (optionally) in-place updates variables using the program
+  /// outputs, as specified in attributes device_var_reads_indices (program input
+  /// indices from directly reading variables) and device_var_updates_indices (program
+  /// output indices used to update variables, -1 means no-update/read-only). Such
+  /// program outputs are consumed by these variables will not appear in the op
+  /// output. For the internal use of the distributed TPU compiler.
+  @inlinable @inline(__always)
+  public static func tPUExecuteAndUpdateVariables<
+    Targs: TensorArrayProtocol,
+    Tresults: TensorGroup
+  >(
+    args: Targs,
+    key: StringTensor,
+    deviceVarReadsIndices: [Int32],
+    deviceVarUpdatesIndices: [Int32]
+  ) -> Tresults {
+    _RawTFEager.tPUExecuteAndUpdateVariables(
+      args: args, key: key, deviceVarReadsIndices: deviceVarReadsIndices,
+      deviceVarUpdatesIndices: deviceVarUpdatesIndices)
+  }
+
   /// A TPU core selector Op.
   ///
   /// This Op produces a set of TPU cores (for warm-up) or a single TPU core
@@ -35591,6 +41439,51 @@ public enum _Raw {
       args: args, deviceOrdinal: deviceOrdinal, f: f, autotunerThresh: autotunerThresh)
   }
 
+  /// An op that groups a list of partitioned inputs together. This op
+  ///
+  /// - Parameter inputs: A list of partitioned inputs which must have the same shape.
+  ///
+  /// - Attr partition_dim: An integer describles which dimension is partitioned. -1 means
+  ///     those inputs are replicated.
+  ///
+  /// - Output output: A handle which represents the full shape of partitioned tensors.
+  @inlinable @inline(__always)
+  public static func tPUPartitionedInput<T: TensorFlowScalar>(
+    inputs: [Tensor<T>],
+    partitionDim: Int64 = 0
+  ) -> Tensor<T> {
+    _RawTFEager.tPUPartitionedInput(inputs: inputs, partitionDim: partitionDim)
+  }
+
+  /// An op that demultiplexes a tensor to be sharded by XLA to a list of partitioned
+  ///
+  /// outputs outside the XLA computation.
+  ///
+  /// - Parameter inputs: A tensor which represents the full shape of partitioned tensors.
+  ///
+  /// - Attr partition_dim: An integer describles which dimension is partitioned.
+  ///
+  /// - Output output: A list of partitioned inputs which must have the same shape.
+  @inlinable @inline(__always)
+  public static func tPUPartitionedOutput<T: TensorFlowScalar>(
+    inputs: Tensor<T>,
+    numSplits: Int64,
+    partitionDim: Int64 = 0
+  ) -> [Tensor<T>] {
+    switch inputs.handle.backend {
+    case .XLA:
+      let output_device = inputs.device
+      let inputs = Tensor<T>(copying: inputs, to: .defaultTFEager)
+      return [Tensor<T>](
+        copying: _RawTFEager.tPUPartitionedOutput(
+          inputs: inputs, numSplits: numSplits, partitionDim: partitionDim), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.tPUPartitionedOutput(
+        inputs: inputs, numSplits: numSplits, partitionDim: partitionDim)
+    }
+
+  }
+
   /// Metadata indicating how the TPU computation should be replicated.
   ///
   /// This operation holds the metadata common to operations of a `tpu.replicate()` computation subgraph.
@@ -35613,13 +41506,15 @@ public enum _Raw {
     hostComputeCore: [String],
     paddingMap: [String],
     stepMarkerLocation: String = "STEP_MARK_AT_ENTRY",
-    allowSoftPlacement: Bool = false
+    allowSoftPlacement: Bool = false,
+    useSpmdForXlaPartitioning: Bool = false
   ) {
     _RawTFEager.tPUReplicateMetadata(
       numReplicas: numReplicas, numCoresPerReplica: numCoresPerReplica, topology: topology,
       useTpu: useTpu, deviceAssignment: deviceAssignment, computationShape: computationShape,
       hostComputeCore: hostComputeCore, paddingMap: paddingMap,
-      stepMarkerLocation: stepMarkerLocation, allowSoftPlacement: allowSoftPlacement)
+      stepMarkerLocation: stepMarkerLocation, allowSoftPlacement: allowSoftPlacement,
+      useSpmdForXlaPartitioning: useSpmdForXlaPartitioning)
   }
 
   /// Connects N inputs to an N-way replicated TPU computation.
@@ -35639,10 +41534,11 @@ public enum _Raw {
   public static func tPUReplicatedInput<T: TensorFlowScalar>(
     inputs: [Tensor<T>],
     isMirroredVariable: Bool = false,
-    index: Int64 = -1
+    index: Int64 = -1,
+    isPacked: Bool = false
   ) -> Tensor<T> {
     _RawTFEager.tPUReplicatedInput(
-      inputs: inputs, isMirroredVariable: isMirroredVariable, index: index)
+      inputs: inputs, isMirroredVariable: isMirroredVariable, index: index, isPacked: isPacked)
   }
 
   /// Connects N outputs from an N-way replicated TPU computation.
@@ -35666,12 +41562,30 @@ public enum _Raw {
       let output_device = input.device
       let input = Tensor<T>(copying: input, to: .defaultTFEager)
       return [Tensor<T>](
-        copying: _RawTFEager.tPUReplicatedOutput(input, numReplicas: numReplicas),
-        to: output_device)
+        copying: _RawTFEager.tPUReplicatedOutput(input, numReplicas: numReplicas), to: output_device
+      )
     case .TF_EAGER:
       return _RawTFEager.tPUReplicatedOutput(input, numReplicas: numReplicas)
     }
 
+  }
+
+  /// Op that reshards on-device TPU variables to specified state.
+  ///
+  /// Op that reshards on-device TPU variables to specified state. Internal use only.
+  ///
+  /// The sharding state is represented as the key of the compilation that generated
+  /// the sharding/unsharding programs along with the main program. new_format_key
+  /// specifies the desired state, and format_state_var is the current state of the
+  /// variables.
+  @inlinable @inline(__always)
+  public static func tPUReshardVariables(
+    vars: [ResourceHandle],
+    newFormatKey: StringTensor,
+    formatStateVar: ResourceHandle
+  ) {
+    _RawTFEager.tPUReshardVariables(
+      vars: vars, newFormatKey: newFormatKey, formatStateVar: formatStateVar)
   }
 
   @inlinable @inline(__always)
@@ -35684,7 +41598,10 @@ public enum _Raw {
     inTensor: Intt,
     serializedSegment: String,
     segmentFunc: (SegmentfuncIn) -> SegmentfuncOut,
+    inputShapes: [TensorShape?],
+    outputShapes: [TensorShape?],
     maxCachedEnginesCount: Int64 = 1,
+    maxBatchSize: Int64 = 1,
     workspaceSizeBytes: Int64,
     precisionMode: PrecisionMode,
     calibrationData: String,
@@ -35692,17 +41609,19 @@ public enum _Raw {
     segmentFuncdefName: String,
     cachedEngineBatches: [Int32],
     fixedInputSize: Bool = true,
-    inputShapes: [TensorShape?],
-    outputShapes: [TensorShape?],
-    staticEngine: Bool = true
+    staticEngine: Bool = true,
+    profileStrategy: String,
+    useExplicitPrecision: Bool = false
   ) -> Outt {
     _RawTFEager.tRTEngineOp(
       inTensor: inTensor, serializedSegment: serializedSegment, segmentFunc: segmentFunc,
-      maxCachedEnginesCount: maxCachedEnginesCount, workspaceSizeBytes: workspaceSizeBytes,
-      precisionMode: precisionMode, calibrationData: calibrationData,
-      useCalibration: useCalibration, segmentFuncdefName: segmentFuncdefName,
-      cachedEngineBatches: cachedEngineBatches, fixedInputSize: fixedInputSize,
-      inputShapes: inputShapes, outputShapes: outputShapes, staticEngine: staticEngine)
+      inputShapes: inputShapes, outputShapes: outputShapes,
+      maxCachedEnginesCount: maxCachedEnginesCount, maxBatchSize: maxBatchSize,
+      workspaceSizeBytes: workspaceSizeBytes, precisionMode: precisionMode,
+      calibrationData: calibrationData, useCalibration: useCalibration,
+      segmentFuncdefName: segmentFuncdefName, cachedEngineBatches: cachedEngineBatches,
+      fixedInputSize: fixedInputSize, staticEngine: staticEngine, profileStrategy: profileStrategy,
+      useExplicitPrecision: useExplicitPrecision)
   }
 
   /// Creates a dataset that contains `count` elements from the `input_dataset`.
@@ -35715,11 +41634,12 @@ public enum _Raw {
     inputDataset: VariantHandle,
     count: Tensor<Int64>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.takeDataset(
       inputDataset: inputDataset, count: count, outputTypes: outputTypes,
-      outputShapes: outputShapes)
+      outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Read `SparseTensors` from a `SparseTensorsMap` and concatenate them.
@@ -35820,11 +41740,12 @@ public enum _Raw {
     otherArguments: Targuments,
     predicate: (PredicateIn) -> PredicateOut,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.takeWhileDataset(
       inputDataset: inputDataset, otherArguments: otherArguments, predicate: predicate,
-      outputTypes: outputTypes, outputShapes: outputShapes)
+      outputTypes: outputTypes, outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Computes tan of x element-wise.
@@ -35857,10 +41778,12 @@ public enum _Raw {
   ///   element in the tensor. Input range is `[-inf, inf]` and
   ///   output range is `[-1,1]`.
   ///
-  ///   ```python
-  ///   x = tf.constant([-float("inf"), -5, -0.5, 1, 1.2, 2, 3, float("inf")])
-  ///   tf.math.tanh(x) ==> [-1. -0.99990916 -0.46211717 0.7615942 0.8336547 0.9640276 0.9950547 1.]
-  ///   ```
+  ///   >>> x = tf.constant([-float("inf"), -5, -0.5, 1, 1.2, 2, 3, float("inf")])
+  ///   >>> tf.math.tanh(x)
+  ///   <tf.Tensor: shape=(8,), dtype=float32, numpy=
+  ///   array([-1.0, -0.99990916, -0.46211717,  0.7615942 ,  0.8336547 ,
+  ///           0.9640276 ,  0.9950547 ,  1.0], dtype=float32)>
+  ///
   @inlinable @inline(__always)
   public static func tanh<T: FloatingPoint & TensorFlowScalar>(
     _ x: Tensor<T>
@@ -36388,7 +42311,7 @@ public enum _Raw {
   ///         after being read.  This disables multiple read semantics but allows early
   ///         release of memory.
   ///     - identical_element_shapes: If true (default is false), then all
-  ///         elements in the TensorArray will be expected to have have identical shapes.
+  ///         elements in the TensorArray will be expected to have identical shapes.
   ///         This allows certain behaviors, like dynamically checking for
   ///         consistent shapes on write, and being able to fill in properly
   ///         shaped zero tensors on stack -- even if the element_shape attribute
@@ -36480,110 +42403,11 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func tensorDataset<ToutputTypes: TensorArrayProtocol>(
     components: ToutputTypes,
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
-    _RawTFEager.tensorDataset(components: components, outputShapes: outputShapes)
-  }
-
-  /// Creates a tree resource and returns a handle to it.
-  ///
-  /// - Parameters:
-  ///     - tree_handle: Handle to the tree resource to be created.
-  ///     - tree_config: Serialized proto string of the boosted_trees.Tree.
-  @inlinable @inline(__always)
-  public static func tensorForestCreateTreeVariable(
-    treeHandle: ResourceHandle,
-    treeConfig: StringTensor
-  ) {
-    _RawTFEager.tensorForestCreateTreeVariable(treeHandle: treeHandle, treeConfig: treeConfig)
-  }
-
-  /// Deserializes a proto into the tree handle
-  ///
-  /// - Parameters:
-  ///     - tree_handle: Handle to the tree resource to be restored.
-  ///     - tree_config: Serialied proto string of the boosted_trees.Tree proto.
-  @inlinable @inline(__always)
-  public static func tensorForestTreeDeserialize(
-    treeHandle: ResourceHandle,
-    treeConfig: StringTensor
-  ) {
-    _RawTFEager.tensorForestTreeDeserialize(treeHandle: treeHandle, treeConfig: treeConfig)
-  }
-
-  /// Checks whether a tree has been initialized.
-  ///
-  /// - Parameter tree_handle: Handle to the tree.
-  ///
-  /// - Output is_initialized: Whether the tree is initialized.
-  @inlinable @inline(__always)
-  public static func tensorForestTreeIsInitializedOp(
-    treeHandle: ResourceHandle
-  ) -> Tensor<Bool> {
-    _RawTFEager.tensorForestTreeIsInitializedOp(treeHandle: treeHandle)
-  }
-
-  /// Output the logits for the given input data
-  ///
-  /// - Parameters:
-  ///     - tree_handle: Handle to the tree resource.
-  ///     - dense_features: Rank 2 dense features tensor.
-  ///
-  /// - Attr logits_dimension: Scalar, dimension of the logits.
-  ///
-  /// - Output logits: The logits predictions from the tree for each instance in the batch.
-  @inlinable @inline(__always)
-  public static func tensorForestTreePredict(
-    treeHandle: ResourceHandle,
-    denseFeatures: Tensor<Float>,
-    logitsDimension: Int64
-  ) -> Tensor<Float> {
-    switch denseFeatures.handle.backend {
-    case .XLA:
-      let output_device = denseFeatures.device
-      let denseFeatures = Tensor<Float>(copying: denseFeatures, to: .defaultTFEager)
-      return Tensor<Float>(
-        copying: _RawTFEager.tensorForestTreePredict(
-          treeHandle: treeHandle, denseFeatures: denseFeatures, logitsDimension: logitsDimension),
-        to: output_device)
-    case .TF_EAGER:
-      return _RawTFEager.tensorForestTreePredict(
-        treeHandle: treeHandle, denseFeatures: denseFeatures, logitsDimension: logitsDimension)
-    }
-
-  }
-
-  /// Creates a handle to a TensorForestTreeResource
-  @inlinable @inline(__always)
-  public static func tensorForestTreeResourceHandleOp(
-    container: String,
-    sharedName: String
-  ) -> ResourceHandle {
-    _RawTFEager.tensorForestTreeResourceHandleOp(container: container, sharedName: sharedName)
-  }
-
-  /// Serializes the tree handle to a proto
-  ///
-  /// - Parameter tree_handle: Handle to the tree resource to be serialized.
-  ///
-  /// - Output tree_config: Serialied proto string of the tree resource.
-  @inlinable @inline(__always)
-  public static func tensorForestTreeSerialize(
-    treeHandle: ResourceHandle
-  ) -> StringTensor {
-    _RawTFEager.tensorForestTreeSerialize(treeHandle: treeHandle)
-  }
-
-  /// Get the number of nodes in a tree
-  ///
-  /// - Parameter tree_handle: Handle to the tree resource.
-  ///
-  /// - Output tree_size: The size of the tree.
-  @inlinable @inline(__always)
-  public static func tensorForestTreeSize(
-    treeHandle: ResourceHandle
-  ) -> Tensor<Int32> {
-    _RawTFEager.tensorForestTreeSize(treeHandle: treeHandle)
+    _RawTFEager.tensorDataset(
+      components: components, outputShapes: outputShapes, metadata: metadata)
   }
 
   /// Concats all tensors in the list along the 0th dimension.
@@ -36687,8 +42511,8 @@ public enum _Raw {
       let elementShape = Tensor<Int32>(copying: elementShape, to: .defaultTFEager)
       return Tensor<ElementDtype>(
         copying: _RawTFEager.tensorListGather(
-          inputHandle: inputHandle, indices: indices, elementShape: elementShape),
-        to: output_device)
+          inputHandle: inputHandle, indices: indices, elementShape: elementShape), to: output_device
+      )
     case .TF_EAGER:
       return _RawTFEager.tensorListGather(
         inputHandle: inputHandle, indices: indices, elementShape: elementShape)
@@ -36924,43 +42748,145 @@ public enum _Raw {
 
   }
 
+  /// Returns a tensor map with item from given key erased.
+  ///
+  /// input_handle: the original map
+  /// output_handle: the map with value from given key removed
+  /// key: the key of the value to be erased
+  @inlinable @inline(__always)
+  public static func tensorMapErase<KeyDtype: TensorFlowScalar>(
+    inputHandle: VariantHandle,
+    key: Tensor<KeyDtype>,
+    valueDtype: TensorDataType
+  ) -> VariantHandle {
+    _RawTFEager.tensorMapErase(inputHandle: inputHandle, key: key, valueDtype: valueDtype)
+  }
+
+  /// Returns whether the given key exists in the map.
+  ///
+  /// input_handle: the input map
+  /// key: the key to check
+  /// has_key: whether the key is already in the map or not
+  @inlinable @inline(__always)
+  public static func tensorMapHasKey<KeyDtype: TensorFlowScalar>(
+    inputHandle: VariantHandle,
+    key: Tensor<KeyDtype>
+  ) -> Tensor<Bool> {
+    switch key.handle.backend {
+    case .XLA:
+      let output_device = key.device
+      let key = Tensor<KeyDtype>(copying: key, to: .defaultTFEager)
+      return Tensor<Bool>(
+        copying: _RawTFEager.tensorMapHasKey(inputHandle: inputHandle, key: key), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.tensorMapHasKey(inputHandle: inputHandle, key: key)
+    }
+
+  }
+
+  /// Returns a map that is the 'input_handle' with the given key-value pair inserted.
+  ///
+  /// input_handle: the original map
+  /// output_handle: the map with key and value inserted
+  /// key: the key to be inserted
+  /// value: the value to be inserted
+  @inlinable @inline(__always)
+  public static func tensorMapInsert<
+    KeyDtype: TensorFlowScalar,
+    ValueDtype: TensorFlowScalar
+  >(
+    inputHandle: VariantHandle,
+    key: Tensor<KeyDtype>,
+    value: Tensor<ValueDtype>
+  ) -> VariantHandle {
+    _RawTFEager.tensorMapInsert(inputHandle: inputHandle, key: key, value: value)
+  }
+
+  /// Returns the value from a given key in a tensor map.
+  ///
+  /// input_handle: the input map
+  /// key: the key to be looked up
+  /// value: the value found from the given key
+  @inlinable @inline(__always)
+  public static func tensorMapLookup<
+    KeyDtype: TensorFlowScalar,
+    ValueDtype: TensorFlowScalar
+  >(
+    inputHandle: VariantHandle,
+    key: Tensor<KeyDtype>
+  ) -> Tensor<ValueDtype> {
+    switch key.handle.backend {
+    case .XLA:
+      let output_device = key.device
+      let key = Tensor<KeyDtype>(copying: key, to: .defaultTFEager)
+      return Tensor<ValueDtype>(
+        copying: _RawTFEager.tensorMapLookup(inputHandle: inputHandle, key: key), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.tensorMapLookup(inputHandle: inputHandle, key: key)
+    }
+
+  }
+
+  /// Returns the number of tensors in the input tensor map.
+  ///
+  /// input_handle: the input map
+  /// size: the number of tensors in the map
+  @inlinable @inline(__always)
+  public static func tensorMapSize(
+    inputHandle: VariantHandle
+  ) -> Tensor<Int32> {
+    _RawTFEager.tensorMapSize(inputHandle: inputHandle)
+  }
+
+  /// Returns a Tensor stack of all keys in a tensor map.
+  ///
+  /// input_handle: the input map
+  /// keys: the returned Tensor of all keys in the map
+  @inlinable @inline(__always)
+  public static func tensorMapStackKeys<KeyDtype: TensorFlowScalar>(
+    inputHandle: VariantHandle
+  ) -> Tensor<KeyDtype> {
+    _RawTFEager.tensorMapStackKeys(inputHandle: inputHandle)
+  }
+
   /// Adds sparse `updates` to an existing tensor according to `indices`.
   ///
   /// This operation creates a new tensor by adding sparse `updates` to the passed
   /// in `tensor`.
-  /// This operation is very similar to `tf.scatter_nd_add`, except that the updates
-  /// are added onto an existing tensor (as opposed to a variable). If the memory
-  /// for the existing tensor cannot be re-used, a copy is made and updated.
+  /// This operation is very similar to `tf.compat.v1.scatter_nd_add`, except that the
+  /// updates are added onto an existing tensor (as opposed to a variable). If the
+  /// memory for the existing tensor cannot be re-used, a copy is made and updated.
   ///
   /// `indices` is an integer tensor containing indices into a new tensor of shape
-  /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
+  /// `tensor.shape`.  The last dimension of `indices` can be at most the rank of
+  /// `tensor.shape`:
   ///
-  ///     indices.shape[-1] <= shape.rank
+  /// ```
+  /// indices.shape[-1] <= tensor.shape.rank
+  /// ```
   ///
   /// The last dimension of `indices` corresponds to indices into elements
-  /// (if `indices.shape[-1] = shape.rank`) or slices
-  /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
-  /// `shape`.  `updates` is a tensor with shape
+  /// (if `indices.shape[-1] = tensor.shape.rank`) or slices
+  /// (if `indices.shape[-1] < tensor.shape.rank`) along dimension
+  /// `indices.shape[-1]` of `tensor.shape`.  `updates` is a tensor with shape
   ///
-  ///     indices.shape[:-1] + shape[indices.shape[-1]:]
+  /// ```
+  /// indices.shape[:-1] + tensor.shape[indices.shape[-1]:]
+  /// ```
   ///
-  /// The simplest form of tensor_scatter_add is to add individual elements to a
+  /// The simplest form of `tensor_scatter_nd_add` is to add individual elements to a
   /// tensor by index. For example, say we want to add 4 elements in a rank-1
   /// tensor with 8 elements.
   ///
   /// In Python, this scatter add operation would look like this:
   ///
-  /// ```python
-  ///     indices = tf.constant([[4], [3], [1], [7]])
-  ///     updates = tf.constant([9, 10, 11, 12])
-  ///     tensor = tf.ones([8], dtype=tf.int32)
-  ///     updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
-  ///     print(updated)
-  /// ```
-  ///
-  /// The resulting tensor would look like this:
-  ///
-  ///     [1, 12, 1, 11, 10, 1, 1, 13]
+  /// >>> indices = tf.constant([[4], [3], [1], [7]])
+  /// >>> updates = tf.constant([9, 10, 11, 12])
+  /// >>> tensor = tf.ones([8], dtype=tf.int32)
+  /// >>> updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
+  /// >>> updated
+  /// <tf.Tensor: shape=(8,), dtype=int32,
+  /// numpy=array([ 1, 12,  1, 11, 10,  1,  1, 13], dtype=int32)>
   ///
   /// We can also, insert entire slices of a higher rank tensor all at once. For
   /// example, if we wanted to insert two slices in the first dimension of a
@@ -36968,25 +42894,21 @@ public enum _Raw {
   ///
   /// In Python, this scatter add operation would look like this:
   ///
-  /// ```python
-  ///     indices = tf.constant([[0], [2]])
-  ///     updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
-  ///                             [7, 7, 7, 7], [8, 8, 8, 8]],
-  ///                            [[5, 5, 5, 5], [6, 6, 6, 6],
-  ///                             [7, 7, 7, 7], [8, 8, 8, 8]]])
-  ///     tensor = tf.ones([4, 4, 4],dtype=tf.int32)
-  ///     updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
-  ///     print(updated)
-  /// ```
+  /// >>> indices = tf.constant([[0], [2]])
+  /// >>> updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
+  /// ...                         [7, 7, 7, 7], [8, 8, 8, 8]],
+  /// ...                        [[5, 5, 5, 5], [6, 6, 6, 6],
+  /// ...                         [7, 7, 7, 7], [8, 8, 8, 8]]])
+  /// >>> tensor = tf.ones([4, 4, 4],dtype=tf.int32)
+  /// >>> updated = tf.tensor_scatter_nd_add(tensor, indices, updates)
+  /// >>> updated
+  /// <tf.Tensor: shape=(4, 4, 4), dtype=int32,
+  /// numpy=array([[[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
+  ///              [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
+  ///              [[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
+  ///              [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]], dtype=int32)>
   ///
-  /// The resulting tensor would look like this:
-  ///
-  ///     [[[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
-  ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]],
-  ///      [[6, 6, 6, 6], [7, 7, 7, 7], [8, 8, 8, 8], [9, 9, 9, 9]],
-  ///      [[1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1], [1, 1, 1, 1]]]
-  ///
-  /// Note that on CPU, if an out of bound index is found, an error is returned.
+  /// Note: on CPU, if an out of bound index is found, an error is returned.
   /// On GPU, if an out of bound index is found, the index is ignored.
   ///
   /// - Parameters:
@@ -37017,6 +42939,84 @@ public enum _Raw {
         to: output_device)
     case .TF_EAGER:
       return _RawTFEager.tensorScatterAdd(tensor, indices: indices, updates: updates)
+    }
+
+  }
+
+  /// Apply a sparse update to a tensor taking the element-wise maximum.
+  ///
+  /// Returns a new tensor copied from `tensor` whose values are element-wise maximum between
+  /// tensor and updates according to the indices.
+  ///
+  /// >>> tensor = [0, 0, 0, 0, 0, 0, 0, 0]
+  /// >>> indices = [[1], [4], [5]]
+  /// >>> updates = [1, -1, 1]
+  /// >>> tf.tensor_scatter_nd_max(tensor, indices, updates).numpy()
+  /// array([0, 1, 0, 0, 0, 1, 0, 0], dtype=int32)
+  ///
+  /// Refer to `tf.tensor_scatter_nd_update` for more details.
+  ///
+  /// - Parameters:
+  ///     - tensor: Tensor to update.
+  ///     - indices: Index tensor.
+  ///     - updates: Updates to scatter into output.
+  ///
+  /// - Output output: A new tensor copied from tensor whose values are element-wise maximum between tensor and updates according to the indices.
+  @inlinable @inline(__always)
+  public static func tensorScatterMax<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    _ tensor: Tensor<T>,
+    indices: Tensor<Tindices>,
+    updates: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(tensor.handle.backend, indices.handle.backend), updates.handle.backend)
+    {
+    case .XLA:
+      let output_device = updates.device
+      let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
+      let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
+      let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.tensorScatterMax(tensor, indices: indices, updates: updates),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.tensorScatterMax(tensor, indices: indices, updates: updates)
+    }
+
+  }
+
+  ///
+  /// - Parameters:
+  ///     - tensor: Tensor to update.
+  ///     - indices: Index tensor.
+  ///     - updates: Updates to scatter into output.
+  ///
+  /// - Output output: A new tensor copied from tensor whose values are element-wise minimum between tensor and updates according to the indices.
+  @inlinable @inline(__always)
+  public static func tensorScatterMin<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    _ tensor: Tensor<T>,
+    indices: Tensor<Tindices>,
+    updates: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(tensor.handle.backend, indices.handle.backend), updates.handle.backend)
+    {
+    case .XLA:
+      let output_device = updates.device
+      let tensor = Tensor<T>(copying: tensor, to: .defaultTFEager)
+      let indices = Tensor<Tindices>(copying: indices, to: .defaultTFEager)
+      let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.tensorScatterMin(tensor, indices: indices, updates: updates),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.tensorScatterMin(tensor, indices: indices, updates: updates)
     }
 
   }
@@ -37126,73 +43126,36 @@ public enum _Raw {
   /// scattered onto an existing tensor (as opposed to a zero-tensor). If the memory
   /// for the existing tensor cannot be re-used, a copy is made and updated.
   ///
-  /// If `indices` contains duplicates, then their updates are accumulated (summed).
+  /// If `indices` contains duplicates, then we pick the last update for the index.
   ///
-  /// **WARNING**: The order in which updates are applied is nondeterministic, so the
-  /// output will be nondeterministic if `indices` contains duplicates -- because
-  /// of some numerical approximation issues, numbers summed in different order
-  /// may yield different results.
+  /// If an out of bound index is found on CPU, an error is returned.
+  ///
+  /// **WARNING**: There are some GPU specific semantics for this operation.
+  /// - If an out of bound index is found, the index is ignored.
+  /// - The order in which updates are applied is nondeterministic, so the output
+  /// will be nondeterministic if `indices` contains duplicates.
   ///
   /// `indices` is an integer tensor containing indices into a new tensor of shape
-  /// `shape`.  The last dimension of `indices` can be at most the rank of `shape`:
+  /// `shape`.
   ///
-  ///     indices.shape[-1] <= shape.rank
+  /// * `indices` must have at least 2 axes: `(num_updates, index_depth)`.
+  /// * The last axis of `indices` is how deep to index into `tensor` so  this index
+  ///   depth must be less than the rank of `tensor`: `indices.shape[-1] <= tensor.ndim`
   ///
-  /// The last dimension of `indices` corresponds to indices into elements
-  /// (if `indices.shape[-1] = shape.rank`) or slices
-  /// (if `indices.shape[-1] < shape.rank`) along dimension `indices.shape[-1]` of
-  /// `shape`.  `updates` is a tensor with shape
+  /// if `indices.shape[-1] = tensor.rank` this Op indexes and updates scalar elements.
+  /// if `indices.shape[-1] < tensor.rank` it indexes and updates slices of the input
+  /// `tensor`.
   ///
-  ///     indices.shape[:-1] + shape[indices.shape[-1]:]
+  /// Each `update` has a rank of `tensor.rank - indices.shape[-1]`.
+  /// The overall shape of `updates` is:
   ///
-  /// The simplest form of scatter is to insert individual elements in a tensor by
-  /// index. For example, say we want to insert 4 scattered elements in a rank-1
-  /// tensor with 8 elements.
+  /// ```
+  /// indices.shape[:-1] + tensor.shape[indices.shape[-1]:]
+  /// ```
   ///
-  /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
-  /// <img style="width:100%" src="https://www.tensorflow.org/images/ScatterNd1.png" alt>
-  /// </div>
+  /// For usage examples see the python [tf.tensor_scatter_nd_update](
+  /// https://www.tensorflow.org/api_docs/python/tf/tensor_scatter_nd_update) function
   ///
-  /// In Python, this scatter operation would look like this:
-  ///
-  ///     >>> indices = tf.constant([[4], [3], [1], [7]])
-  ///     >>> updates = tf.constant([9, 10, 11, 12])
-  ///     >>> tensor = tf.ones([8], dtype=tf.int32)
-  ///     >>> print(tf.tensor_scatter_nd_update(tensor, indices, updates))
-  ///     tf.Tensor([ 1 11  1 10  9  1  1 12], shape=(8,), dtype=int32)
-  ///
-  /// We can also, insert entire slices of a higher rank tensor all at once. For
-  /// example, if we wanted to insert two slices in the first dimension of a
-  /// rank-3 tensor with two matrices of new values.
-  ///
-  /// In Python, this scatter operation would look like this:
-  ///
-  ///     >>> indices = tf.constant([[0], [2]])
-  ///     >>> updates = tf.constant([[[5, 5, 5, 5], [6, 6, 6, 6],
-  ///     ...                         [7, 7, 7, 7], [8, 8, 8, 8]],
-  ///     ...                        [[5, 5, 5, 5], [6, 6, 6, 6],
-  ///     ...                         [7, 7, 7, 7], [8, 8, 8, 8]]])
-  ///     >>> tensor = tf.ones([4, 4, 4], dtype=tf.int32)
-  ///     >>> print(tf.tensor_scatter_nd_update(tensor, indices, updates).numpy())
-  ///     [[[5 5 5 5]
-  ///       [6 6 6 6]
-  ///       [7 7 7 7]
-  ///       [8 8 8 8]]
-  ///      [[1 1 1 1]
-  ///       [1 1 1 1]
-  ///       [1 1 1 1]
-  ///       [1 1 1 1]]
-  ///      [[5 5 5 5]
-  ///       [6 6 6 6]
-  ///       [7 7 7 7]
-  ///       [8 8 8 8]]
-  ///      [[1 1 1 1]
-  ///       [1 1 1 1]
-  ///       [1 1 1 1]
-  ///       [1 1 1 1]]]
-  ///
-  /// Note that on CPU, if an out of bound index is found, an error is returned.
-  /// On GPU, if an out of bound index is found, the index is ignored.
   ///
   /// - Parameters:
   ///     - tensor: Tensor to copy/update.
@@ -37231,9 +43194,12 @@ public enum _Raw {
   @inlinable @inline(__always)
   public static func tensorSliceDataset<ToutputTypes: TensorArrayProtocol>(
     components: ToutputTypes,
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    isFiles: Bool = false,
+    metadata: String
   ) -> VariantHandle {
-    _RawTFEager.tensorSliceDataset(components: components, outputShapes: outputShapes)
+    _RawTFEager.tensorSliceDataset(
+      components: components, outputShapes: outputShapes, isFiles: isFiles, metadata: metadata)
   }
 
   /// Assign `value` to the sliced l-value reference of `input`.
@@ -37344,10 +43310,12 @@ public enum _Raw {
   public static func textLineDataset(
     filenames: StringTensor,
     compressionType: StringTensor,
-    bufferSize: Tensor<Int64>
+    bufferSize: Tensor<Int64>,
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.textLineDataset(
-      filenames: filenames, compressionType: compressionType, bufferSize: bufferSize)
+      filenames: filenames, compressionType: compressionType, bufferSize: bufferSize,
+      metadata: metadata)
   }
 
   /// A Reader that outputs the lines of a file delimited by '\n'.
@@ -37368,6 +43336,17 @@ public enum _Raw {
   ) -> ResourceHandle {
     _RawTFEager.textLineReaderV2(
       skipHeaderLines: skipHeaderLines, container: container, sharedName: sharedName)
+  }
+
+  @inlinable @inline(__always)
+  public static func tfLiteSubgraphExecute<
+    Tin: TensorArrayProtocol,
+    Tout: TensorGroup
+  >(
+    subgraphKey: StringTensor,
+    args: Tin
+  ) -> Tout {
+    _RawTFEager.tfLiteSubgraphExecute(subgraphKey: subgraphKey, args: args)
   }
 
   /// Creates a dataset that uses a custom thread pool to compute `input_dataset`.
@@ -37548,6 +43527,35 @@ public enum _Raw {
     _RawTFEager.timestamp()
   }
 
+  /// Converts a tensor to a scalar predicate.
+  ///
+  /// Converts a tensor to a scalar predicate with the following rules:
+  ///
+  /// - For 0D tensors, truthiness is determined by comparing against a "zero"
+  ///   value. For numerical types it is the obvious zero. For strings it is the
+  ///   empty string.
+  ///
+  /// - For >0D tensors, truthiness is determined by looking at the number of
+  ///   elements. If has zero elements, then the result is false. Otherwise the
+  ///   result is true.
+  ///
+  /// This matches the behavior of If and While for determining if a tensor counts
+  /// as true/false for a branch condition.
+  @inlinable @inline(__always)
+  public static func toBool<T: TensorFlowScalar>(
+    _ input: Tensor<T>
+  ) -> Tensor<Bool> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<Bool>(copying: _RawTFEager.toBool(input), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.toBool(input)
+    }
+
+  }
+
   /// Finds values and indices of the `k` largest elements for the last dimension.
   ///
   /// If the input is a vector (rank-1), finds the `k` largest entries in the vector
@@ -37583,6 +43591,28 @@ public enum _Raw {
     _RawTFEager.topK(input, k: k, sorted: sorted)
   }
 
+  /// Returns the TopK unique values in the array in sorted order.
+  ///
+  /// The running time is proportional to the product of K and the input
+  /// size. Sorting the whole array is more efficient for sufficiently large
+  /// values of K. The median-of-medians algorithm is probably faster, but
+  /// difficult to implement efficiently in XLA. If there are fewer than K
+  /// unique numbers (not NANs), the results are padded with negative
+  /// infinity. NaNs are never returned. Subnormal numbers are flushed to
+  /// zero. If an element appears at multiple indices, the highest index is
+  /// returned. If a TopK element never appears in the input due to padding
+  /// values, the indices are padded with negative one. If a padding value
+  /// appears in the input and padding is needed, the highest index of the
+  /// padding value will be returned. The semantics are not the same as
+  /// kth_order_statistic.
+  @inlinable @inline(__always)
+  public static func topKUnique(
+    _ input: Tensor<Float>,
+    k: Int64
+  ) -> (topk: Tensor<Float>, topkIndices: Tensor<Int32>) {
+    _RawTFEager.topKUnique(input, k: k)
+  }
+
   /// Finds values and indices of the `k` largest elements for the last dimension.
   ///
   /// If the input is a vector (rank-1), finds the `k` largest entries in the vector
@@ -37614,6 +43644,21 @@ public enum _Raw {
     sorted: Bool = true
   ) -> (values: Tensor<T>, indices: Tensor<Int32>) {
     _RawTFEager.topKV2(input, k: k, sorted: sorted)
+  }
+
+  /// Returns the TopK values in the array in sorted order.
+  ///
+  /// This is a combination of MakeUnique and TopKUnique. The returned top-K will
+  /// have its lower bits replaced by iota, thus it will be close to the original
+  /// value but not exactly the same. The running time is proportional to the product
+  /// of K and the input size. NaNs are never returned. Subnormal numbers are flushed
+  /// to zero.
+  @inlinable @inline(__always)
+  public static func topKWithUnique(
+    _ input: Tensor<Float>,
+    k: Int64
+  ) -> (topk: Tensor<Float>, topkIndices: Tensor<Int32>) {
+    _RawTFEager.topKWithUnique(input, k: k)
   }
 
   /// Shuffle dimensions of x according to a permutation.
@@ -37672,8 +43717,7 @@ public enum _Raw {
       let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.tridiagonalMatMul(
-          superdiag: superdiag, maindiag: maindiag, subdiag: subdiag, rhs: rhs), to: output_device
-      )
+          superdiag: superdiag, maindiag: maindiag, subdiag: subdiag, rhs: rhs), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.tridiagonalMatMul(
         superdiag: superdiag, maindiag: maindiag, subdiag: subdiag, rhs: rhs)
@@ -37689,6 +43733,7 @@ public enum _Raw {
   ///   On CPU, solution is computed via Gaussian elimination with or without partial
   ///   pivoting, depending on `partial_pivoting` attribute. On GPU, Nvidia's cuSPARSE
   ///   library is used: https://docs.nvidia.com/cuda/cusparse/index.html#gtsv
+  ///   Partial pivoting is not yet supported by XLA backends.
   ///
   /// - Parameters:
   ///     - diagonals: Tensor of shape `[..., 3, M]` whose innermost 2 dimensions represent the
@@ -37706,7 +43751,8 @@ public enum _Raw {
   public static func tridiagonalSolve<T: FloatingPoint & TensorFlowScalar>(
     diagonals: Tensor<T>,
     rhs: Tensor<T>,
-    partialPivoting: Bool = true
+    partialPivoting: Bool = true,
+    perturbSingular: Bool = false
   ) -> Tensor<T> {
     switch commonBackend(diagonals.handle.backend, rhs.handle.backend) {
     case .XLA:
@@ -37715,10 +43761,12 @@ public enum _Raw {
       let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.tridiagonalSolve(
-          diagonals: diagonals, rhs: rhs, partialPivoting: partialPivoting), to: output_device)
+          diagonals: diagonals, rhs: rhs, partialPivoting: partialPivoting,
+          perturbSingular: perturbSingular), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.tridiagonalSolve(
-        diagonals: diagonals, rhs: rhs, partialPivoting: partialPivoting)
+        diagonals: diagonals, rhs: rhs, partialPivoting: partialPivoting,
+        perturbSingular: perturbSingular)
     }
 
   }
@@ -37812,98 +43860,6 @@ public enum _Raw {
 
   }
 
-  /// Perform batches of RPC requests.
-  ///
-  /// This op asynchronously performs either a single RPC request, or a batch
-  /// of requests.  RPC requests are defined by three main parameters:
-  ///
-  ///   - `address` (the host+port or BNS address of the request)
-  ///   - `method` (the method name for the request)
-  ///   - `request` (the serialized proto string, or vector of strings,
-  ///      of the RPC request argument).
-  ///
-  /// For example, if you have an RPC service running on port localhost:2345,
-  /// and its interface is configured with the following proto declaration:
-  ///
-  /// ```
-  /// service MyService {
-  ///   rpc MyMethod(MyRequestProto) returns (MyResponseProto) {
-  ///   }
-  /// };
-  /// ```
-  ///
-  /// then call this op with arguments:
-  ///
-  /// ```
-  /// address = "localhost:2345"
-  /// method = "MyService/MyMethod"
-  /// ```
-  ///
-  /// The `request` tensor is a string tensor representing serialized `MyRequestProto`
-  /// strings; and the output string tensor `response` will have the same shape
-  /// and contain (upon successful completion) corresponding serialized
-  /// `MyResponseProto` strings.
-  ///
-  /// For example, to send a single, empty, `MyRequestProto`, call
-  /// this op with `request = ""`.  To send 5 **parallel** empty requests,
-  /// call this op with `request = ["", "", "", "", ""]`.
-  ///
-  /// More generally, one can create a batch of `MyRequestProto` serialized protos
-  /// from regular batched tensors using the `encode_proto` op, and convert
-  /// the response `MyResponseProto` serialized protos to batched tensors
-  /// using the `decode_proto` op.
-  ///
-  /// **NOTE** Working with serialized proto strings is faster than instantiating
-  /// actual proto objects in memory, so no performance degradation is expected
-  /// compared to writing custom kernels for this workflow.
-  ///
-  /// Unlike the standard `Rpc` op, if the connection fails or the remote worker
-  /// returns an error status, this op does **not** reraise the exception.
-  /// Instead, the `status_code` and `status_message` entry for the corresponding RPC
-  /// call is set with the error returned from the RPC call.  The `response` tensor
-  /// will contain valid response values for those minibatch entries whose RPCs did
-  /// not fail; the rest of the entries will have empty strings.
-  ///
-  /// - Parameters:
-  ///     - address: `0-D` or `1-D`.  The address (i.e. host_name:port) of the RPC server.
-  ///         If this tensor has more than 1 element, then multiple parallel rpc requests
-  ///         are sent.  This argument broadcasts with `method` and `request`.
-  ///     - method: `0-D` or `1-D`.  The method address on the RPC server.
-  ///         If this tensor has more than 1 element, then multiple parallel rpc requests
-  ///         are sent.  This argument broadcasts with `address` and `request`.
-  ///     - request: `0-D` or `1-D`.  Serialized proto strings: the rpc request argument.
-  ///         If this tensor has more than 1 element, then multiple parallel rpc requests
-  ///         are sent.  This argument broadcasts with `address` and `method`.
-  ///
-  /// - Attrs:
-  ///     - protocol: RPC protocol to use.  Empty string means use the default protocol.
-  ///         Options include 'grpc'.
-  ///     - fail_fast: `boolean`. If `true` (default), then failures to connect
-  ///         (i.e., the server does not immediately respond) cause an RPC failure.
-  ///     - timeout_in_ms: `int`. If `0` (default), then the kernel will run the RPC
-  ///         request and only time out if the RPC deadline passes or the session times out.
-  ///         If this value is greater than `0`, then the op will raise an exception if
-  ///         the RPC takes longer than `timeout_in_ms`.
-  ///
-  /// - Outputs:
-  ///     - response: Same shape as `request`. Serialized proto strings: the rpc responses.
-  ///     - status_code: Same shape as `request`.  Values correspond to tensorflow Status enum codes.
-  ///     - status_message: Same shape as `request`.  Values correspond to Status messages
-  ///         returned from the RPC calls.
-  @inlinable @inline(__always)
-  public static func tryRpc(
-    address: StringTensor,
-    method: StringTensor,
-    request: StringTensor,
-    protocol_: String,
-    failFast: Bool = true,
-    timeoutInMs: Int64 = 0
-  ) -> (response: StringTensor, statusCode: Tensor<Int32>, statusMessage: StringTensor) {
-    _RawTFEager.tryRpc(
-      address: address, method: method, request: request, protocol_: protocol_,
-      failFast: failFast, timeoutInMs: timeoutInMs)
-  }
-
   @inlinable @inline(__always)
   public static func twoFloatInputs(
     _ a: Tensor<Float>,
@@ -37922,8 +43878,7 @@ public enum _Raw {
       let output_device = b.device
       let a = Tensor<Float>(copying: a, to: .defaultTFEager)
       let b = Tensor<Float>(copying: b, to: .defaultTFEager)
-      return Tensor<Float>(
-        copying: _RawTFEager.twoFloatInputsFloatOutput(a, b), to: output_device)
+      return Tensor<Float>(copying: _RawTFEager.twoFloatInputsFloatOutput(a, b), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.twoFloatInputsFloatOutput(a, b)
     }
@@ -38046,8 +44001,8 @@ public enum _Raw {
         to: output_device)
     case .TF_EAGER:
       return _RawTFEager.unbatch(
-        batchedTensor: batchedTensor, batchIndex: batchIndex, id: id,
-        timeoutMicros: timeoutMicros, container: container, sharedName: sharedName)
+        batchedTensor: batchedTensor, batchIndex: batchIndex, id: id, timeoutMicros: timeoutMicros,
+        container: container, sharedName: sharedName)
     }
 
   }
@@ -38057,10 +44012,12 @@ public enum _Raw {
   public static func unbatchDataset(
     inputDataset: VariantHandle,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.unbatchDataset(
-      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes)
+      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Gradient of Unbatch.
@@ -38090,8 +44047,8 @@ public enum _Raw {
   ) -> Tensor<T> {
     switch commonBackend(
       commonBackend(
-        commonBackend(originalInput.handle.backend, batchIndex.handle.backend),
-        grad.handle.backend), id.handle.backend)
+        commonBackend(originalInput.handle.backend, batchIndex.handle.backend), grad.handle.backend),
+      id.handle.backend)
     {
     case .XLA:
       let output_device = id.device
@@ -38109,6 +44066,15 @@ public enum _Raw {
         container: container, sharedName: sharedName)
     }
 
+  }
+
+  /// Uncompresses a compressed dataset element.
+  @inlinable @inline(__always)
+  public static func uncompressElement<OutputTypes: TensorGroup>(
+    compressed: VariantHandle,
+    outputShapes: [TensorShape?]
+  ) -> OutputTypes {
+    _RawTFEager.uncompressElement(compressed: compressed, outputShapes: outputShapes)
   }
 
   /// Decodes each string in `input` into a sequence of Unicode code points.
@@ -38278,7 +44244,15 @@ public enum _Raw {
   ///
   /// This operation converts Unicode code points to script codes corresponding to
   /// each code point. Script codes correspond to International Components for
-  /// Unicode (ICU) UScriptCode values. See http://icu-project.org/apiref/icu4c/uscript_8h.html.
+  /// Unicode (ICU) UScriptCode values.
+  ///
+  /// See
+  /// [ICU project docs](http://icu-project.org/apiref/icu4c/uscript_8h.html)
+  /// for more details on script codes.
+  ///
+  /// For an example, see the unicode strings guide on [unicode scripts]
+  /// (https://www.tensorflow.org/tutorials/load_data/unicode#representing_unicode).
+  ///
   /// Returns -1 (USCRIPT_INVALID_CODE) for invalid codepoints. Output shape will
   /// match input shape.
   ///
@@ -38483,10 +44457,12 @@ public enum _Raw {
   public static func uniqueDataset(
     inputDataset: VariantHandle,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.uniqueDataset(
-      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes)
+      inputDataset: inputDataset, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
   /// Finds unique elements along an axis of a tensor.
@@ -38608,33 +44584,33 @@ public enum _Raw {
   /// For example:
   ///
   /// ```
-  /// # tensor 'x' is [1, 1, 2, 4, 4, 4, 7, 8, 8]
-  /// y, idx, count = unique_with_counts(x)
+  /// x = tf.constant([1, 1, 2, 4, 4, 4, 7, 8, 8])
+  /// y, idx, count = UniqueWithCountsV2(x, axis = [0])
   /// y ==> [1, 2, 4, 7, 8]
   /// idx ==> [0, 0, 1, 2, 2, 2, 3, 4, 4]
   /// count ==> [2, 1, 3, 1, 2]
   /// ```
   ///
-  /// For an `2-D` tensor `x` with `axis = 0`:
+  /// For a `2-D` tensor `x` with `axis = 0`:
   ///
   /// ```
-  /// # tensor 'x' is [[1, 0, 0],
-  /// #                [1, 0, 0],
-  /// #                [2, 0, 0]]
-  /// y, idx, count = unique_with_counts(x, axis=0)
+  /// x = tf.constant([[1, 0, 0],
+  ///                 [1, 0, 0],
+  ///                 [2, 0, 0]])
+  /// y, idx, count = UniqueWithCountsV2(x, axis=[0])
   /// y ==> [[1, 0, 0],
   ///        [2, 0, 0]]
   /// idx ==> [0, 0, 1]
   /// count ==> [2, 1]
   /// ```
   ///
-  /// For an `2-D` tensor `x` with `axis = 1`:
+  /// For a `2-D` tensor `x` with `axis = 1`:
   ///
   /// ```
-  /// # tensor 'x' is [[1, 0, 0],
-  /// #                [1, 0, 0],
-  /// #                [2, 0, 0]]
-  /// y, idx, count = unique_with_counts(x, axis=1)
+  /// x = tf.constant([[1, 0, 0],
+  ///                 [1, 0, 0],
+  ///                 [2, 0, 0]])
+  /// y, idx, count = UniqueWithCountsV2(x, axis=[1])
   /// y ==> [[1, 0],
   ///        [1, 0],
   ///        [2, 0]]
@@ -38805,8 +44781,7 @@ public enum _Raw {
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
   ///
-  /// This operator is similar to the unsorted segment sum operator found
-  /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
+  /// This operator is similar to `tf.math.unsorted_segment_sum`,
   /// Instead of computing the sum over segments, it computes the maximum such that:
   ///
   /// \\(output_i = \max_{j...} data[j...]\\) where max is over tuples `j...` such
@@ -38819,21 +44794,30 @@ public enum _Raw {
   /// If the given segment ID `i` is negative, then the corresponding value is
   /// dropped, and will not be included in the result.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be less than
+  /// `num_segments`, and an error is thrown for out-of-bound indices. On GPU, this
+  /// does not throw an error for out-of-bound indices. On Gpu, out-of-bound indices
+  /// result in safe but unspecified behavior, which may include ignoring
+  /// out-of-bound indices or outputting a tensor with a 0 stored in the first
+  /// dimension of its shape if `num_segments` is 0.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentMax.png" alt>
   /// </div>
   ///
   /// For example:
   ///
-  /// ``` python
-  /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
-  /// tf.unsorted_segment_max(c, tf.constant([0, 1, 0]), num_segments=2)
-  /// # ==> [[ 4,  3, 3, 4],
-  /// #       [5,  6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
+  /// >>> tf.math.unsorted_segment_max(c, tf.constant([0, 1, 0]), num_segments=2).numpy()
+  /// array([[4, 3, 3, 4],
+  ///        [5,  6, 7, 8]], dtype=int32)
   ///
   ///
   /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
+  ///     The values must be less than `num_segments`.
+  ///
+  ///     Caution: The values are always validated to be in range on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
   ///     dimensions, which are replaced with a single dimension which has size
@@ -38872,8 +44856,7 @@ public enum _Raw {
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
   ///
-  /// This operator is similar to the unsorted segment sum operator found
-  /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
+  /// This operator is similar to `tf.math.unsorted_segment_sum`,
   /// Instead of computing the sum over segments, it computes the minimum such that:
   ///
   /// \\(output_i = \min_{j...} data_[j...]\\) where min is over tuples `j...` such
@@ -38885,17 +44868,26 @@ public enum _Raw {
   ///
   /// For example:
   ///
-  /// ``` python
-  /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
-  /// tf.unsorted_segment_min(c, tf.constant([0, 1, 0]), num_segments=2)
-  /// # ==> [[ 1,  2, 2, 1],
-  /// #       [5,  6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
+  /// >>> tf.math.unsorted_segment_min(c, tf.constant([0, 1, 0]), num_segments=2).numpy()
+  /// array([[1, 2, 2, 1],
+  ///        [5, 6, 7, 8]], dtype=int32)
   ///
   /// If the given segment ID `i` is negative, then the corresponding value is
   /// dropped, and will not be included in the result.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be less than
+  /// `num_segments`, and an error is thrown for out-of-bound indices. On GPU, this
+  /// does not throw an error for out-of-bound indices. On Gpu, out-of-bound indices
+  /// result in safe but unspecified behavior, which may include ignoring
+  /// out-of-bound indices or outputting a tensor with a 0 stored in the first
+  /// dimension of its shape if `num_segments` is 0.
+  ///
   /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
+  ///     The values must be less than `num_segments`.
+  ///
+  ///     Caution: The values are always validated to be in range on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
   ///     dimensions, which are replaced with a single dimension which has size
@@ -38934,8 +44926,7 @@ public enum _Raw {
   /// [the section on segmentation](https://tensorflow.org/api_docs/python/tf/math#Segmentation)
   /// for an explanation of segments.
   ///
-  /// This operator is similar to the unsorted segment sum operator found
-  /// [(here)](../../../api_docs/python/math_ops.md#UnsortedSegmentSum).
+  /// This operator is similar to `tf.math.unsorted_segment_sum`,
   /// Instead of computing the sum over segments, it computes the product of all
   /// entries belonging to a segment such that:
   ///
@@ -38944,19 +44935,28 @@ public enum _Raw {
   ///
   /// For example:
   ///
-  /// ``` python
-  /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
-  /// tf.unsorted_segment_prod(c, tf.constant([0, 1, 0]), num_segments=2)
-  /// # ==> [[ 4,  6, 6, 4],
-  /// #       [5,  6, 7, 8]]
-  /// ```
+  /// >>> c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
+  /// >>> tf.math.unsorted_segment_prod(c, tf.constant([0, 1, 0]), num_segments=2).numpy()
+  /// array([[4, 6, 6, 4],
+  ///        [5, 6, 7, 8]], dtype=int32)
   ///
   /// If there is no entry for a given segment ID `i`, it outputs 1.
   ///
   /// If the given segment ID `i` is negative, then the corresponding value is
   /// dropped, and will not be included in the result.
+  /// Caution: On CPU, values in `segment_ids` are always validated to be less than
+  /// `num_segments`, and an error is thrown for out-of-bound indices. On GPU, this
+  /// does not throw an error for out-of-bound indices. On Gpu, out-of-bound indices
+  /// result in safe but unspecified behavior, which may include ignoring
+  /// out-of-bound indices or outputting a tensor with a 0 stored in the first
+  /// dimension of its shape if `num_segments` is 0.
+  ///
   ///
   /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
+  ///     The values must be less than `num_segments`.
+  ///
+  ///     Caution: The values are always validated to be in range on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
   ///     dimensions, which are replaced with a single dimension which has size
@@ -39007,19 +45007,29 @@ public enum _Raw {
   ///
   /// `num_segments` should equal the number of distinct segment IDs.
   ///
+  /// Caution: On CPU, values in `segment_ids` are always validated to be less than
+  /// `num_segments`, and an error is thrown for out-of-bound indices. On GPU, this
+  /// does not throw an error for out-of-bound indices. On Gpu, out-of-bound indices
+  /// result in safe but unspecified behavior, which may include ignoring
+  /// out-of-bound indices or outputting a tensor with a 0 stored in the first
+  /// dimension of its shape if `num_segments` is 0.
+  ///
   /// <div style="width:70%; margin:auto; margin-bottom:10px; margin-top:20px;">
   /// <img style="width:100%" src="https://www.tensorflow.org/images/UnsortedSegmentSum.png" alt>
   /// </div>
   ///
-  /// ``` python
-  /// c = tf.constant([[1,2,3,4], [5,6,7,8], [4,3,2,1]])
-  /// tf.unsorted_segment_sum(c, tf.constant([0, 1, 0]), num_segments=2)
-  /// # ==> [[ 5,  5, 5, 5],
-  /// #       [5,  6, 7, 8]]
-  /// ```
+  /// >>> c = [[1,2,3,4], [5,6,7,8], [4,3,2,1]]
+  /// >>> tf.math.unsorted_segment_sum(c, [0, 1, 0], num_segments=2).numpy()
+  /// array([[5, 5, 5, 5],
+  ///        [5, 6, 7, 8]], dtype=int32)
+  ///
   ///
   ///
   /// - Parameter segment_ids: A tensor whose shape is a prefix of `data.shape`.
+  ///     The values must be less than `num_segments`.
+  ///
+  ///     Caution: The values are always validated to be in range on CPU, never validated
+  ///     on GPU.
   ///
   /// - Output output: Has same shape as data, except for the first `segment_ids.rank`
   ///     dimensions, which are replaced with a single dimension which has size
@@ -39126,15 +45136,19 @@ public enum _Raw {
   ///     - dtype: the type of this variable. Must agree with the dtypes
   ///         of all ops using this variable.
   ///     - shape: The (possibly partially specified) shape of this variable.
+  ///     - allowed_devices: DEPRECATED. The allowed devices containing the resource variable. Set when the
+  ///         output ResourceHandle represents a per-replica/partitioned resource variable.
   @inlinable @inline(__always)
   public static func varHandleOp(
     container: String,
     sharedName: String,
     dtype: TensorDataType,
-    shape: TensorShape?
+    shape: TensorShape?,
+    allowedDevices: [String]
   ) -> ResourceHandle {
     _RawTFEager.varHandleOp(
-      container: container, sharedName: sharedName, dtype: dtype, shape: shape)
+      container: container, sharedName: sharedName, dtype: dtype, shape: shape,
+      allowedDevices: allowedDevices)
   }
 
   /// Checks whether a resource handle-based variable has been initialized.
@@ -39315,7 +45329,7 @@ public enum _Raw {
   ///   ```
   ///
   ///   of the input dataset. In particular, the first element of the first window
-  ///   will always be the first element of the input dataset.  
+  ///   will always be the first element of the input dataset.
   ///
   ///   If the `stride` parameter is greater than 1, then each window will skip
   ///   `(stride - 1)` input elements between each element that appears in the
@@ -39363,11 +45377,22 @@ public enum _Raw {
     stride: Tensor<Int64>,
     dropRemainder: Tensor<Bool>,
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.windowDataset(
       inputDataset: inputDataset, size: size, shift: shift, stride: stride,
-      dropRemainder: dropRemainder, outputTypes: outputTypes, outputShapes: outputShapes)
+      dropRemainder: dropRemainder, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
+  }
+
+  @inlinable @inline(__always)
+  public static func windowOp<Tinputs: TensorArrayProtocol>(
+    inputs: Tinputs,
+    outputTypes: [TensorDataType],
+    outputShapes: [TensorShape?]
+  ) -> VariantHandle {
+    _RawTFEager.windowOp(inputs: inputs, outputTypes: outputTypes, outputShapes: outputShapes)
   }
 
   /// Worker heartbeat op.
@@ -39392,6 +45417,10 @@ public enum _Raw {
     _RawTFEager.wrapDatasetVariant(inputHandle: inputHandle)
   }
 
+  /// Writes an audio summary.
+  ///
+  /// Writes encoded audio summary `tensor` at `step` with `tag` using summary `writer`.
+  /// `sample_rate` is the audio sample rate is Hz.
   @inlinable @inline(__always)
   public static func writeAudioSummary(
     writer: ResourceHandle,
@@ -39402,13 +45431,12 @@ public enum _Raw {
     maxOutputs: Int64 = 3
   ) {
     _RawTFEager.writeAudioSummary(
-      writer: writer, step: step, tag: tag, tensor, sampleRate: sampleRate, maxOutputs: maxOutputs
-    )
+      writer: writer, step: step, tag: tag, tensor, sampleRate: sampleRate, maxOutputs: maxOutputs)
   }
 
-  /// Writes contents to the file at input filename. Creates file and recursively
+  /// Writes `contents` to the file at input `filename`.
   ///
-  /// creates directory if not existing.
+  /// Creates the file and recursively creates directory if it does not exist.
   ///
   /// - Parameters:
   ///     - filename: scalar. The name of the file to which we write the contents.
@@ -39421,6 +45449,9 @@ public enum _Raw {
     _RawTFEager.writeFile(filename: filename, contents: contents)
   }
 
+  /// Writes a graph summary.
+  ///
+  /// Writes TensorFlow graph `tensor` at `step` using summary `writer`.
   @inlinable @inline(__always)
   public static func writeGraphSummary(
     writer: ResourceHandle,
@@ -39430,8 +45461,11 @@ public enum _Raw {
     _RawTFEager.writeGraphSummary(writer: writer, step: step, tensor)
   }
 
+  /// Writes a histogram summary.
+  ///
+  /// Writes histogram `values` at `step` with `tag` using summary `writer`.
   @inlinable @inline(__always)
-  public static func writeHistogramSummary<T: TensorFlowNumeric>(
+  public static func writeHistogramSummary<T: TensorFlowScalar>(
     writer: ResourceHandle,
     step: Tensor<Int64>,
     tag: StringTensor,
@@ -39440,6 +45474,10 @@ public enum _Raw {
     _RawTFEager.writeHistogramSummary(writer: writer, step: step, tag: tag, values)
   }
 
+  /// Writes an image summary.
+  ///
+  /// Writes image `tensor` at `step` with `tag` using summary `writer`.
+  /// `tensor` is image with shape [height, width, channels].
   @inlinable @inline(__always)
   public static func writeImageSummary<T: TensorFlowNumeric>(
     writer: ResourceHandle,
@@ -39453,6 +45491,9 @@ public enum _Raw {
       writer: writer, step: step, tag: tag, tensor, badColor: badColor, maxImages: maxImages)
   }
 
+  /// Writes a serialized proto summary.
+  ///
+  /// Writes `tensor`, a serialized proto at `step` using summary `writer`.
   @inlinable @inline(__always)
   public static func writeRawProtoSummary(
     writer: ResourceHandle,
@@ -39462,6 +45503,9 @@ public enum _Raw {
     _RawTFEager.writeRawProtoSummary(writer: writer, step: step, tensor)
   }
 
+  /// Writes a scalar summary.
+  ///
+  /// Writes scalar `value` at `step` with `tag` using summary `writer`.
   @inlinable @inline(__always)
   public static func writeScalarSummary<T: TensorFlowNumeric>(
     writer: ResourceHandle,
@@ -39472,6 +45516,9 @@ public enum _Raw {
     _RawTFEager.writeScalarSummary(writer: writer, step: step, tag: tag, value: value)
   }
 
+  /// Writes a tensor summary.
+  ///
+  /// Writes `tensor` at `step` with `tag` using summary `writer`.
   @inlinable @inline(__always)
   public static func writeSummary<T: TensorFlowScalar>(
     writer: ResourceHandle,
@@ -39495,6 +45542,44 @@ public enum _Raw {
       return _RawXLA.xdivy(x, y)
     case .TF_EAGER:
       return _RawTFEager.xdivy(x, y)
+    }
+
+  }
+
+  /// Wraps the XLA AllReduce operator
+  ///
+  ///   documented at https://www.tensorflow.org/xla/operation_semantics#allreduce.
+  ///
+  /// - Parameters:
+  ///     - input: Array or a non-empty tuple of arrays to reduce across replicas.
+  ///     - group_assignment: Groups between which the reductions are performed.
+  ///
+  /// - Attrs:
+  ///     - reduce_op: Reduction computation.
+  ///     - mode: group mode.
+  ///         CrossReplica: group_assignment contains replica_id. Each group contains the
+  ///           replicas for the current partition.
+  ///         CrossReplicaAndPartition: group_assignment contains replica_id. Each group
+  ///           contains the replicas for all partitions.
+  @inlinable @inline(__always)
+  public static func xlaAllReduce<T: TensorFlowNumeric>(
+    _ input: Tensor<T>,
+    groupAssignment: Tensor<Int32>,
+    reduceOp: ReduceOp1,
+    mode: Mode2
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, groupAssignment.handle.backend) {
+    case .XLA:
+      let output_device = groupAssignment.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaAllReduce(
+          input, groupAssignment: groupAssignment, reduceOp: reduceOp, mode: mode),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaAllReduce(
+        input, groupAssignment: groupAssignment, reduceOp: reduceOp, mode: mode)
     }
 
   }
@@ -39539,6 +45624,62 @@ public enum _Raw {
       return _RawTFEager.xlaClusterOutput(input)
     }
 
+  }
+
+  /// Concats input tensor across all dimensions.
+  ///
+  /// An op which merges slices the input tensor based on the given num_splits
+  /// attribute, strips paddings optionally, and returns the merged tensor without
+  /// paddings.
+  ///
+  /// This op may be generated via the TPU bridge.
+  ///
+  /// For example, with `input` tensor:
+  /// ```
+  /// [[0, 1],
+  ///  [4, 5]]
+  /// [[2, 3],
+  ///  [6, 7]]
+  /// [[8, 9],
+  ///  [12, 13]]
+  /// [[10, 11],
+  ///  [14, 15]]
+  /// ```
+  /// `num_splits`:
+  /// ```
+  /// [2, 2]
+  /// ```
+  /// and `paddings`:
+  /// ```
+  /// [1, 1]
+  /// ```
+  /// the expected `outputs` is:
+  /// ```
+  /// [[0, 1, 2],
+  ///  [4, 5, 6],
+  ///  [8, 9, 10]]
+  /// ```
+  ///
+  /// - Parameter inputs: Input tensor slices in row-major order to merge across all dimensions. All
+  ///     inputs must have the same shape.
+  ///       }
+  ///       out_arg {
+  ///         name: "output"
+  ///         description: <<END
+  ///     Output tensor formed from merging input slices based on num_concats defined.
+  ///
+  /// - Attrs:
+  ///     - num_concats: Number of ways to merge per dimension.
+  ///     - paddings: Optional list of right paddings per dimension to strip from the final merged
+  ///         tensor. These paddings must not exceed the dimension size of the merged result
+  ///         prior to stripping paddings.
+  @inlinable @inline(__always)
+  public static func xlaConcatND<T: TensorFlowScalar>(
+    inputs: [Tensor<T>],
+    numConcats: [Int32],
+    paddings: [Int32]
+  ) -> Tensor<T> {
+    _RawTFEager.xlaConcatND(inputs: inputs, numConcats: numConcats, paddings: paddings)
   }
 
   /// Wraps the XLA ConvGeneralDilated operator, documented at
@@ -39594,9 +45735,8 @@ public enum _Raw {
       return Tensor<T>(
         copying: _RawTFEager.xlaConv(
           lhs: lhs, rhs: rhs, windowStrides: windowStrides, padding: padding,
-          lhsDilation: lhsDilation, rhsDilation: rhsDilation,
-          featureGroupCount: featureGroupCount, dimensionNumbers: dimensionNumbers,
-          precisionConfig: precisionConfig), to: output_device)
+          lhsDilation: lhsDilation, rhsDilation: rhsDilation, featureGroupCount: featureGroupCount,
+          dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.xlaConv(
         lhs: lhs, rhs: rhs, windowStrides: windowStrides, padding: padding,
@@ -39604,6 +45744,103 @@ public enum _Raw {
         dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig)
     }
 
+  }
+
+  /// Wraps the XLA ConvGeneralDilated operator, documented at
+  ///
+  ///  https://www.tensorflow.org/performance/xla/operation_semantics#conv_convolution
+  /// .
+  ///
+  /// - Parameters:
+  ///     - lhs: input tensor
+  ///     - rhs: kernel tensor
+  ///     - window_strides: inter-window strides
+  ///     - padding: padding to apply at the start and end of each input dimensions
+  ///     - lhs_dilation: dilation to apply between input elements
+  ///     - rhs_dilation: dilation to apply between kernel elements
+  ///     - feature_group_count: number of feature groups for grouped convolution.
+  ///
+  /// - Attrs:
+  ///     - dimension_numbers: serialized xla::ConvolutionDimensionNumbers proto.
+  ///     - precision_config: serialized xla::PrecisionConfig proto.
+  ///     - preferred_element_type: type of the tensor.
+  ///     - batch_group_count: number of batch groups or grouped filters.
+  @inlinable @inline(__always)
+  public static func xlaConvV2<
+    Lhst: TensorFlowNumeric,
+    Rhst: TensorFlowNumeric,
+    Tindices: TensorFlowIndex,
+    PreferredElementType: TensorFlowNumeric
+  >(
+    lhs: Tensor<Lhst>,
+    rhs: Tensor<Rhst>,
+    windowStrides: Tensor<Tindices>,
+    padding: Tensor<Tindices>,
+    lhsDilation: Tensor<Tindices>,
+    rhsDilation: Tensor<Tindices>,
+    featureGroupCount: Tensor<Tindices>,
+    dimensionNumbers: String,
+    precisionConfig: String,
+    batchGroupCount: Int64 = 1
+  ) -> Tensor<PreferredElementType> {
+    switch commonBackend(
+      commonBackend(
+        commonBackend(
+          commonBackend(
+            commonBackend(
+              commonBackend(lhs.handle.backend, rhs.handle.backend), windowStrides.handle.backend),
+            padding.handle.backend), lhsDilation.handle.backend), rhsDilation.handle.backend),
+      featureGroupCount.handle.backend)
+    {
+    case .XLA:
+      let output_device = featureGroupCount.device
+      let lhs = Tensor<Lhst>(copying: lhs, to: .defaultTFEager)
+      let rhs = Tensor<Rhst>(copying: rhs, to: .defaultTFEager)
+      let windowStrides = Tensor<Tindices>(copying: windowStrides, to: .defaultTFEager)
+      let padding = Tensor<Tindices>(copying: padding, to: .defaultTFEager)
+      let lhsDilation = Tensor<Tindices>(copying: lhsDilation, to: .defaultTFEager)
+      let rhsDilation = Tensor<Tindices>(copying: rhsDilation, to: .defaultTFEager)
+      let featureGroupCount = Tensor<Tindices>(copying: featureGroupCount, to: .defaultTFEager)
+      return Tensor<PreferredElementType>(
+        copying: _RawTFEager.xlaConvV2(
+          lhs: lhs, rhs: rhs, windowStrides: windowStrides, padding: padding,
+          lhsDilation: lhsDilation, rhsDilation: rhsDilation, featureGroupCount: featureGroupCount,
+          dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig,
+          batchGroupCount: batchGroupCount), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaConvV2(
+        lhs: lhs, rhs: rhs, windowStrides: windowStrides, padding: padding,
+        lhsDilation: lhsDilation, rhsDilation: rhsDilation, featureGroupCount: featureGroupCount,
+        dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig,
+        batchGroupCount: batchGroupCount)
+    }
+
+  }
+
+  /// Wraps the XLA CustomCall operator
+  ///
+  ///   documented at https://www.tensorflow.org/xla/operation_semantics#customcall.
+  ///
+  /// - Parameter args: A list of `Tensor` with possibly different types.
+  ///
+  /// - Attrs:
+  ///     - target_name: Name of the function. A call instruction will be emitted which
+  ///         targets this symbol name.
+  ///     - backend_config: String, used to encode serialized metadata to the backend.
+  ///     - dtype: Output tensor data type.
+  ///     - shape: Output tensor shape.
+  @inlinable @inline(__always)
+  public static func xlaCustomCall<
+    T: TensorArrayProtocol,
+    Dtype: TensorFlowScalar
+  >(
+    args: T,
+    targetName: String,
+    backendConfig: String,
+    shape: TensorShape?
+  ) -> Tensor<Dtype> {
+    _RawTFEager.xlaCustomCall(
+      args: args, targetName: targetName, backendConfig: backendConfig, shape: shape)
   }
 
   /// Wraps the XLA DotGeneral operator, documented at
@@ -39632,10 +45869,50 @@ public enum _Raw {
       let rhs = Tensor<T>(copying: rhs, to: .defaultTFEager)
       return Tensor<T>(
         copying: _RawTFEager.xlaDot(
-          lhs: lhs, rhs: rhs, dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig
-        ), to: output_device)
+          lhs: lhs, rhs: rhs, dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.xlaDot(
+        lhs: lhs, rhs: rhs, dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig)
+    }
+
+  }
+
+  /// Wraps the XLA DotGeneral operator, documented at
+  ///
+  ///  https://www.tensorflow.org/performance/xla/operation_semantics#dotgeneral
+  /// .
+  ///
+  /// - Parameters:
+  ///     - lhs: the LHS tensor
+  ///     - rhs: the RHS tensor
+  ///
+  /// - Attrs:
+  ///     - dimension_numbers: a serialized xla::DotDimensionNumbers proto.
+  ///     - precision_config: a serialized xla::PrecisionConfig proto.
+  ///     - preferred_element_type: The type of the tensor.
+  @inlinable @inline(__always)
+  public static func xlaDotV2<
+    Lhst: TensorFlowNumeric,
+    Rhst: TensorFlowNumeric,
+    PreferredElementType: TensorFlowNumeric
+  >(
+    lhs: Tensor<Lhst>,
+    rhs: Tensor<Rhst>,
+    dimensionNumbers: String,
+    precisionConfig: String
+  ) -> Tensor<PreferredElementType> {
+    switch commonBackend(lhs.handle.backend, rhs.handle.backend) {
+    case .XLA:
+      let output_device = rhs.device
+      let lhs = Tensor<Lhst>(copying: lhs, to: .defaultTFEager)
+      let rhs = Tensor<Rhst>(copying: rhs, to: .defaultTFEager)
+      return Tensor<PreferredElementType>(
+        copying: _RawTFEager.xlaDotV2(
+          lhs: lhs, rhs: rhs, dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaDotV2(
         lhs: lhs, rhs: rhs, dimensionNumbers: dimensionNumbers, precisionConfig: precisionConfig)
     }
 
@@ -39668,8 +45945,8 @@ public enum _Raw {
     sizeIndices: Tensor<Tindices>
   ) -> Tensor<T> {
     switch commonBackend(
-      commonBackend(input.handle.backend, startIndices.handle.backend), sizeIndices.handle.backend
-    ) {
+      commonBackend(input.handle.backend, startIndices.handle.backend), sizeIndices.handle.backend)
+    {
     case .XLA:
       let output_device = sizeIndices.device
       let input = Tensor<T>(copying: input, to: .defaultTFEager)
@@ -39732,7 +46009,7 @@ public enum _Raw {
 
   /// An op which supports basic einsum op with 2 inputs and 1 output.
   ///
-  /// This op has better TPU performnce since it doesn't have explicitly reshape and
+  /// This op has better TPU performance since it doesn't have explicitly reshape and
   /// transpose operations as tf.einsum does.
   @inlinable @inline(__always)
   public static func xlaEinsum<T: FloatingPoint & TensorFlowScalar>(
@@ -39745,12 +46022,95 @@ public enum _Raw {
       let output_device = b.device
       let a = Tensor<T>(copying: a, to: .defaultTFEager)
       let b = Tensor<T>(copying: b, to: .defaultTFEager)
-      return Tensor<T>(
-        copying: _RawTFEager.xlaEinsum(a, b, equation: equation), to: output_device)
+      return Tensor<T>(copying: _RawTFEager.xlaEinsum(a, b, equation: equation), to: output_device)
     case .TF_EAGER:
       return _RawTFEager.xlaEinsum(a, b, equation: equation)
     }
 
+  }
+
+  /// Wraps the XLA Gather operator documented at
+  ///
+  ///   https://www.tensorflow.org/xla/operation_semantics#gather
+  ///
+  /// - Parameters:
+  ///     - operand: The array we're gathering from.
+  ///     - start_indices: Array containing the starting indices of the slices we gather.
+  ///     - slice_sizes: slice_sizes[i] is the bounds for the slice on dimension i.
+  ///
+  /// - Attrs:
+  ///     - dimension_numbers: A serialized xla::GatherDimensionNumbers proto.
+  ///     - indices_are_sorted: Boolean indicating if the indices are sorted.
+  @inlinable @inline(__always)
+  public static func xlaGather<
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    operand: Tensor<T>,
+    startIndices: Tensor<Tindices>,
+    sliceSizes: Tensor<Tindices>,
+    dimensionNumbers: String,
+    indicesAreSorted: Bool
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(operand.handle.backend, startIndices.handle.backend), sliceSizes.handle.backend)
+    {
+    case .XLA:
+      let output_device = sliceSizes.device
+      let operand = Tensor<T>(copying: operand, to: .defaultTFEager)
+      let startIndices = Tensor<Tindices>(copying: startIndices, to: .defaultTFEager)
+      let sliceSizes = Tensor<Tindices>(copying: sliceSizes, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaGather(
+          operand: operand, startIndices: startIndices, sliceSizes: sliceSizes,
+          dimensionNumbers: dimensionNumbers, indicesAreSorted: indicesAreSorted), to: output_device
+      )
+    case .TF_EAGER:
+      return _RawTFEager.xlaGather(
+        operand: operand, startIndices: startIndices, sliceSizes: sliceSizes,
+        dimensionNumbers: dimensionNumbers, indicesAreSorted: indicesAreSorted)
+    }
+
+  }
+
+  /// A pseudo-op to represent host-side computation in an XLA program.
+  ///
+  /// - Parameter inputs: A list of tensors that will be sent to the host.
+  ///
+  /// - Attrs:
+  ///     - Tinputs: The element types of each element in `inputs`.
+  ///     - Toutputs: The element types of each element in `outputs`.
+  ///     - ancestors: A list of names of HostCompute computations that must be
+  ///         sequenced before this computation.
+  ///     - shapes: If shape_inference_graph is empty, a list of the shapes of `outputs`.
+  ///     - shape_inference_graph: If non-empty, a serialized GraphDef representing a graph
+  ///         that must be analyzed at compile time to determine the shapes of the outputs.
+  ///     - key: A unique identifier for this region used to match up host transfers.
+  ///     - cost_estimate_ns: Estimated duration of the host computation in nanoseconds.
+  ///     - tpu_core: Default core to use for host to device transfers.
+  ///
+  /// - Output outputs: A list of tensors that will be returned to the device.
+  @inlinable @inline(__always)
+  public static func xlaHostCompute<
+    Tinputs: TensorArrayProtocol,
+    Toutputs: TensorGroup,
+    ShapeinferencegraphIn: TensorGroup,
+    ShapeinferencegraphOut: TensorGroup
+  >(
+    inputs: Tinputs,
+    ancestors: [String],
+    shapes: [TensorShape?],
+    shapeInferenceGraph: (ShapeinferencegraphIn) -> ShapeinferencegraphOut,
+    key: String,
+    sendKey: String,
+    recvKey: String,
+    costEstimateNs: Int64 = 1_000_000,
+    tpuCore: Int64 = 0
+  ) -> Toutputs {
+    _RawTFEager.xlaHostCompute(
+      inputs: inputs, ancestors: ancestors, shapes: shapes,
+      shapeInferenceGraph: shapeInferenceGraph, key: key, sendKey: sendKey, recvKey: recvKey,
+      costEstimateNs: costEstimateNs, tpuCore: tpuCore)
   }
 
   /// output = cond ? then_branch(inputs) : else_branch(inputs).
@@ -39829,6 +46189,18 @@ public enum _Raw {
       constants: constants, args: args, resources: resources, function: function)
   }
 
+  /// Wraps the XLA OptimizationBarrier operator.
+  ///
+  /// Documented at https://www.tensorflow.org/xla/operation_semantics#optimizationbarrier.
+  ///
+  /// - Parameter input: A Tuple of Arrays of any type.
+  @inlinable @inline(__always)
+  public static func xlaOptimizationBarrier<T: TensorArrayProtocol>(
+    _ input: T
+  ) -> T {
+    _RawTFEager.xlaOptimizationBarrier(input)
+  }
+
   /// Wraps the XLA Pad operator, documented at
   ///
   ///  https://www.tensorflow.org/performance/xla/operation_semantics#pad
@@ -39837,9 +46209,13 @@ public enum _Raw {
   /// - Parameters:
   ///     - input: A `Tensor` of type T.
   ///     - padding_value: A scalar `Tensor` of type T.
-  ///     - padding_low: the padding to apply at the start of each input dimensions
-  ///     - padding_high: the padding to apply at the end of each input dimension.
-  ///     - padding_interior: the padding to apply between each input element.
+  ///     - padding_low: the padding to apply at the start of each input dimensions. Must
+  ///         be a compile-time constant 1D tensor of length equal to rank of input.
+  ///     - padding_high: the padding to apply at the end of each input dimension. Must
+  ///         be a compile-time constant 1D tensor of length equal to rank of input.
+  ///     - padding_interior: the padding to apply between each input element. Must
+  ///         be a compile-time constant 1D tensor of length equal to rank of input,
+  ///         containing only non-negative values.
   ///
   /// - Output output: A `Tensor` of type T.
   @inlinable @inline(__always)
@@ -39897,6 +46273,20 @@ public enum _Raw {
     _RawTFEager.xlaRecv(tensorName: tensorName, shape: shape)
   }
 
+  /// An op to receive a tensor from the host.
+  ///
+  /// output: the tensor that will be received from the host.
+  /// Toutput: element type for output.
+  /// shape: shape for output.
+  /// key: A unique identifier for this region used to match up host transfers.
+  @inlinable @inline(__always)
+  public static func xlaRecvFromHost<Toutput: TensorFlowScalar>(
+    shape: TensorShape?,
+    key: String
+  ) -> Tensor<Toutput> {
+    _RawTFEager.xlaRecvFromHost(shape: shape, key: key)
+  }
+
   /// Wraps the XLA Reduce operator, documented at
   ///
   ///  https://www.tensorflow.org/performance/xla/operation_semantics#reduce .
@@ -39910,7 +46300,7 @@ public enum _Raw {
   ///     - reducer: a reducer function to apply
   @inlinable @inline(__always)
   public static func xlaReduce<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     ReducerIn: TensorGroup,
     ReducerOut: TensorGroup
   >(
@@ -39935,6 +46325,44 @@ public enum _Raw {
 
   }
 
+  /// Wraps the XLA ReduceScatter operator
+  ///
+  ///   documented at https://www.tensorflow.org/xla/operation_semantics#reducescatter.
+  ///
+  /// - Parameters:
+  ///     - input: Array or a non-empty tuple of arrays to reduce across replicas.
+  ///     - group_assignment: Groups between which the reductions are performed.
+  ///     - scatter_dimension: Dimension to scatter.
+  ///
+  /// - Attr reduce_op: Reduction computation.
+  @inlinable @inline(__always)
+  public static func xlaReduceScatter<T: TensorFlowNumeric>(
+    _ input: Tensor<T>,
+    groupAssignment: Tensor<Int32>,
+    scatterDimension: Tensor<Int32>,
+    reduceOp: ReduceOp1
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, groupAssignment.handle.backend),
+      scatterDimension.handle.backend)
+    {
+    case .XLA:
+      let output_device = scatterDimension.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let groupAssignment = Tensor<Int32>(copying: groupAssignment, to: .defaultTFEager)
+      let scatterDimension = Tensor<Int32>(copying: scatterDimension, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaReduceScatter(
+          input, groupAssignment: groupAssignment, scatterDimension: scatterDimension,
+          reduceOp: reduceOp), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaReduceScatter(
+        input, groupAssignment: groupAssignment, scatterDimension: scatterDimension,
+        reduceOp: reduceOp)
+    }
+
+  }
+
   /// Wraps the XLA ReduceWindow operator, documented at
   ///
   ///  https://www.tensorflow.org/performance/xla/operation_semantics#reducewindow .
@@ -39949,7 +46377,7 @@ public enum _Raw {
   /// - Attr computation: a reducer function to apply
   @inlinable @inline(__always)
   public static func xlaReduceWindow<
-    T: TensorFlowNumeric,
+    T: TensorFlowScalar,
     Tindices: TensorFlowIndex,
     ComputationIn: TensorGroup,
     ComputationOut: TensorGroup
@@ -39996,10 +46424,109 @@ public enum _Raw {
 
   }
 
+  /// Inverse of XlaSetDynamicDimensionSize.
+  ///
+  /// Make an xla bounded dynamic dimension into a static dimension. The bound of the
+  /// size of dimension `dim_index` becomes the static dimension size.
+  @inlinable @inline(__always)
+  public static func xlaRemoveDynamicDimensionSize<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    dimIndex: Tensor<Int32>
+  ) -> Tensor<T> {
+    switch commonBackend(input.handle.backend, dimIndex.handle.backend) {
+    case .XLA:
+      let output_device = dimIndex.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let dimIndex = Tensor<Int32>(copying: dimIndex, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaRemoveDynamicDimensionSize(input, dimIndex: dimIndex),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaRemoveDynamicDimensionSize(input, dimIndex: dimIndex)
+    }
+
+  }
+
   /// Replica ID.
   @inlinable @inline(__always)
   public static func xlaReplicaId() -> Tensor<Int32> {
     _RawTFEager.xlaReplicaId()
+  }
+
+  /// Stateless PRNG bit generator.
+  ///
+  /// Wraps the XLA RngBitGenerator operator, documented at
+  ///  https://www.tensorflow.org/performance/xla/operation_semantics#rngbitgenerator.
+  ///
+  /// - Parameters:
+  ///     - algorithm: The PRNG algorithm to use, one of
+  ///         tf.random.Algorithm.{PHILOX, THREEFRY, AUTO_SELECT}.
+  ///     - initial_state: Initial state for the PRNG algorithm. For THREEFRY, it should be
+  ///         a u64[2] and for PHILOX a u64[3].
+  ///     - shape: The output shape of the generated data.
+  ///
+  /// - Attr dtype: The type of the tensor.
+  @inlinable @inline(__always)
+  public static func xlaRngBitGenerator<
+    Dtype: TensorFlowInteger,
+    Tshape: TensorFlowIndex
+  >(
+    algorithm: Tensor<Int32>,
+    initialState: Tensor<UInt64>,
+    shape: Tensor<Tshape>
+  ) -> (outputKey: Tensor<UInt64>, output: Tensor<Dtype>) {
+    _RawTFEager.xlaRngBitGenerator(algorithm: algorithm, initialState: initialState, shape: shape)
+  }
+
+  /// Wraps the XLA Scatter operator documented at
+  ///
+  ///   https://www.tensorflow.org/xla/operation_semantics#scatter.
+  ///
+  /// - Parameters:
+  ///     - operand: Array to be scattered into.
+  ///     - scatter_indices: Array containing the starting indices of the slices that must
+  ///         be scattered to.
+  ///     - updates: Array containing the values that must be used for scattering.
+  ///
+  /// - Attrs:
+  ///     - update_computation: Computation to be used for combining the existing values in
+  ///         the input array and the updates during scatter.
+  ///     - dimension_numbers: A serialized xla::ScatterDimensionNumbers proto.
+  ///     - indices_are_sorted: Boolean indicating if the indices are sorted.
+  @inlinable @inline(__always)
+  public static func xlaScatter<
+    UpdatecomputationIn: TensorGroup,
+    UpdatecomputationOut: TensorGroup,
+    T: TensorFlowScalar,
+    Tindices: TensorFlowIndex
+  >(
+    operand: Tensor<T>,
+    scatterIndices: Tensor<Tindices>,
+    updates: Tensor<T>,
+    updateComputation: (UpdatecomputationIn) -> UpdatecomputationOut,
+    dimensionNumbers: String,
+    indicesAreSorted: Bool
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(operand.handle.backend, scatterIndices.handle.backend), updates.handle.backend)
+    {
+    case .XLA:
+      let output_device = updates.device
+      let operand = Tensor<T>(copying: operand, to: .defaultTFEager)
+      let scatterIndices = Tensor<Tindices>(copying: scatterIndices, to: .defaultTFEager)
+      let updates = Tensor<T>(copying: updates, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaScatter(
+          operand: operand, scatterIndices: scatterIndices, updates: updates,
+          updateComputation: updateComputation, dimensionNumbers: dimensionNumbers,
+          indicesAreSorted: indicesAreSorted), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaScatter(
+        operand: operand, scatterIndices: scatterIndices, updates: updates,
+        updateComputation: updateComputation, dimensionNumbers: dimensionNumbers,
+        indicesAreSorted: indicesAreSorted)
+    }
+
   }
 
   /// Wraps the XLA SelectAndScatter operator, documented at
@@ -40055,8 +46582,8 @@ public enum _Raw {
       return Tensor<T>(
         copying: _RawTFEager.xlaSelectAndScatter(
           operand: operand, windowDimensions: windowDimensions, windowStrides: windowStrides,
-          padding: padding, source: source, initValue: initValue, select: select, scatter: scatter
-        ), to: output_device)
+          padding: padding, source: source, initValue: initValue, select: select, scatter: scatter),
+        to: output_device)
     case .TF_EAGER:
       return _RawTFEager.xlaSelectAndScatter(
         operand: operand, windowDimensions: windowDimensions, windowStrides: windowStrides,
@@ -40080,7 +46607,7 @@ public enum _Raw {
   ///         triangular part or the upper triangular part.
   ///     - max_iter: maximum number of sweep update, i.e., the whole lower triangular
   ///         part or upper triangular part based on parameter lower. Heuristically, it has
-  ///         been argued that approximatly logN sweeps are needed in practice (Ref: Golub &
+  ///         been argued that approximately logN sweeps are needed in practice (Ref: Golub &
   ///         van Loan "Matrix Computation").
   ///     - epsilon: the tolerance ratio.
   ///
@@ -40115,18 +46642,85 @@ public enum _Raw {
     _RawTFEager.xlaSend(tensor, tensorName: tensorName)
   }
 
-  /// An op which shards the input based on the given sharding attribute.
+  /// An op to send a tensor to the host.
+  ///
+  /// input: the tensor that will be sent to the host.
+  /// Tinput: element type for input.
+  /// key: A unique identifier for this region used to match up host transfers.
+  @inlinable @inline(__always)
+  public static func xlaSendToHost<Tinput: TensorFlowScalar>(
+    _ input: Tensor<Tinput>,
+    key: String
+  ) {
+    _RawTFEager.xlaSendToHost(input, key: key)
+  }
+
+  /// Set a bound for the given input value as a hint to Xla compiler,
+  ///
+  ///         returns the same value.
+  @inlinable @inline(__always)
+  public static func xlaSetBound(
+    _ input: Tensor<Int32>,
+    bound: Tensor<Int32>
+  ) -> Tensor<Int32> {
+    switch commonBackend(input.handle.backend, bound.handle.backend) {
+    case .XLA:
+      let output_device = bound.device
+      let input = Tensor<Int32>(copying: input, to: .defaultTFEager)
+      let bound = Tensor<Int32>(copying: bound, to: .defaultTFEager)
+      return Tensor<Int32>(copying: _RawTFEager.xlaSetBound(input, bound: bound), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaSetBound(input, bound: bound)
+    }
+
+  }
+
+  /// Make a static dimension into a xla bounded dynamic dimension.
+  ///
+  ///         The current static dimension size will become the bound and the second
+  ///         operand becomes the dynamic size of the dimension.
+  @inlinable @inline(__always)
+  public static func xlaSetDynamicDimensionSize<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    dimIndex: Tensor<Int32>,
+    size: Tensor<Int32>
+  ) -> Tensor<T> {
+    switch commonBackend(
+      commonBackend(input.handle.backend, dimIndex.handle.backend), size.handle.backend)
+    {
+    case .XLA:
+      let output_device = size.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      let dimIndex = Tensor<Int32>(copying: dimIndex, to: .defaultTFEager)
+      let size = Tensor<Int32>(copying: size, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaSetDynamicDimensionSize(input, dimIndex: dimIndex, size: size),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaSetDynamicDimensionSize(input, dimIndex: dimIndex, size: size)
+    }
+
+  }
+
+  /// An op which shards the input based on the given sharding attribute. It can
+  ///
+  /// selectively annotate a subset of tensor dimensions by skipping unspecified_dims,
+  /// and the sharding annotation should be replicated in those dims.
   @inlinable @inline(__always)
   public static func xlaSharding<T: TensorFlowScalar>(
-    _ input: Tensor<T>
+    _ input: Tensor<T>,
+    sharding: String,
+    unspecifiedDims: [Int32]
   ) -> Tensor<T> {
     switch input.handle.backend {
     case .XLA:
       let output_device = input.device
       let input = Tensor<T>(copying: input, to: .defaultTFEager)
-      return Tensor<T>(copying: _RawTFEager.xlaSharding(input), to: output_device)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaSharding(
+          input, sharding: sharding, unspecifiedDims: unspecifiedDims), to: output_device)
     case .TF_EAGER:
-      return _RawTFEager.xlaSharding(input)
+      return _RawTFEager.xlaSharding(input, sharding: sharding, unspecifiedDims: unspecifiedDims)
     }
 
   }
@@ -40156,6 +46750,132 @@ public enum _Raw {
 
   }
 
+  /// Splits input tensor across all dimensions.
+  ///
+  /// An op which slices the input tensor based on the given num_splits attribute,
+  /// pads slices optionally, and returned the slices. Slices are returned in
+  /// row-major order.
+  ///
+  /// This op may be generated via the TPU bridge.
+  ///
+  /// For example, with `input` tensor:
+  /// ```
+  /// [[0, 1, 2],
+  ///  [3, 4, 5],
+  ///  [6, 7, 8]]
+  /// ```
+  /// `num_splits`:
+  /// ```
+  /// [2, 2]
+  /// ```
+  /// and `paddings`:
+  /// ```
+  /// [1, 1]
+  /// ```
+  /// the expected `outputs` is:
+  /// ```
+  /// [[0, 1],
+  ///  [3, 4]]
+  /// [[2, 0],
+  ///  [5, 0]]
+  /// [[6, 7],
+  ///  [0, 0]]
+  /// [[8, 0],
+  ///  [0, 0]]
+  /// ```
+  ///
+  /// - Parameter input: Input tensor to split across all dimensions.
+  ///       }
+  ///       out_arg {
+  ///         name: "outputs"
+  ///         description: <<END
+  ///     Output slices based on input and num_splits defined, in row-major order.
+  ///
+  /// - Attrs:
+  ///     - num_splits: Number of ways to split per dimension. Shape dimensions must be evenly
+  ///         divisible.
+  ///     - paddings: Optional list of right paddings per dimension of input tensor to apply before
+  ///         splitting. This can be used to make a dimension evenly divisible.
+  @inlinable @inline(__always)
+  public static func xlaSplitND<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    n: Int64,
+    numSplits: [Int32],
+    paddings: [Int32]
+  ) -> [Tensor<T>] {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return [Tensor<T>](
+        copying: _RawTFEager.xlaSplitND(input, n: n, numSplits: numSplits, paddings: paddings),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaSplitND(input, n: n, numSplits: numSplits, paddings: paddings)
+    }
+
+  }
+
+  /// An op used by XLA SPMD partitioner to switch from automatic partitioning to
+  ///
+  /// manual partitioning. It annotates the input (full-shape, to be automatically
+  /// partitioned) with the same sharding used by manual partitioning, and outputs a
+  /// shard-shaped tensor to be consumed by later manually-partitioned ops. If the
+  /// shape is not evenly partitionable, the padding region will be masked with 0s.
+  /// The conversion can happen partially in subgroups, by specifying the dim
+  /// attribute, where only that dim will be converted.
+  @inlinable @inline(__always)
+  public static func xlaSpmdFullToShardShape<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    manualSharding: String,
+    dim: Int64 = -1,
+    unspecifiedDims: [Int32]
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaSpmdFullToShardShape(
+          input, manualSharding: manualSharding, dim: dim, unspecifiedDims: unspecifiedDims),
+        to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaSpmdFullToShardShape(
+        input, manualSharding: manualSharding, dim: dim, unspecifiedDims: unspecifiedDims)
+    }
+
+  }
+
+  /// An op used by XLA SPMD partitioner to switch from manual partitioning to
+  ///
+  /// automatic partitioning. It converts the shard-shaped, manually partitioned input
+  /// into full-shaped tensor to be partitioned automatically with the same sharding
+  /// used by manual partitioning. The conversion can happen partially in subgroups,
+  /// by specifying the dim attribute, where only that dim will be converted.
+  @inlinable @inline(__always)
+  public static func xlaSpmdShardToFullShape<T: TensorFlowScalar>(
+    _ input: Tensor<T>,
+    manualSharding: String,
+    fullShape: TensorShape?,
+    dim: Int64 = -1,
+    unspecifiedDims: [Int32]
+  ) -> Tensor<T> {
+    switch input.handle.backend {
+    case .XLA:
+      let output_device = input.device
+      let input = Tensor<T>(copying: input, to: .defaultTFEager)
+      return Tensor<T>(
+        copying: _RawTFEager.xlaSpmdShardToFullShape(
+          input, manualSharding: manualSharding, fullShape: fullShape, dim: dim,
+          unspecifiedDims: unspecifiedDims), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlaSpmdShardToFullShape(
+        input, manualSharding: manualSharding, fullShape: fullShape, dim: dim,
+        unspecifiedDims: unspecifiedDims)
+    }
+
+  }
+
   /// Computes the eigen decomposition of a batch of self-adjoint matrices
   ///
   /// (Note: Only real inputs are supported).
@@ -40168,7 +46888,7 @@ public enum _Raw {
   /// - Attrs:
   ///     - max_iter: maximum number of sweep update, i.e., the whole lower triangular
   ///         part or upper triangular part based on parameter lower. Heuristically, it has
-  ///         been argued that approximatly log(min (M, N)) sweeps are needed in practice
+  ///         been argued that approximately log(min (M, N)) sweeps are needed in practice
   ///         (Ref: Golub & van Loan "Matrix Computation").
   ///     - epsilon: the tolerance ratio.
   ///     - precision_config: a serialized xla::PrecisionConfig proto.
@@ -40186,6 +46906,101 @@ public enum _Raw {
     precisionConfig: String
   ) -> (s: Tensor<T>, u: Tensor<T>, v: Tensor<T>) {
     _RawTFEager.xlaSvd(a, maxIter: maxIter, epsilon: epsilon, precisionConfig: precisionConfig)
+  }
+
+  /// Wraps the variadic XLA Reduce operator.
+  ///
+  /// Semantics are documented at
+  ///  https://www.tensorflow.org/performance/xla/operation_semantics#variadic_reduce.
+  ///
+  /// This version is limited to operands of the same dtype.
+  /// XlaVariadicReduceV2 is a version that supports heterogeneous operands.
+  ///
+  /// - Parameters:
+  ///     - input: the input tensor(s)
+  ///     - init_value: scalar initial value(s) for the reduction
+  ///
+  /// - Attrs:
+  ///     - dimensions_to_reduce: dimension numbers over which to reduce
+  ///     - reducer: a reducer function to apply
+  @inlinable @inline(__always)
+  public static func xlaVariadicReduce<
+    T: TensorFlowScalar,
+    ReducerIn: TensorGroup,
+    ReducerOut: TensorGroup
+  >(
+    _ input: [Tensor<T>],
+    initValue: [Tensor<T>],
+    dimensionsToReduce: [Int32],
+    reducer: (ReducerIn) -> ReducerOut
+  ) -> [Tensor<T>] {
+    _RawTFEager.xlaVariadicReduce(
+      input, initValue: initValue, dimensionsToReduce: dimensionsToReduce, reducer: reducer)
+  }
+
+  /// Wraps the variadic XLA Reduce operator.
+  ///
+  /// Semantics are documented at
+  ///  https://www.tensorflow.org/performance/xla/operation_semantics#variadic_reduce.
+  ///
+  /// This is an expanded version of XlaVariadicReduce, with support for
+  /// operands of different dtypes, and improved shape inference.
+  ///
+  /// - Parameters:
+  ///     - inputs: the input tensor(s)
+  ///     - init_values: scalar initial value(s) for the reduction
+  ///
+  /// - Attrs:
+  ///     - dimensions_to_reduce: dimension numbers over which to reduce
+  ///     - reducer: a reducer function to apply
+  @inlinable @inline(__always)
+  public static func xlaVariadicReduceV2<
+    T: TensorArrayProtocol,
+    ReducerIn: TensorGroup,
+    ReducerOut: TensorGroup
+  >(
+    inputs: T,
+    initValues: T,
+    dimensionsToReduce: [Int32],
+    reducer: (ReducerIn) -> ReducerOut
+  ) -> T {
+    _RawTFEager.xlaVariadicReduceV2(
+      inputs: inputs, initValues: initValues, dimensionsToReduce: dimensionsToReduce,
+      reducer: reducer)
+  }
+
+  /// Wraps the XLA Sort operator, documented at
+  ///
+  ///  https://www.tensorflow.org/performance/xla/operation_semantics#sort
+  /// .
+  ///
+  /// Sorts one or more tensors, with support for custom comparator, dimension, and
+  /// is_stable attributes.
+  ///
+  /// - Parameters:
+  ///     - inputs: A list of `Tensor` of identical shape but possibly different types.
+  ///     - dimension: The dimension along which to sort. Must be a compile-time constant.
+  ///
+  /// - Attrs:
+  ///     - comparator: A comparator function to apply to 2*N scalars and returning a
+  ///         boolean. N is the number of sort inputs. If you want to sort in ascending
+  ///         order then the comparator should perform a less-than comparison.
+  ///     - is_stable: Whether to use stable sort.
+  ///
+  /// - Output outputs: A list of `Tensor` of same shape and types as the `input`.
+  @inlinable @inline(__always)
+  public static func xlaVariadicSort<
+    T: TensorArrayProtocol,
+    ComparatorIn: TensorGroup,
+    ComparatorOut: TensorGroup
+  >(
+    inputs: T,
+    dimension: Tensor<Int32>,
+    comparator: (ComparatorIn) -> ComparatorOut,
+    isStable: Bool
+  ) -> T {
+    _RawTFEager.xlaVariadicSort(
+      inputs: inputs, dimension: dimension, comparator: comparator, isStable: isStable)
   }
 
   /// output = input; While (Cond(output)) { output = Body(output) }
@@ -40217,6 +47032,24 @@ public enum _Raw {
     body: (BodyIn) -> BodyOut
   ) -> T {
     _RawTFEager.xlaWhile(input, cond: cond, body: body)
+  }
+
+  /// Returns 0 if x == 0, and x * log1p(y) otherwise, elementwise.
+  @inlinable @inline(__always)
+  public static func xlog1py<T: FloatingPoint & TensorFlowScalar>(
+    _ x: Tensor<T>,
+    _ y: Tensor<T>
+  ) -> Tensor<T> {
+    switch commonBackend(x.handle.backend, y.handle.backend) {
+    case .XLA:
+      let output_device = y.device
+      let x = Tensor<T>(copying: x, to: .defaultTFEager)
+      let y = Tensor<T>(copying: y, to: .defaultTFEager)
+      return Tensor<T>(copying: _RawTFEager.xlog1py(x, y), to: output_device)
+    case .TF_EAGER:
+      return _RawTFEager.xlog1py(x, y)
+    }
+
   }
 
   /// Returns 0 if x == 0, and x * log(y) otherwise, elementwise.
@@ -40293,10 +47126,12 @@ public enum _Raw {
   public static func zipDataset(
     inputDatasets: [VariantHandle],
     outputTypes: [TensorDataType],
-    outputShapes: [TensorShape?]
+    outputShapes: [TensorShape?],
+    metadata: String
   ) -> VariantHandle {
     _RawTFEager.zipDataset(
-      inputDatasets: inputDatasets, outputTypes: outputTypes, outputShapes: outputShapes)
+      inputDatasets: inputDatasets, outputTypes: outputTypes, outputShapes: outputShapes,
+      metadata: metadata)
   }
 
 }

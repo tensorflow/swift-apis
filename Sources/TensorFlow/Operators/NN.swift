@@ -470,7 +470,8 @@ public func depthwiseConv2D<Scalar: TensorFlowFloatingPoint>(
     input,
     filter: filter,
     strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
-    padding: padding.raw,
+    padding: padding.raw2,
+    explicitPaddings: [],
     dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2), Int32(dilations.3)])
 }
 
@@ -517,7 +518,8 @@ func depthwiseConv2dBackpropInput<Scalar: TensorFlowFloatingPoint>(
     filter: filter,
     outBackprop: x,
     strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
-    padding: padding.raw,
+    padding: padding.raw2,
+    explicitPaddings: [],
     dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2), Int32(dilations.3)])
 }
 
@@ -564,7 +566,8 @@ func depthwiseConv2dBackpropFilter<Scalar: TensorFlowFloatingPoint>(
     filterSizes: filterSizes,
     outBackprop: x,
     strides: [Int32(strides.0), Int32(strides.1), Int32(strides.2), Int32(strides.3)],
-    padding: padding.raw,
+    padding: padding.raw2,
+    explicitPaddings: [],
     dilations: [Int32(dilations.0), Int32(dilations.1), Int32(dilations.2), Int32(dilations.3)])
 }
 
