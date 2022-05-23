@@ -201,7 +201,7 @@ where Element: Differentiable & ElementaryFunctions {
   /// For real types, if `x` is negative the result is NaN, even if `y` has
   /// an integral value. For complex types, there is a branch cut on the
   /// negative real axis.
-  // public static func pow(_ x: Self, _ y: Self) -> Self { .init(zip(x, y).map({ (x,y) -> Element in Element.pow(x,y)})) }
+  public static func pow(_ x: Self, _ y: Self) -> Self { .init(zip(x, y).map({ (x,y) -> Element in Element.pow(x,y)})) }
 
   /// `x` raised to the `n`th power.
   ///
@@ -299,17 +299,17 @@ where Element: Differentiable & PointwiseMultiplicative {
 
   public var reciprocal: Self { .init(map { $0.reciprocal }) }
 
-  // public static func .* (lhs: Self, rhs: Self) -> Self {
-  //   precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
-  //   return .init(zip(lhs, rhs).map(.*))
-  // }
+  public static func .* (lhs: Self, rhs: Self) -> Self {
+    precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
+    return .init(zip(lhs, rhs).map(.*))
+  }
 
-  // public static func .*= (lhs: inout Self, rhs: Self) {
-  //   precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
-  //   for (i, x) in zip(lhs.indices, rhs) {
-  //     lhs[i] .*= x
-  //   }
-  // }
+  public static func .*= (lhs: inout Self, rhs: Self) {
+    precondition(lhs.count == rhs.count, "Count mismatch: \(lhs.count) and \(rhs.count)")
+    for (i, x) in zip(lhs.indices, rhs) {
+      lhs[i] .*= x
+    }
+  }
 }
 
 extension Collection {

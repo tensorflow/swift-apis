@@ -411,39 +411,37 @@ extension Tensor: VectorProtocol where Scalar: TensorFlowFloatingPoint {
 //
 // Consider publicly exposing these operators when tensorflow/swift-apis is no
 // longer built as part of the Swift standard library,
-/*
 public extension VectorProtocol {
-    static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.adding(lhs)
-    }
+  static func + (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+    rhs.adding(lhs)
+  }
 
-    static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.adding(rhs)
-    }
+  static func + (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+    lhs.adding(rhs)
+  }
 
-    static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.subtracting(rhs)
-    }
+  static func - (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+    lhs.subtracting(rhs)
+  }
 
-    static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        rhs.scaled(by: lhs)
-    }
+  static func * (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+    rhs.scaled(by: lhs)
+  }
 
-    static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
-        lhs.scaled(by: rhs)
-    }
+  static func * (lhs: Self, rhs: VectorSpaceScalar) -> Self {
+    lhs.scaled(by: rhs)
+  }
 }
 
-public extension VectorProtocol where VectorSpaceScalar: SignedNumeric {
-    static prefix func - (x: Self) -> Self {
-        .zero - x
-    }
+public extension VectorProtocol {
+  static prefix func - (x: Self) -> Self {
+    .zero - x
+  }
 
-    static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
-        (-rhs).adding(lhs)
-    }
+  static func - (lhs: VectorSpaceScalar, rhs: Self) -> Self {
+    (-rhs).adding(lhs)
+  }
 }
-*/
 
 //===------------------------------------------------------------------------------------------===//
 // Additional Element-wise Operators
