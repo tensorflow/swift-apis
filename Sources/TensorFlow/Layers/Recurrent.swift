@@ -209,7 +209,7 @@ public struct LSTMCell<Scalar: TensorFlowFloatingPoint>: RecurrentLayerCell {
     /// Concatenates two values.
     @differentiable(reverse)
     public static func concatenate(_ lhs: Self, _ rhs: Self) -> Self {
-      // TODO(TF-1005): Remove workaround for differenting concatenated.
+      // TODO(TF-1005): Remove workaround for differentiating concatenated.
       let concatCell = lhs.cell.concatenated(with: rhs.cell, alongAxis: -1)
       let concatHidden = lhs.hidden.concatenated(with: rhs.hidden, alongAxis: -1)
       let cell = concatCell.withDerivative { [shape = concatCell.shape] in
