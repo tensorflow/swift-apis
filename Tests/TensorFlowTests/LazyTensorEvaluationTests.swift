@@ -82,6 +82,7 @@ final class LazyTensorEvaluationTests: LazyTensorTestCase {
   }
 
   func testNoOutputOperations() {
+    #if !FALLBACK_X10_BINARY
     withDevice(.cpu) {
       let elements1: Tensor<Int32> = [0, 1, 2]
       let elements2: Tensor<Int32> = [10, 11, 12]
@@ -111,6 +112,7 @@ final class LazyTensorEvaluationTests: LazyTensorTestCase {
       XCTAssertEqual(Tensor(handle: next.a).scalarized(), 0)
       XCTAssertEqual(Tensor(handle: next.b).scalarized(), 10)
     }
+    #endif
   }
 
   private func isMaterialized<T: TensorFlowScalar>(_ input: Tensor<T>) -> Bool {
