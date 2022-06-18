@@ -131,6 +131,7 @@ final class LazyTensorHandleTests: XCTestCase {
   }
 
   func testTensorToLazyTensorConversions() {
+    #if !FALLBACK_X10_BINARY
     checkConversions(Tensor<Float>(10.0))
     checkConversions(StringTensor("Hello!"))
 
@@ -150,6 +151,7 @@ final class LazyTensorHandleTests: XCTestCase {
     )
     checkConversions(dataset)
     checkConversions(iterator)
+    #endif
   }
 
   private func isSymbolic(_ t: LazyTensorHandle?) -> Bool {
