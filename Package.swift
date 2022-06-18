@@ -35,10 +35,10 @@ let package = Package(
       name: "x10_optimizers_tensor_visitor_plan",
       type: .dynamic,
       targets: ["x10_optimizers_tensor_visitor_plan"]),
-    // .library(
-    //   name: "x10_training_loop",
-    //   type: .dynamic,
-    //   targets: ["x10_training_loop"]),
+    .library(
+      name: "x10_training_loop",
+      type: .dynamic,
+      targets: ["x10_training_loop"]),
   ],
   dependencies: [
     .package(url: "https://github.com/apple/swift-numerics", .branch("main")),
@@ -80,13 +80,13 @@ let package = Package(
         "swift_bindings/optimizers/Optimizer.swift",
         "swift_bindings/optimizers/Optimizers.swift",
       ]),
-    // .target(
-    //   name: "x10_training_loop",
-    //   dependencies: ["TensorFlow"],
-    //   path: "Sources/x10",
-    //   sources: [
-    //     "swift_bindings/training_loop.swift",
-    //   ]),
+    .target(
+      name: "x10_training_loop",
+      dependencies: ["TensorFlow"],
+      path: "Sources/x10",
+      sources: [
+        "swift_bindings/training_loop.swift",
+      ]),
     .target(
       name: "Experimental",
       dependencies: [],
